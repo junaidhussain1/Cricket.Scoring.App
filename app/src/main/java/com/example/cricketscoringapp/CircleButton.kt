@@ -31,7 +31,7 @@ fun CircleButton(
     Button(
         onClick = onClick,
         shape = CircleShape,
-        modifier = Modifier.size(54.dp),
+        modifier = Modifier.size(80.dp),
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = buttonColor,

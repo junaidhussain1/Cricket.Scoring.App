@@ -72,15 +72,15 @@ dependencies {
     //implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
 
     // Coroutine support for networking
-    implementation(libs.kotlinx.coroutines.android)
-
-    implementation(libs.google.api.client.android)
-    implementation(libs.google.api.services.sheets)
-    implementation(libs.google.oauth.client.jetty)
-    implementation(libs.google.auth.library.oauth2.http)
-
-    implementation(libs.gradle)
-
-    implementation(libs.androidx.core.ktx.v1100)
+//    implementation(libs.kotlinx.coroutines.android)
+//
+//    implementation(libs.google.api.client.android)
+//    implementation(libs.google.api.services.sheets)
+//    implementation(libs.google.oauth.client.jetty)
+//    implementation(libs.google.auth.library.oauth2.http)
+//
+//    implementation(libs.gradle)
+//
+//    implementation(libs.androidx.core.ktx.v1100)
 
 }
