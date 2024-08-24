@@ -1,10 +1,9 @@
 package com.example.cricketscoringapp
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.content.ContentValues
-import android.database.Cursor
 
 // SQLite helper class
 class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -36,13 +35,13 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     }
 
     // Add method to update player
-    fun updatePlayer(playerId: Int, newName: String): Int {
-        val db = writableDatabase
-        val contentValues = ContentValues().apply {
-            put("name", newName)
-        }
-        return db.update("players", contentValues, "id = ?", arrayOf(playerId.toString()))
-    }
+//    fun updatePlayer(playerId: Int, newName: String): Int {
+//        val db = writableDatabase
+//        val contentValues = ContentValues().apply {
+//            put("name", newName)
+//        }
+//        return db.update("players", contentValues, "id = ?", arrayOf(playerId.toString()))
+//    }
 
     // Add method to delete player
     fun deletePlayer(playerId: Int): Int {
@@ -62,5 +61,15 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         }
         cursor.close()
         return players
+    }
+
+    fun playerAlreadyExists(playerName: String): Boolean {
+        val db = readableDatabase
+        val query = "SELECT 1 FROM players WHERE name = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(playerName))
+
+        val exists = cursor.moveToFirst() // returns true if the query returned a row, false otherwise
+        cursor.close()
+        return exists
     }
 }
