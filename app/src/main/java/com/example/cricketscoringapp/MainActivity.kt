@@ -21,6 +21,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -41,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -79,15 +82,42 @@ fun MainScreenContent() {
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
+    val captainViewModel: CaptainViewModel = viewModel()
+
     NavHost(navController = navController, startDestination = "homepage") {
-        composable("homepage") { Homepage(navController = navController) }
-        composable("newmatch") { NewMatchPage() }
+        composable("homepage") { HomePage(navController = navController)}
+        composable("playermgt") { PlayerMgtPage() }
+        composable("newmatch") { NewMatchPage(navController = navController, captainViewModel = captainViewModel) }
+        composable("startnewmatch") { StartNewMatchPage(captainViewModel = captainViewModel) }
     }
 }
 
-// Modify the Homepage composable to display an editable list of players with a delete option
 @Composable
-fun Homepage(navController: NavHostController) {
+fun HomePage(navController: NavHostController) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Welcome to Cricket Scoring App")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { navController.navigate("playermgt") }) {
+            Text(text = "Player Management")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { navController.navigate("newmatch") }) {
+            Text(text = "New Match")
+        }
+    }
+}
+
+@Composable
+fun PlayerMgtPage() {
     val context = LocalContext.current
     Column(
         modifier = Modifier
@@ -97,12 +127,12 @@ fun Homepage(navController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val dbHelper = CricketDatabaseHelper(context)
-
-        Text(text = "Welcome to Cricket Scoring App")
-        Spacer(modifier = Modifier.height(16.dp))
-
         var playerName by remember { mutableStateOf("") }
         val playersList = remember { mutableStateListOf<Player>() }
+
+        //Show all players
+        playersList.clear()
+        playersList.addAll(dbHelper.getAllPlayers())
 
         // TextField to input player name
         OutlinedTextField(
@@ -118,9 +148,16 @@ fun Homepage(navController: NavHostController) {
         Button(
             onClick = {
                 if (playerName.isNotEmpty()) {
-                    dbHelper.addPlayer(playerName)
-                    Toast.makeText(context, "Player Added", Toast.LENGTH_SHORT).show()
-                    playerName = ""
+                    if (!dbHelper.playerAlreadyExists(playerName)) {
+                        dbHelper.addPlayer(playerName)
+                        Toast.makeText(context, "Player Added", Toast.LENGTH_SHORT).show()
+                        playerName = ""
+                        //Show all players
+                        playersList.clear()
+                        playersList.addAll(dbHelper.getAllPlayers())
+                    } else {
+                        Toast.makeText(context, "Player already exists!", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
                     Toast.makeText(context, "Player name cannot be empty", Toast.LENGTH_SHORT).show()
                 }
@@ -131,22 +168,9 @@ fun Homepage(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Button to display all players from the database
-        Button(
-            onClick = {
-                playersList.clear()
-                // Map the List<Player> to List<String> containing only the player names
-                playersList.addAll(dbHelper.getAllPlayers())
-            }
-        ) {
-            Text("Show All Players")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         // Display the list of players in a scrollable LazyColumn
         if (playersList.isNotEmpty()) {
-            Text("Player List:", style = MaterialTheme.typography.headlineSmall)
+            Text("Player List:" + playersList.size.toString(), style = MaterialTheme.typography.headlineSmall)
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(modifier = Modifier
@@ -163,38 +187,135 @@ fun Homepage(navController: NavHostController) {
         } else {
             Text("No players found")
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainViewModel) {
+    val context = LocalContext.current
+    val dbHelper = CricketDatabaseHelper(context)
+    val playersList = remember { mutableStateListOf<Player>() }
+    val remainingPlayersList = remember { mutableStateListOf<Player>() }
+
+    playersList.clear()
+    playersList.addAll(dbHelper.getAllPlayers()) // Fetch players from database
+
+    remainingPlayersList.clear()
+    remainingPlayersList.addAll(dbHelper.getAllPlayers()) // Fetch players from database
+
+    var team1Captain by remember { mutableStateOf<Player?>(null) }
+    var team2Captain by remember { mutableStateOf<Player?>(null) }
+
+    var expanded1 by remember { mutableStateOf(false) }
+    var expanded2 by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        //captainViewModel.clearCaptains()
+        Text(text = "New Match", style = MaterialTheme.typography.headlineSmall)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = { navController.navigate("newmatch") }) {
-            Text(text = "New Match")
+        // Team 1 Captain Dropdown
+        Text(text = "Select Team 1 Captain")
+        ExposedDropdownMenuBox(
+            expanded = expanded1,
+            onExpandedChange = { expanded1 = !expanded1 }
+        ) {
+            OutlinedTextField(
+                readOnly = true,
+                value = team1Captain?.name ?: "Select Captain",
+                onValueChange = { },
+                label = { Text("Team 1 Captain") },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+            ExposedDropdownMenu(
+                expanded = expanded1,
+                onDismissRequest = { expanded1 = false }
+            ) {
+                playersList.forEach { player ->
+                    androidx.compose.material3.DropdownMenuItem(
+                        text = { Text(text = player.name) },
+                        onClick = {
+                            team1Captain = player
+                            team1Captain?.let { captain ->
+                                captainViewModel.addCaptain(captain.name)
+                            }
+                            expanded1 = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Team 2 Captain Dropdown
+        Text(text = "Select Team 2 Captain")
+        ExposedDropdownMenuBox(
+            expanded = expanded2,
+            onExpandedChange = { expanded2 = !expanded2 }
+        ) {
+            OutlinedTextField(
+                readOnly = true,
+                value = team2Captain?.name ?: "Select Captain",
+                onValueChange = { },
+                label = { Text("Team 2 Captain") },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+            ExposedDropdownMenu(
+                expanded = expanded2,
+                onDismissRequest = { expanded2 = false }
+            ) {
+                remainingPlayersList.remove(team1Captain)
+                remainingPlayersList.forEach { player ->
+                    androidx.compose.material3.DropdownMenuItem(
+                        text = { Text(text = player.name) },
+                        onClick = {
+                            team2Captain = player
+                            team2Captain?.let { captain ->
+                                captainViewModel.addCaptain(captain.name)
+                            }
+                            expanded2 = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Proceed to start the match
+        Button(onClick = { navController.navigate("startnewmatch") }) {
+            Text(text = "Start New Match")
         }
     }
 }
 
-@Composable
-fun PlayerRow(player: String, onDelete: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = player, modifier = Modifier.weight(1f))
-        Button(onClick = onDelete) {
-            Text(text = "Delete")
-        }
-    }
-}
 
 @Composable
-fun NewMatchPage() {
+fun StartNewMatchPage(captainViewModel: CaptainViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        // Retrieve the captain names from the view model
+        val captains = captainViewModel.captains
+        val team1Captain = captains.getOrElse(0) { "Team 1 Captain" }
+        val team2Captain = captains.getOrElse(1) { "Team 2 Captain" }
+
         val balls = remember {
             mutableStateListOf(
                 "",
@@ -222,7 +343,7 @@ fun NewMatchPage() {
         val runsToWin = remember { mutableStateOf("") }
         val firstBattingTeamStats = remember {
             TeamStats(
-                name = mutableStateOf("Farhan"),
+                name = mutableStateOf(team1Captain),
                 overs = mutableDoubleStateOf(7.0),
                 inningScore = mutableIntStateOf(36),
                 inningWickets = mutableIntStateOf(2),
@@ -232,7 +353,7 @@ fun NewMatchPage() {
 
         val secondBattingTeamStats = remember {
             TeamStats(
-                name = mutableStateOf("Junaid"),
+                name = mutableStateOf(team2Captain),
                 overs = mutableDoubleStateOf(12.0),
                 inningScore = mutableIntStateOf(value = 56),
                 inningWickets = mutableIntStateOf(value = 9),
@@ -620,6 +741,22 @@ fun NewMatchPage() {
                     runsToWin
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun PlayerRow(player: String, onDelete: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = player, modifier = Modifier.weight(1f))
+        Button(onClick = onDelete) {
+            Text(text = "Delete")
         }
     }
 }
