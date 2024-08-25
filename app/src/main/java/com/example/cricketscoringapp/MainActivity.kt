@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.MaterialTheme
@@ -88,7 +89,10 @@ fun AppNavHost(navController: NavHostController) {
         composable("homepage") { HomePage(navController = navController)}
         composable("playermgt") { PlayerMgtPage() }
         composable("newmatch") { NewMatchPage(navController = navController, captainViewModel = captainViewModel) }
+        composable("team1PlayerSelection") { Team1PlayerSelectionPage(navController = navController, captainViewModel = captainViewModel)}
+        composable("team2PlayerSelection") { Team2PlayerSelectionPage(navController = navController, captainViewModel = captainViewModel)}
         composable("startnewmatch") { StartNewMatchPage(captainViewModel = captainViewModel) }
+    //composable("existingmatches") { ExistingMatchesPage() }
     }
 }
 
@@ -112,6 +116,12 @@ fun HomePage(navController: NavHostController) {
 
         Button(onClick = { navController.navigate("newmatch") }) {
             Text(text = "New Match")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { navController.navigate("existingmatches") }) {
+            Text(text = "Existing Matches")
         }
     }
 }
@@ -196,13 +206,9 @@ fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainView
     val context = LocalContext.current
     val dbHelper = CricketDatabaseHelper(context)
     val playersList = remember { mutableStateListOf<Player>() }
-    val remainingPlayersList = remember { mutableStateListOf<Player>() }
 
     playersList.clear()
-    playersList.addAll(dbHelper.getAllPlayers()) // Fetch players from database
-
-    remainingPlayersList.clear()
-    remainingPlayersList.addAll(dbHelper.getAllPlayers()) // Fetch players from database
+    playersList.addAll(dbHelper.getAllPlayers())
 
     var team1Captain by remember { mutableStateOf<Player?>(null) }
     var team2Captain by remember { mutableStateOf<Player?>(null) }
@@ -217,7 +223,6 @@ fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainView
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        //captainViewModel.clearCaptains()
         Text(text = "New Match", style = MaterialTheme.typography.headlineSmall)
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -247,7 +252,7 @@ fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainView
                         onClick = {
                             team1Captain = player
                             team1Captain?.let { captain ->
-                                captainViewModel.addCaptain(captain.name)
+                                captainViewModel.addCaptain(captain)
                             }
                             expanded1 = false
                         }
@@ -277,14 +282,14 @@ fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainView
                 expanded = expanded2,
                 onDismissRequest = { expanded2 = false }
             ) {
-                remainingPlayersList.remove(team1Captain)
-                remainingPlayersList.forEach { player ->
+                val remainingPlayers = playersList.filter { it != team1Captain }
+                remainingPlayers.forEach { player ->
                     androidx.compose.material3.DropdownMenuItem(
                         text = { Text(text = player.name) },
                         onClick = {
                             team2Captain = player
                             team2Captain?.let { captain ->
-                                captainViewModel.addCaptain(captain.name)
+                                captainViewModel.addCaptain(captain)
                             }
                             expanded2 = false
                         }
@@ -295,13 +300,30 @@ fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainView
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Proceed to start the match
-        Button(onClick = { navController.navigate("startnewmatch") }) {
-            Text(text = "Start New Match")
+        // Buttons to navigate to team player selection pages
+        if (team1Captain != null) {
+            Button(
+                onClick = {
+                    navController.navigate("team1PlayerSelection")
+                }
+            ) {
+                Text(text = "Select Team 1 Players")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (team2Captain != null) {
+            Button(
+                onClick = {
+                    navController.navigate("team2PlayerSelection")
+                }
+            ) {
+                Text(text = "Select Team 2 Players")
+            }
         }
     }
 }
-
 
 @Composable
 fun StartNewMatchPage(captainViewModel: CaptainViewModel) {
@@ -313,8 +335,8 @@ fun StartNewMatchPage(captainViewModel: CaptainViewModel) {
 
         // Retrieve the captain names from the view model
         val captains = captainViewModel.captains
-        val team1Captain = captains.getOrElse(0) { "Team 1 Captain" }
-        val team2Captain = captains.getOrElse(1) { "Team 2 Captain" }
+        val team1Captain = captains.getOrElse(0) { Player(0, "Team 1 Captain") }
+        val team2Captain = captains.getOrElse(1) { Player(0, "Team 2 Captain") }
 
         val balls = remember {
             mutableStateListOf(
@@ -343,20 +365,20 @@ fun StartNewMatchPage(captainViewModel: CaptainViewModel) {
         val runsToWin = remember { mutableStateOf("") }
         val firstBattingTeamStats = remember {
             TeamStats(
-                name = mutableStateOf(team1Captain),
-                overs = mutableDoubleStateOf(7.0),
-                inningScore = mutableIntStateOf(36),
-                inningWickets = mutableIntStateOf(2),
+                name = mutableStateOf(team1Captain.name),
+                overs = mutableDoubleStateOf(0.0),
+                inningScore = mutableIntStateOf(0),
+                inningWickets = mutableIntStateOf(0),
                 active = mutableStateOf(value = true)
             )
         }
 
         val secondBattingTeamStats = remember {
             TeamStats(
-                name = mutableStateOf(team2Captain),
-                overs = mutableDoubleStateOf(12.0),
-                inningScore = mutableIntStateOf(value = 56),
-                inningWickets = mutableIntStateOf(value = 9),
+                name = mutableStateOf(team2Captain.name),
+                overs = mutableDoubleStateOf(0.0),
+                inningScore = mutableIntStateOf(value = 0),
+                inningWickets = mutableIntStateOf(value = 0),
                 active = mutableStateOf(value = false)
             )
         }
@@ -364,10 +386,10 @@ fun StartNewMatchPage(captainViewModel: CaptainViewModel) {
         val firstBatsmanStats = remember {
             BatsmanStats(
                 name = mutableStateOf("Tanveer"),
-                runs = mutableIntStateOf(value = 2),
-                balls = mutableIntStateOf(value = 5),
+                runs = mutableIntStateOf(value = 0),
+                balls = mutableIntStateOf(value = 0),
                 fours = mutableIntStateOf(value = 0),
-                sixes = mutableIntStateOf(value = 2),
+                sixes = mutableIntStateOf(value = 0),
                 active = mutableStateOf(value = true)
             )
         }
@@ -375,10 +397,10 @@ fun StartNewMatchPage(captainViewModel: CaptainViewModel) {
         val secondBatsmanStats = remember {
             BatsmanStats(
                 name = mutableStateOf("Fahid"),
-                runs = mutableIntStateOf(value = 14),
-                balls = mutableIntStateOf(value = 12),
-                fours = mutableIntStateOf(value = 1),
-                sixes = mutableIntStateOf(value = 1),
+                runs = mutableIntStateOf(value = 0),
+                balls = mutableIntStateOf(value = 0),
+                fours = mutableIntStateOf(value = 0),
+                sixes = mutableIntStateOf(value = 0),
                 active = mutableStateOf(value = false)
             )
         }
@@ -386,7 +408,7 @@ fun StartNewMatchPage(captainViewModel: CaptainViewModel) {
         val bowlerStats = remember {
             BowlerStats(
                 name = mutableStateOf("Adnan"),
-                over = mutableDoubleStateOf(2.0),
+                over = mutableDoubleStateOf(.0),
                 maiden = mutableIntStateOf(0),
                 runs = mutableIntStateOf(0),
                 wickets = mutableIntStateOf(0)
@@ -744,6 +766,171 @@ fun StartNewMatchPage(captainViewModel: CaptainViewModel) {
         }
     }
 }
+
+@Composable
+fun Team1PlayerSelectionPage(
+    navController: NavHostController,
+    captainViewModel: CaptainViewModel
+) {
+    val captains = captainViewModel.captains
+    val team1CaptainId = captains.getOrElse(0) { Player(0, "Team 1 Captain") }
+    val team2CaptainId = captains.getOrElse(1) { Player(0, "Team 2 Captain") }
+
+    val context = LocalContext.current
+    val dbHelper = CricketDatabaseHelper(context)
+    val playersList = remember { mutableStateListOf<Player>() }
+    playersList.clear()
+    playersList.addAll(dbHelper.getAllPlayers())
+
+    val team1Players = remember { mutableStateListOf<Player>() }
+    val team1Captain = playersList.find { it.id == team1CaptainId.id }
+    val team2Captain = playersList.find { it.id == team2CaptainId.id }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Select Players for ${team1Captain?.name}", style = MaterialTheme.typography.headlineSmall)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val filteredPlayers = playersList.filter { it != team1Captain && it != team2Captain }
+
+        // Player Selection for Team 1
+        LazyColumn(
+            modifier = Modifier.fillMaxHeight(0.8f)
+        ) {
+            items(filteredPlayers.size) { index ->
+                val player = filteredPlayers[index]
+                val isSelected = team1Players.contains(player)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = isSelected,
+                        onCheckedChange = {
+                            if (isSelected) {
+                                team1Players.remove(player)
+                            } else {
+                                if (team1Players.size < 5) {
+                                    team1Players.add(player)
+                                    captainViewModel.addTeam1Player(player)
+                                } else {
+                                    Toast.makeText(context, "You can only select 5 players", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    )
+                    Text(text = player.name)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Navigate back to the main page or to Team 2 Player Selection
+        Button(
+            onClick = {
+                if (team1Players.size == 5) {
+                    navController.navigate("team2PlayerSelection")
+                } else {
+                    Toast.makeText(context, "Please select 5 players for Team 2", Toast.LENGTH_SHORT).show()
+                }
+            }
+        ) {
+            Text(text = "Confirm Team 1 Players")
+        }
+    }
+}
+
+@Composable
+fun Team2PlayerSelectionPage(
+    navController: NavHostController,
+    captainViewModel: CaptainViewModel
+) {
+    val captains = captainViewModel.captains
+    val team1CaptainId = captains.getOrElse(0) { Player(0, "Team 1 Captain") }
+    val team2CaptainId = captains.getOrElse(1) { Player(0, "Team 2 Captain") }
+
+    val context = LocalContext.current
+    val dbHelper = CricketDatabaseHelper(context)
+    val playersList = remember { mutableStateListOf<Player>() }
+    playersList.clear()
+    playersList.addAll(dbHelper.getAllPlayers())
+
+    val team1Players = captainViewModel.team1
+    val team2Players = remember { mutableStateListOf<Player>() }
+    val team1Captain = playersList.find { it.id == team1CaptainId.id }
+    val team2Captain = playersList.find { it.id == team2CaptainId.id }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Select Players for ${team2Captain?.name}", style = MaterialTheme.typography.headlineSmall)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val filteredPlayers = playersList.filter { it != team1Captain && it != team2Captain && it !in team1Players}
+
+        // Player Selection for Team 2
+        LazyColumn(
+            modifier = Modifier.fillMaxHeight(0.8f)
+        ) {
+            items(filteredPlayers.size) { index ->
+                val player = filteredPlayers[index]
+                val isSelected = team2Players.contains(player)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = isSelected,
+                        onCheckedChange = {
+                            if (isSelected) {
+                                team2Players.remove(player)
+                            } else {
+                                if (team2Players.size < 5) {
+                                    team2Players.add(player)
+                                } else {
+                                    Toast.makeText(context, "You can only select 5 players", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    )
+                    Text(text = player.name)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Navigate back to the main page or to Team 2 Player Selection
+        Button(
+            onClick = {
+                if (team2Players.size == 5) {
+                    navController.navigate("startnewmatch")
+                } else {
+                    Toast.makeText(context, "Please select 5 players for Team 2", Toast.LENGTH_SHORT).show()
+                }
+            }
+        ) {
+            Text(text = "Confirm Team 2 Players")
+        }
+    }
+}
+
 
 @Composable
 fun PlayerRow(player: String, onDelete: () -> Unit) {

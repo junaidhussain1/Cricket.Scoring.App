@@ -20,7 +20,6 @@ fun updateStats(balls: MutableList<String>,
                 if (balls[i] != "W" && balls[i] != "NB") {
                     bowlerStats.over.value -= 0.1f
                     updateBatsman("balls",firstBatsmanStats,secondBatsmanStats,-1)
-                    //firstTeamStats.overs.value -= 0.1f
                     updateTeam("overs",firstTeamStats,secondTeamStats,-0.1)
                 }
                 if (i == 5) {
@@ -33,7 +32,6 @@ fun updateStats(balls: MutableList<String>,
                         swapBatsmen(firstBatsmanStats,secondBatsmanStats)
                         bowlerStats.runs.value -= 1
                         updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,-1)
-                        //firstTeamStats.inningScore.value -= 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-1.0)
                     }
 
@@ -41,14 +39,12 @@ fun updateStats(balls: MutableList<String>,
                         swapBatsmen(firstBatsmanStats,secondBatsmanStats)
                         bowlerStats.runs.value -= 2
                         updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,-2)
-                        //firstTeamStats.inningScore.value -= 2
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-2.0)
                     }
 
                     "3" -> {
                         bowlerStats.runs.value -= 3
                         updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,-3)
-                        //firstTeamStats.inningScore.value -= 3
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-3.0)
                     }
 
@@ -56,7 +52,6 @@ fun updateStats(balls: MutableList<String>,
                         bowlerStats.runs.value -= 4
                         updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,-4)
                         updateBatsman("fours",firstBatsmanStats,secondBatsmanStats,-1)
-                        //firstTeamStats.inningScore.value -= 4
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-4.0)
                     }
 
@@ -64,39 +59,32 @@ fun updateStats(balls: MutableList<String>,
                         bowlerStats.runs.value -= 6
                         updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,-6)
                         updateBatsman("sixes",firstBatsmanStats,secondBatsmanStats,-1)
-                        //firstTeamStats.inningScore.value -= 6
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-6.0)
                     }
 
                     "W" -> {
                         bowlerStats.runs.value -= 1
-                        //firstTeamStats.inningScore.value -= 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-1.0)
                     }
 
                     "NB" -> {
                         bowlerStats.runs.value -= 1
-                        //firstTeamStats.inningScore.value -= 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-1.0)
                     }
 
                     "B" -> {
                         bowlerStats.runs.value -= 1
-                        //firstTeamStats.inningScore.value -= 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-1.0)
                     }
 
                     "LB" -> {
                         bowlerStats.runs.value -= 1
-                        //firstTeamStats.inningScore.value -= 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-1.0)
                     }
 
                     "WI" -> {
                         bowlerStats.wickets.value -= 1
-                        //firstTeamStats.inningWickets.value -= 1
                         updateTeam("inningWickets",firstTeamStats,secondTeamStats,-1.0)
-                        //firstTeamStats.inningScore.value += 3
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,3.0)
                     }
                 }
@@ -113,7 +101,6 @@ fun updateStats(balls: MutableList<String>,
                 if (newValue != "W" && newValue != "NB") {
                     bowlerStats.over.value += 0.1f
                     updateBatsman("balls",firstBatsmanStats,secondBatsmanStats,1)
-                    //firstTeamStats.overs.value += 0.1f
                     updateTeam("overs",firstTeamStats,secondTeamStats,0.1)
                 }
                 val tolerance = 0.0001
@@ -121,7 +108,6 @@ fun updateStats(balls: MutableList<String>,
                 if (abs(roundedValue % 1.0 - 0.7) < tolerance) {
                     bowlerStats.over.value -= 0.1f
                     updateBatsman("balls",firstBatsmanStats,secondBatsmanStats,-1)
-                    //firstTeamStats.overs.value -= 0.1f
                     updateTeam("overs",firstTeamStats,secondTeamStats,-0.1)
                     balls[i] = ""
                     overCompleted = true
@@ -131,14 +117,12 @@ fun updateStats(balls: MutableList<String>,
                     "1" -> {
                         bowlerStats.runs.value += 1
                         updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,1)
-                        //firstTeamStats.inningScore.value += 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,1.0)
                         swapBatsmen(firstBatsmanStats,secondBatsmanStats)
                     }
                     "2" -> {
                         bowlerStats.runs.value += 2
                         updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,2)
-                        //firstTeamStats.inningScore.value += 2
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,2.0)
 
                         swapBatsmen(firstBatsmanStats,secondBatsmanStats)
@@ -146,48 +130,39 @@ fun updateStats(balls: MutableList<String>,
                     "3" -> {
                         bowlerStats.runs.value += 3
                         updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,3)
-                        //firstTeamStats.inningScore.value += 3
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,3.0)
                     }
                     "4" -> {
                         bowlerStats.runs.value += 4
                         updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,4)
                         updateBatsman("fours",firstBatsmanStats,secondBatsmanStats,1)
-                        //firstTeamStats.inningScore.value += 4
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,4.0)
                     }
                     "6" -> {
                         bowlerStats.runs.value += 6
                         updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,6)
                         updateBatsman("sixes",firstBatsmanStats,secondBatsmanStats,1)
-                        //firstTeamStats.inningScore.value += 6
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,6.0)
                     }
                     "W" -> {
                         bowlerStats.runs.value += 1
-                        //firstTeamStats.inningScore.value += 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,1.0)
                     }
                     "NB" -> {
                         bowlerStats.runs.value += 1
-                        //firstTeamStats.inningScore.value += 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,1.0)
                     }
                     "B" -> {
                         bowlerStats.runs.value += 1
-                        //firstTeamStats.inningScore.value += 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,1.0)
                     }
                     "LB" -> {
                         bowlerStats.runs.value += 1
-                        //firstTeamStats.inningScore.value += 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,1.0)
                     }
                     "WI" -> {
                         bowlerStats.wickets.value += 1
-                        //firstTeamStats.inningWickets.value += 1
                         updateTeam("inningWickets",firstTeamStats,secondTeamStats,1.0)
-                        //firstTeamStats.inningScore.value -= 3
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-3.0)
                     }
                 }
@@ -222,7 +197,11 @@ fun updateStats(balls: MutableList<String>,
     if (winningTeam.isNotEmpty()) {
         runsToWinTxt.value = "Team $winningTeam is the winner!"
     } else {
-        runsToWinTxt.value = "$runsToWin runs to win from $ballsRemaining balls!"
+        if (firstTeamStats.overs.value.toInt() == 0  ||  secondTeamStats.overs.value.toInt() == 0) {
+            runsToWinTxt.value = "$ballsRemaining balls remaining!"
+        } else {
+            runsToWinTxt.value = "$runsToWin runs to win from $ballsRemaining balls!"
+        }
     }
 }
 
