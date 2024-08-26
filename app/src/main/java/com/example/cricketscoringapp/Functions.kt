@@ -4,6 +4,12 @@ import androidx.compose.runtime.MutableState
 import java.util.Locale
 import kotlin.math.abs
 
+fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats) {
+    val tempActive = batsman1.active.value
+    batsman1.active.value = batsman2.active.value
+    batsman2.active.value = tempActive
+}
+
 // Function to update the stats
 fun updateStats(balls: MutableList<String>,
                 newValue: String,

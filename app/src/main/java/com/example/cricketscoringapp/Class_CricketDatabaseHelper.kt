@@ -35,13 +35,13 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     }
 
     // Add method to update player
-//    fun updatePlayer(playerId: Int, newName: String): Int {
-//        val db = writableDatabase
-//        val contentValues = ContentValues().apply {
-//            put("name", newName)
-//        }
-//        return db.update("players", contentValues, "id = ?", arrayOf(playerId.toString()))
-//    }
+    fun updatePlayer(playerId: Int, newName: String): Int {
+        val db = writableDatabase
+        val contentValues = ContentValues().apply {
+            put("name", newName)
+        }
+        return db.update("players", contentValues, "id = ?", arrayOf(playerId.toString()))
+    }
 
     // Add method to delete player
     fun deletePlayer(playerId: Int): Int {
