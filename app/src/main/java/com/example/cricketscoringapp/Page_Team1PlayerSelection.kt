@@ -30,8 +30,8 @@ fun Team1PlayerSelectionPage(
     captainViewModel: CaptainViewModel
 ) {
     val captains = captainViewModel.captains
-    val team1CaptainId = captains.getOrElse(0) { Player(0, "Team 1 Captain") }
-    val team2CaptainId = captains.getOrElse(1) { Player(0, "Team 2 Captain") }
+    val team1CaptainName = captains.getOrElse(0) { Player("Team 1 Captain") }
+    val team2CaptainName = captains.getOrElse(1) { Player("Team 2 Captain") }
 
     val context = LocalContext.current
     val dbHelper = CricketDatabaseHelper(context)
@@ -40,8 +40,8 @@ fun Team1PlayerSelectionPage(
     playersList.addAll(dbHelper.getAllPlayers())
 
     val team1Players = remember { mutableStateListOf<Player>() }
-    val team1Captain = playersList.find { it.id == team1CaptainId.id }
-    val team2Captain = playersList.find { it.id == team2CaptainId.id }
+    val team1Captain = playersList.find { it.name == team1CaptainName.name }
+    val team2Captain = playersList.find { it.name == team2CaptainName.name }
 
     Column(
         modifier = Modifier
@@ -95,7 +95,7 @@ fun Team1PlayerSelectionPage(
         Button(
             onClick = {
                 if (team1Players.size == 5) {
-                    navController.navigate("team2PlayerSelection")
+                    navController.navigate("newmatch")
                 } else {
                     Toast.makeText(context, "Please select 5 players for Team 2", Toast.LENGTH_SHORT).show()
                 }

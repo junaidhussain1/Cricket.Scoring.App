@@ -1,3 +1,3 @@
 package com.example.cricketscoringapp
 
-data class Player(var id: Int, val name: String)
+data class Player(val name: String)

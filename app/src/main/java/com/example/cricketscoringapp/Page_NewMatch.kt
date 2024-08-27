@@ -38,6 +38,10 @@ fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainView
     var team1Captain by remember { mutableStateOf<Player?>(null) }
     var team2Captain by remember { mutableStateOf<Player?>(null) }
 
+    //JH - If arriving to NewMatchPage for first time then team 1 and team 2 captain should be blank
+    //     But if arriving here from the team selection then then team 1 and/or team 2 captains should be pulled from the db
+
+
     var expanded1 by remember { mutableStateOf(false) }
     var expanded2 by remember { mutableStateOf(false) }
 
@@ -147,5 +151,17 @@ fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainView
                 Text(text = "Select Team 2 Players")
             }
         }
+
+//        Spacer(modifier = Modifier.height(16.dp))
+//
+//        if ((team1Captain != null) && (team2Captain != null)) {
+//            Button(
+//                onClick = {
+//                    navController.navigate("team2PlayerSelection")
+//                }
+//            ) {
+//                Text(text = "Select Team 2 Players")
+//            }
+//        }
     }
 }
