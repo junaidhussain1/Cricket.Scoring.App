@@ -29,19 +29,26 @@ fun Team1PlayerSelectionPage(
     navController: NavHostController,
     captainViewModel: CaptainViewModel
 ) {
-    val captains = captainViewModel.captains
-    val team1CaptainId = captains.getOrElse(0) { Player(0, "Team 1 Captain") }
-    val team2CaptainId = captains.getOrElse(1) { Player(0, "Team 2 Captain") }
-
     val context = LocalContext.current
     val dbHelper = CricketDatabaseHelper(context)
+    val matchId = dbHelper.getMatchId()
+
+    val team1CaptainName = Player(dbHelper.getCaptain(matchId, 1))
+    val team2CaptainName = Player(dbHelper.getCaptain(matchId, 2))
+
     val playersList = remember { mutableStateListOf<Player>() }
     playersList.clear()
     playersList.addAll(dbHelper.getAllPlayers())
 
-    val team1Players = remember { mutableStateListOf<Player>() }
-    val team1Captain = playersList.find { it.id == team1CaptainId.id }
-    val team2Captain = playersList.find { it.id == team2CaptainId.id }
+    // Get players already selected for Team 1 from the DB
+    val initialTeam1Players = dbHelper.getTeamPlayers(matchId, 1)
+
+    // State to keep track of selected players
+    val selectedPlayers = remember { mutableStateListOf<Player>().apply { addAll(initialTeam1Players) } }
+
+    val team2PlayersDB = dbHelper.getTeamPlayers(matchId, 2)
+    val team1Captain = playersList.find { it.name == team1CaptainName.name }
+    val team2Captain = playersList.find { it.name == team2CaptainName.name }
 
     Column(
         modifier = Modifier
@@ -54,7 +61,7 @@ fun Team1PlayerSelectionPage(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        val filteredPlayers = playersList.filter { it != team1Captain && it != team2Captain }
+        val filteredPlayers = playersList.filter { it != team1Captain && it != team2Captain && it !in team2PlayersDB }
 
         // Player Selection for Team 1
         LazyColumn(
@@ -62,7 +69,8 @@ fun Team1PlayerSelectionPage(
         ) {
             items(filteredPlayers.size) { index ->
                 val player = filteredPlayers[index]
-                val isSelected = team1Players.contains(player)
+                val isSelected = selectedPlayers.contains(player)
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -71,37 +79,29 @@ fun Team1PlayerSelectionPage(
                 ) {
                     Checkbox(
                         checked = isSelected,
-                        onCheckedChange = {
-                            if (isSelected) {
-                                team1Players.remove(player)
-                            } else {
-                                if (team1Players.size < 5) {
-                                    team1Players.add(player)
+                        onCheckedChange = { checked ->
+                            if (checked) {
+                                if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
+                                    selectedPlayers.add(player)
                                     captainViewModel.addTeam1Player(player)
+                                    dbHelper.addTeamPlayer(matchId, 1, player.name, 0, 0)
                                 } else {
-                                    Toast.makeText(context, "You can only select 5 players", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "You can only select 5 players",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
+                            } else {
+                                selectedPlayers.remove(player)
+                                captainViewModel.removeTeam1Player(player)
+                                dbHelper.removeTeamPlayer(matchId, 1, player.name)
                             }
                         }
                     )
                     Text(text = player.name)
                 }
             }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Navigate back to the main page or to Team 2 Player Selection
-        Button(
-            onClick = {
-                if (team1Players.size == 5) {
-                    navController.navigate("team2PlayerSelection")
-                } else {
-                    Toast.makeText(context, "Please select 5 players for Team 2", Toast.LENGTH_SHORT).show()
-                }
-            }
-        ) {
-            Text(text = "Confirm Team 1 Players")
         }
     }
 }

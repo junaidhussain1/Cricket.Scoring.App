@@ -35,8 +35,8 @@ fun StartNewMatchPage(captainViewModel: CaptainViewModel) {
 
         // Retrieve the captain names from the view model
         val captains = captainViewModel.captains
-        val team1Captain = captains.getOrElse(0) { Player(0, "Team 1 Captain") }
-        val team2Captain = captains.getOrElse(1) { Player(0, "Team 2 Captain") }
+        val team1Captain = captains.getOrElse(0) { Player("Team 1 Captain") }
+        val team2Captain = captains.getOrElse(1) { Player("Team 2 Captain") }
 
         val balls = remember {
             mutableStateListOf(

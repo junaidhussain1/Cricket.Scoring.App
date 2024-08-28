@@ -54,7 +54,7 @@ fun AppNavHost(navController: NavHostController) {
     val captainViewModel: CaptainViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = "homepage") {
-        composable("homepage") { HomePage(navController = navController)}
+        composable("homepage") { HomePage(navController = navController) }
         composable("playermgt") { PlayerMgtPage() }
         composable("newmatch") { NewMatchPage(navController = navController, captainViewModel = captainViewModel) }
         composable("team1PlayerSelection") { Team1PlayerSelectionPage(navController = navController, captainViewModel = captainViewModel)}

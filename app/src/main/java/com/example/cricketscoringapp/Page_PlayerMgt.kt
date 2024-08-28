@@ -89,7 +89,7 @@ fun PlayerMgtPage() {
             {
                 items(playersList) { player ->
                     PlayerRow(player = player.name, onDelete = {
-                        dbHelper.deletePlayer(player.id)
+                        dbHelper.deletePlayer(player.name)
                         playersList.remove(player)
                     })
                 }

@@ -289,3 +289,5 @@ fun calculateBalls(overs: Double): Int {
     // Total balls = (6 balls per over * number of full overs) + extra balls
     return (fullOvers * 6) + extraBalls
 }
+
+
