@@ -33,19 +33,18 @@ fun Team1PlayerSelectionPage(
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
 
-    val team1CaptainName = Player(dbHelper.getCaptain(matchId,1))
-    val team2CaptainName = Player(dbHelper.getCaptain(matchId,2))
+    val team1CaptainName = Player(dbHelper.getCaptain(matchId, 1))
+    val team2CaptainName = Player(dbHelper.getCaptain(matchId, 2))
 
     val playersList = remember { mutableStateListOf<Player>() }
     playersList.clear()
     playersList.addAll(dbHelper.getAllPlayers())
 
-    val team1Players = remember { mutableStateListOf<Player>() }
-    val team1PlayersDB = dbHelper.getTeamPlayers(matchId, 1)
+    // Get players already selected for Team 1 from the DB
+    val initialTeam1Players = dbHelper.getTeamPlayers(matchId, 1)
 
-    for (player in team1PlayersDB) {
-        team1Players.add(player)
-    }
+    // State to keep track of selected players
+    val selectedPlayers = remember { mutableStateListOf<Player>().apply { addAll(initialTeam1Players) } }
 
     val team2PlayersDB = dbHelper.getTeamPlayers(matchId, 2)
     val team1Captain = playersList.find { it.name == team1CaptainName.name }
@@ -70,7 +69,8 @@ fun Team1PlayerSelectionPage(
         ) {
             items(filteredPlayers.size) { index ->
                 val player = filteredPlayers[index]
-                val isSelected = dbHelper.isTeamPlayer(matchId,1,player.name)
+                val isSelected = selectedPlayers.contains(player)
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -81,10 +81,10 @@ fun Team1PlayerSelectionPage(
                         checked = isSelected,
                         onCheckedChange = { checked ->
                             if (checked) {
-                                if (dbHelper.getTeamSize(matchId, 1) < 6) {
-                                    team1Players.add(player)
+                                if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
+                                    selectedPlayers.add(player)
                                     captainViewModel.addTeam1Player(player)
-                                    dbHelper.addTeamPlayer(matchId,1,player.name,0,0)
+                                    dbHelper.addTeamPlayer(matchId, 1, player.name, 0, 0)
                                 } else {
                                     Toast.makeText(
                                         context,
@@ -93,9 +93,9 @@ fun Team1PlayerSelectionPage(
                                     ).show()
                                 }
                             } else {
-                                team1Players.remove(player)
+                                selectedPlayers.remove(player)
                                 captainViewModel.removeTeam1Player(player)
-                                dbHelper.removeTeamPlayer(matchId,1,player.name)
+                                dbHelper.removeTeamPlayer(matchId, 1, player.name)
                             }
                         }
                     )

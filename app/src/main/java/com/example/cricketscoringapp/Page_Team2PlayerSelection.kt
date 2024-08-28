@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -40,9 +39,13 @@ fun Team2PlayerSelectionPage(
     playersList.clear()
     playersList.addAll(dbHelper.getAllPlayers())
 
-    val team1PlayersDB = dbHelper.getTeamPlayers(matchId, 1)
+    // Get players already selected for Team 1 from the DB
+    val initialTeam2Players = dbHelper.getTeamPlayers(matchId, 2)
 
-    val team2Players = remember { mutableStateListOf<Player>() }
+    // State to keep track of selected players
+    val selectedPlayers = remember { mutableStateListOf<Player>().apply { addAll(initialTeam2Players) } }
+
+    val team1PlayersDB = dbHelper.getTeamPlayers(matchId, 1)
     val team1Captain = playersList.find { it.name == team1CaptainName.name }
     val team2Captain = playersList.find { it.name == team2CaptainName.name }
 
@@ -65,7 +68,8 @@ fun Team2PlayerSelectionPage(
         ) {
             items(filteredPlayers.size) { index ->
                 val player = filteredPlayers[index]
-                val isSelected = dbHelper.isTeamPlayer(matchId,2,player.name)
+                val isSelected = selectedPlayers.contains(player)
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -76,8 +80,8 @@ fun Team2PlayerSelectionPage(
                         checked = isSelected,
                         onCheckedChange = { checked ->
                             if (checked) {
-                                if (dbHelper.getTeamSize(matchId, 2) < 6) {
-                                    team2Players.add(player)
+                                if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
+                                    selectedPlayers.add(player)
                                     captainViewModel.addTeam2Player(player)
                                     dbHelper.addTeamPlayer(matchId,2,player.name,0,0)
                                 } else {
@@ -88,7 +92,7 @@ fun Team2PlayerSelectionPage(
                                     ).show()
                                 }
                             } else {
-                                team2Players.remove(player)
+                                selectedPlayers.remove(player)
                                 captainViewModel.removeTeam2Player(player)
                                 dbHelper.removeTeamPlayer(matchId,2,player.name)
                             }

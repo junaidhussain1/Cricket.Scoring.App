@@ -1,9 +1,8 @@
 package com.example.cricketscoringapp
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,8 +47,8 @@ fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainView
     var team1Captain by remember { mutableStateOf<Player?>(null) }
     var team2Captain by remember { mutableStateOf<Player?>(null) }
 
-    team1Captain = Player(dbHelper.getCaptain(matchId,1))
-    team2Captain = Player(dbHelper.getCaptain(matchId,2))
+    team1Captain = Player(dbHelper.getCaptain(matchId, 1))
+    team2Captain = Player(dbHelper.getCaptain(matchId, 2))
 
     var expanded1 by remember { mutableStateOf(false) }
     var expanded2 by remember { mutableStateOf(false) }
@@ -61,18 +60,22 @@ fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainView
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Recycle Bin Button in the Top Right Corner
-        Box(
+        // Row to hold Recycle Bin Button and "New Match" text in the same row
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            Text(text = "New Match", style = MaterialTheme.typography.headlineSmall)
+
             IconButton(
                 onClick = {
                     dbHelper.deleteMatch(matchId)
-                    Toast.makeText(context, "Match Cleared", Toast.LENGTH_SHORT).show()
-                },
-                modifier = Modifier.align(Alignment.TopEnd)
+                    navController.navigate("homepage")
+                    //Toast.makeText(context, "Match Cleared", Toast.LENGTH_SHORT).show()
+                }
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
@@ -80,11 +83,6 @@ fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainView
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(text = "New Match", style = MaterialTheme.typography.headlineSmall)
-
         Spacer(modifier = Modifier.height(16.dp))
 
         // Team 1 Captain Dropdown
@@ -162,36 +160,72 @@ fun NewMatchPage(navController: NavHostController, captainViewModel: CaptainView
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Buttons to navigate to team player selection pages
-        if (team1Captain != null) {
-            Button(
-                onClick = {
-                    navController.navigate("team1PlayerSelection")
-                }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            // Team 1 column: Button + Players List
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Select Team ${team1Captain?.name} Players")
-            }
+                // Buttons to navigate to team player selection pages
+                if (dbHelper.getCaptain(matchId, 1) != "") {
+                    Button(
+                        onClick = {
+                            navController.navigate("team1PlayerSelection")
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        content = {
+                            Text(
+                                text = "Select Team ${team1Captain?.name} Players",
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth() // Ensure text takes full width of the button
+                            )
+                        }
+                    )
 
-            val team1Players = dbHelper.getTeamPlayers(matchId,1)
-            for (player in team1Players) {
-                Text(text = player.name)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (team2Captain != null) {
-            Button(
-                onClick = {
-                    navController.navigate("team2PlayerSelection")
+                    val team1Players = dbHelper.getTeamPlayers(matchId, 1)
+                    for (player in team1Players) {
+                        Text(text = player.name)
+                    }
                 }
-            ) {
-                Text(text = "Select Team ${team2Captain?.name} Players")
             }
 
-            val team2Players = dbHelper.getTeamPlayers(matchId,2)
-            for (player in team2Players) {
-                Text(text = player.name)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Team 2 column: Button + Players List
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                if (dbHelper.getCaptain(matchId, 2) != "") {
+                    Button(
+                        onClick = {
+                            navController.navigate("team2PlayerSelection")
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        content = {
+                            Text(
+                                text = "Select Team ${team2Captain?.name} Players",
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth() // Ensure text takes full width of the button
+                            )
+                        }
+                    )
+
+                    val team2Players = dbHelper.getTeamPlayers(matchId, 2)
+                    for (player in team2Players) {
+                        Text(text = player.name)
+                    }
+                }
             }
         }
     }
