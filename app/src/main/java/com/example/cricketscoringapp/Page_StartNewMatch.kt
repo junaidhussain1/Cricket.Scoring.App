@@ -20,13 +20,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
 
 @Composable
-fun StartNewMatchPage(captainViewModel: CaptainViewModel) {
+fun StartNewMatchPage() {
+    val context = LocalContext.current
+    val dbHelper = CricketDatabaseHelper(context)
+    val matchId = dbHelper.getMatchId()
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -34,9 +39,8 @@ fun StartNewMatchPage(captainViewModel: CaptainViewModel) {
     ) {
 
         // Retrieve the captain names from the view model
-        val captains = captainViewModel.captains
-        val team1Captain = captains.getOrElse(0) { Player("Team 1 Captain") }
-        val team2Captain = captains.getOrElse(1) { Player("Team 2 Captain") }
+        val team1Captain = Player(dbHelper.getCaptain(matchId, 1))
+        val team2Captain = Player(dbHelper.getCaptain(matchId, 2))
 
         val balls = remember {
             mutableStateListOf(
