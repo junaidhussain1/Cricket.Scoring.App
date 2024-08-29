@@ -56,10 +56,10 @@ fun AppNavHost(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "homepage") {
         composable("homepage") { HomePage(navController = navController) }
         composable("playermgt") { PlayerMgtPage() }
-        composable("newmatch") { NewMatchPage(navController = navController, captainViewModel = captainViewModel) }
+        composable("newmatch") { NewMatchPage(navController = navController) }
         composable("team1PlayerSelection") { Team1PlayerSelectionPage(navController = navController, captainViewModel = captainViewModel)}
         composable("team2PlayerSelection") { Team2PlayerSelectionPage(navController = navController, captainViewModel = captainViewModel)}
-        composable("startnewmatch") { StartNewMatchPage(captainViewModel = captainViewModel) }
+        composable("startnewmatch") { StartNewMatchPage() }
     //composable("existingmatches") { ExistingMatchesPage() }
     }
 }

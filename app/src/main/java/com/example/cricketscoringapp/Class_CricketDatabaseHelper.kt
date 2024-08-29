@@ -68,15 +68,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db.close()
     }
 
-    // Add method to update player
-//    fun updatePlayer(playerId: Int, newName: String): Int {
-//        val db = writableDatabase
-//        val contentValues = ContentValues().apply {
-//            put("name", newName)
-//        }
-//        return db.update("players", contentValues, "id = ?", arrayOf(playerId.toString()))
-//    }
-
     // Add method to delete player
     fun deletePlayer(name: String): Int {
         val db = writableDatabase
@@ -145,17 +136,35 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.delete(TABLE_TEAMS, "match_id = ? AND team_id = ? AND isCaptain = 0", arrayOf(matchId,teamId.toString()))
     }
 
-    //Get team players except captain
-    fun getTeamPlayers(matchId: String, teamId: Int): List<Player> {
+    //includeCaptain = 0 (team players except captain). includeCaptain = 1 (all team players)
+    fun getTeamPlayers(matchId: String, teamId: Int, includeCaptain: Int): List<Player> {
         val players = mutableListOf<Player>()
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_TEAMS WHERE match_id = ? AND team_id = ? AND isCaptain = 0", arrayOf(matchId,teamId.toString()))
+        var query = "SELECT * FROM $TABLE_TEAMS WHERE match_id = ? AND team_id = ?"
+        if (includeCaptain == 0) {
+            query += "AND isCaptain = 0"
+        }
+        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString()))
         while (cursor.moveToNext()) {
             val name = cursor.getString(cursor.getColumnIndexOrThrow("player_name"))
             players.add(Player(name))
         }
         cursor.close()
         return players
+    }
+
+    fun getTeamForPlayer(matchId: String,playerName: String) : Int? {
+        val db = readableDatabase
+        val query = "SELECT team_id FROM $TABLE_TEAMS WHERE match_id = ? AND player_name = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId,playerName))
+        var teamId: Int? = null
+
+        if (cursor.moveToFirst()) {
+            teamId = cursor.getInt(0)
+        }
+
+        cursor.close()
+        return teamId
     }
 
     fun addTeamPlayer(matchId: String, teamId: Int, playerName: String, isCaptain: Int, isKeeper: Int) {
@@ -174,6 +183,15 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val db = writableDatabase
         return db.delete(TABLE_TEAMS, "match_id = ? AND team_id = ? AND player_name = ?", arrayOf(matchId,teamId.toString(),playerName))
     }
+
+    // Add method to update player
+//    fun updateTeamPlayer(matchId: String, teamId: Int, playerName: String): Int {
+//        val db = writableDatabase
+//        val contentValues = ContentValues().apply {
+//            put("name", newName)
+//        }
+//        return db.update("players", contentValues, "id = ?", arrayOf(playerId.toString()))
+//    }
 
     fun isTeamPlayer(matchId: String, teamId: Int, playerName: String) : Boolean {
         val db = readableDatabase

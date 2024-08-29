@@ -40,12 +40,12 @@ fun Team2PlayerSelectionPage(
     playersList.addAll(dbHelper.getAllPlayers())
 
     // Get players already selected for Team 1 from the DB
-    val initialTeam2Players = dbHelper.getTeamPlayers(matchId, 2)
+    val initialTeam2Players = dbHelper.getTeamPlayers(matchId, 2,0)
 
     // State to keep track of selected players
     val selectedPlayers = remember { mutableStateListOf<Player>().apply { addAll(initialTeam2Players) } }
 
-    val team1PlayersDB = dbHelper.getTeamPlayers(matchId, 1)
+    val team1PlayersDB = dbHelper.getTeamPlayers(matchId, 1,0)
     val team1Captain = playersList.find { it.name == team1CaptainName.name }
     val team2Captain = playersList.find { it.name == team2CaptainName.name }
 
