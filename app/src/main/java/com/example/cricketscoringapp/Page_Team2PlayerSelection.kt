@@ -81,7 +81,7 @@ fun Team2PlayerSelectionPage(
                                 if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
                                     selectedPlayers.add(player)
                                     //captainViewModel.addTeam2Player(player)
-                                    dbHelper.addTeamPlayer(matchId,2,player.name,0,0)
+                                    dbHelper.addTeamPlayer(matchId,2,player.name,0)
                                 } else {
                                     Toast.makeText(
                                         context,

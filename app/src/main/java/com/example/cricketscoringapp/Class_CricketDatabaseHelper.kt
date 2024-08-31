@@ -33,9 +33,9 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     private val createMATCHESTABLE = """
         CREATE TABLE $TABLE_MATCHES (
             match_id TEXT PRIMARY KEY,
+            first_batting_team_captain TEXT,
             winning_team_captain TEXT,
             losing_team_captain TEXT,
-            is_finished INTEGER,
             is_synced INTEGER
         )
     """
@@ -101,6 +101,8 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db?.execSQL(createMATCHESTABLE)
         db?.execSQL(createTEAMSTABLE)
         db?.execSQL(createBATTINGSTATS)
+        db?.execSQL(createBOWNLINGSTATS)
+        db?.execSQL(createBOWNLINGSTATSSUMMARY)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
@@ -108,6 +110,8 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_MATCHES")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_TEAMS")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_BATTINGSTATS")
+        db?.execSQL("DROP TABLE IF EXISTS $TABLE_BOWLINGSTATS")
+        db?.execSQL("DROP TABLE IF EXISTS $TABLE_BOWLINGSTATSSUMMARY")
         onCreate(db)
     }
 
@@ -119,13 +123,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db.close()
     }
 
-    // Add method to delete player
     fun deletePlayer(name: String): Int {
         val db = writableDatabase
         return db.delete(TABLE_PLAYERS, "name = ?", arrayOf(name))
     }
 
-    // Update getAllPlayers method to return Player objects
     fun getAllPlayers(): List<Player> {
         val players = mutableListOf<Player>()
         val db = readableDatabase
@@ -148,59 +150,9 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return exists
     }
 
-    private fun addMatch(matchId: String) {
-        val db = this.writableDatabase
-        val values = ContentValues()
-        values.put("match_id", matchId)
-        values.put("is_finished",0)
-        values.put("is_synced",0)
-        values.put("first_batting_team_captain","")
-        values.put("winning_team_captain","")
-        db.insert(TABLE_MATCHES, null, values)
-        db.close()
-    }
-
-    fun deleteMatch(matchId: String) {
-        val db = writableDatabase
-        db.delete(TABLE_TEAMS, "match_id = ?", arrayOf(matchId))
-        db.delete(TABLE_MATCHES, "match_id = ?", arrayOf(matchId))
-    }
-
-    fun updateMatchIsFinished(matchId: String) : Int {
-        val db = writableDatabase
-        val contentValues = ContentValues().apply {
-            put("is_finished", 1)
-        }
-        return db.update(TABLE_MATCHES, contentValues, "match_id = ?", arrayOf(matchId))
-    }
-
-    fun updateMatchIsSynced(matchId: String) : Int {
-        val db = writableDatabase
-        val contentValues = ContentValues().apply {
-            put("is_synced", 1)
-        }
-        return db.update(TABLE_MATCHES, contentValues, "match_id = ?", arrayOf(matchId))
-    }
-
-    fun updateMatchFirstBattingTeamCaptain(matchId: String, captainName: String) : Int {
-        val db = writableDatabase
-        val contentValues = ContentValues().apply {
-            put("first_batting_team_captain", captainName)
-        }
-        return db.update(TABLE_MATCHES, contentValues, "match_id = ?", arrayOf(matchId))
-    }
-
-    fun updateMatchWinningTeamCaptain(matchId: String, captainName: String) : Int {
-        val db = writableDatabase
-        val contentValues = ContentValues().apply {
-            put("winning_team_captain", captainName)
-        }
-        return db.update(TABLE_MATCHES, contentValues, "match_id = ?", arrayOf(matchId))
-    }
-
     fun getMatchId(): String {
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_MATCHES WHERE isFinished = 0 LIMIT 1", null)
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_MATCHES WHERE winning_team_captain = ? AND losing_team_captain = ? LIMIT 1", arrayOf("",""))
         val matchId:String
 
         if (cursor.moveToFirst()) {
@@ -215,13 +167,64 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return matchId
     }
 
-    //Delete team players except captain
-    fun clearTeam(matchId: String, teamId: Int): Int {
-        val db = writableDatabase
-        return db.delete(TABLE_TEAMS, "match_id = ? AND team_id = ? AND is_captain = 0", arrayOf(matchId,teamId.toString()))
+    private fun addMatch(matchId: String) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        values.put("match_id", matchId)
+        values.put("first_batting_team_captain","")
+        values.put("winning_team_captain","")
+        values.put("losing_team_captain","")
+        values.put("is_synced",0)
+        db.insert(TABLE_MATCHES, null, values)
+        db.close()
     }
 
-    //includeCaptain = 0 (team players except captain). includeCaptain = 1 (all team players)
+    fun updateMatch(matchId: String, firstBattingTeamCaptain: String) : Int {
+        val db = writableDatabase
+        val contentValues = ContentValues().apply {
+            put("first_batting_team_captain", firstBattingTeamCaptain)
+        }
+        val whereClause = "match_id = ?"
+        val whereArgs = arrayOf(matchId)
+
+        return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
+    }
+
+    fun updateMatch(matchId: String, winningTeamCaptain: String, losingTeamCaptain: String) : Int {
+        val db = writableDatabase
+        val contentValues = ContentValues().apply {
+            put("winning_team_captain", winningTeamCaptain)
+            put("losing_team_captain", losingTeamCaptain)
+        }
+        val whereClause = "match_id = ?"
+        val whereArgs = arrayOf(matchId)
+
+        return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
+    }
+
+    fun deleteMatch(matchId: String) {
+        val db = writableDatabase
+        db.delete(TABLE_TEAMS, "match_id = ?", arrayOf(matchId))
+        db.delete(TABLE_BATTINGSTATS, "match_id = ?", arrayOf(matchId))
+        db.delete(TABLE_BOWLINGSTATS, "match_id = ?", arrayOf(matchId))
+        db.delete(TABLE_BOWLINGSTATSSUMMARY, "match_id = ?", arrayOf(matchId))
+        db.delete(TABLE_MATCHES, "match_id = ?", arrayOf(matchId))
+    }
+
+    fun updateMatch(matchId: String, isSynced: Int) : Int {
+        val db = writableDatabase
+        val contentValues = ContentValues().apply {
+            put("is_synced", isSynced)
+        }
+        return db.update(TABLE_MATCHES, contentValues, "match_id = ?", arrayOf(matchId))
+    }
+
+    //Delete team players except captain
+//    fun clearTeam(matchId: String, teamId: Int): Int {
+//        val db = writableDatabase
+//        return db.delete(TABLE_TEAMS, "match_id = ? AND team_id = ? AND is_captain = 0", arrayOf(matchId,teamId.toString()))
+//    }
+
     fun getTeamPlayers(matchId: String, teamId: Int, includeCaptain: Int): List<Player> {
         val players = mutableListOf<Player>()
         val db = readableDatabase
@@ -252,14 +255,13 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return teamId
     }
 
-    fun addTeamPlayer(matchId: String, teamId: Int, playerName: String, isCaptain: Int, isKeeper: Int) {
+    fun addTeamPlayer(matchId: String, teamId: Int, playerName: String, isCaptain: Int) {
         val db = this.writableDatabase
         val values = ContentValues()
         values.put("match_id", matchId)
         values.put("team_id", teamId)
         values.put("player_name", playerName)
         values.put("is_captain",isCaptain)
-        values.put("is_keeper",isKeeper)
         db.insert(TABLE_TEAMS, null, values)
         db.close()
     }
@@ -268,15 +270,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val db = writableDatabase
         return db.delete(TABLE_TEAMS, "match_id = ? AND team_id = ? AND player_name = ?", arrayOf(matchId,teamId.toString(),playerName))
     }
-
-    // Add method to update player
-//    fun updateTeamPlayer(matchId: String, teamId: Int, playerName: String): Int {
-//        val db = writableDatabase
-//        val contentValues = ContentValues().apply {
-//            put("name", newName)
-//        }
-//        return db.update("players", contentValues, "id = ?", arrayOf(playerId.toString()))
-//    }
 
     fun isTeamPlayer(matchId: String, teamId: Int, playerName: String) : Boolean {
         val db = readableDatabase
@@ -315,11 +308,68 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return captainName
     }
 
-    fun updateTeamPlayerBattingStatus(matchId: String, teamId: Int, playerName: String, battingStatus: String) : Int {
+    fun addBattingStats(matchId: String,
+                        teamId: Int,
+                        playerName: String,
+                        battingTurn: Int,
+                        battingStatus: String) {
+        val db = writableDatabase
+        val values = ContentValues()
+        values.put("match_id", matchId)
+        values.put("team_id", teamId)
+        values.put("batting_order",getNextBattingOrderNo(matchId))
+        values.put("player_name", playerName)
+        values.put("batting_turn", battingTurn)
+        values.put("batting_status", battingStatus)
+        db.insert(TABLE_BATTINGSTATS,null,values)
+        db.close()
+    }
+
+    fun updateBattingStats(matchId: String,
+                           teamId: Int,
+                           battingOrder: Int,
+                           battingStatus: String) : Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("batting_status", battingStatus)
         }
-        return db.update(TABLE_TEAMS, contentValues, "match_id = ? AND team_id = ? AND player_name = ?", arrayOf(matchId,teamId.toString(),playerName))
+        val whereClause = "match_id = ? AND team_id = ? AND batting_order = ?"
+        val whereArgs = arrayOf(matchId, teamId.toString(), battingOrder.toString())
+
+        return db.update(TABLE_BATTINGSTATS, contentValues, whereClause, whereArgs)
+    }
+
+    fun updateBattingStats(matchId: String,
+                           teamId: Int,
+                           battingOrder: Int,
+                           runs: Int,
+                           balls: Int,
+                           fours: Int,
+                           sixes: Int) : Int {
+        val db = writableDatabase
+        val contentValues = ContentValues().apply {
+            put("runs", runs)
+            put("balls", balls)
+            put("fours", fours)
+            put("sixes", sixes)
+        }
+        val whereClause = "match_id = ? AND team_id = ? AND batting_order = ?"
+        val whereArgs = arrayOf(matchId, teamId.toString(), battingOrder.toString())
+
+        return db.update(TABLE_BATTINGSTATS, contentValues, whereClause, whereArgs)
+    }
+
+    private fun getNextBattingOrderNo(matchId: String): Int {
+        val db = readableDatabase
+        val query = "SELECT MAX(batting_order) AS max_battingorder FROM $TABLE_BATTINGSTATS"
+        val cursor = db.rawQuery(query, null)
+
+        cursor.use { // Auto-close the cursor after use
+            if (it.moveToFirst()) {
+                return it.getInt(it.getColumnIndexOrThrow("max_battingorder")) + 1
+            }
+        }
+        // If no records found, return 1
+        return 1
     }
 }

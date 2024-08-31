@@ -141,7 +141,7 @@ fun NewMatchPage(navController: NavHostController) {
                                 onClick = {
                                     team1Captain = player
                                     team1Captain?.let {
-                                        dbHelper.addTeamPlayer(matchId, 1, player.name, 1, 0)
+                                        dbHelper.addTeamPlayer(matchId, 1, player.name, 1)
                                     }
                                     expanded1 = false
                                 }
@@ -183,7 +183,7 @@ fun NewMatchPage(navController: NavHostController) {
                                 onClick = {
                                     team2Captain = player
                                     team2Captain?.let {
-                                        dbHelper.addTeamPlayer(matchId, 2, player.name, 1, 0)
+                                        dbHelper.addTeamPlayer(matchId, 2, player.name, 1)
                                     }
                                     expanded2 = false
                                 }
@@ -311,7 +311,7 @@ fun NewMatchPage(navController: NavHostController) {
                                     onClick = {
                                         team1Captain?.let { captain ->
                                             battingTeamCaptain = captain
-                                            dbHelper.updateMatchFirstBattingTeamCaptain(matchId,captain.name)
+                                            dbHelper.updateMatch(matchId, captain.name)
                                         }
                                         expanded3 = false
                                         facingBatsman = null
@@ -393,8 +393,7 @@ fun NewMatchPage(navController: NavHostController) {
                                             facingBatsman = player
                                             if (battingTeamId != null) {
                                                 facingBatsman?.name?.let {
-                                                    dbHelper.updateTeamPlayerBattingStatus(matchId, battingTeamId,
-                                                        it,"striker")
+                                                    dbHelper.addBattingStats(matchId,battingTeamId,it,1,"striker")
                                                 }
                                             }
                                             expanded4 = false
@@ -438,8 +437,7 @@ fun NewMatchPage(navController: NavHostController) {
                                             secondBatsman = player
                                             if (battingTeamId != null) {
                                                 secondBatsman?.name?.let {
-                                                    dbHelper.updateTeamPlayerBattingStatus(matchId, battingTeamId,
-                                                        it,"non-striker")
+                                                    dbHelper.addBattingStats(matchId,battingTeamId,it,1,"non-striker")
                                                 }
                                             }
                                             expanded5 = false
