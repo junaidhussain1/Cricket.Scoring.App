@@ -21,19 +21,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 
 @Composable
 fun Team2PlayerSelectionPage(
-    navController: NavHostController,
-    captainViewModel: CaptainViewModel
+    //captainViewModel: CaptainViewModel
 ) {
     val context = LocalContext.current
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
 
-    val team1CaptainName = Player(dbHelper.getCaptain(matchId,1))
-    val team2CaptainName = Player(dbHelper.getCaptain(matchId,2))
+    val team1CaptainName = Player(dbHelper.getCaptainForTeam(matchId,1))
+    val team2CaptainName = Player(dbHelper.getCaptainForTeam(matchId,2))
 
     val playersList = remember { mutableStateListOf<Player>() }
     playersList.clear()
@@ -82,7 +80,7 @@ fun Team2PlayerSelectionPage(
                             if (checked) {
                                 if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
                                     selectedPlayers.add(player)
-                                    captainViewModel.addTeam2Player(player)
+                                    //captainViewModel.addTeam2Player(player)
                                     dbHelper.addTeamPlayer(matchId,2,player.name,0,0)
                                 } else {
                                     Toast.makeText(
@@ -93,7 +91,7 @@ fun Team2PlayerSelectionPage(
                                 }
                             } else {
                                 selectedPlayers.remove(player)
-                                captainViewModel.removeTeam2Player(player)
+                                //captainViewModel.removeTeam2Player(player)
                                 dbHelper.removeTeamPlayer(matchId,2,player.name)
                             }
                         }

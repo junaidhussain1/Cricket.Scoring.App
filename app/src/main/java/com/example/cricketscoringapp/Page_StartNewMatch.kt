@@ -39,8 +39,8 @@ fun StartNewMatchPage() {
     ) {
 
         // Retrieve the captain names from the view model
-        val team1Captain = Player(dbHelper.getCaptain(matchId, 1))
-        val team2Captain = Player(dbHelper.getCaptain(matchId, 2))
+        val team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
+        val team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
 
         val balls = remember {
             mutableStateListOf(

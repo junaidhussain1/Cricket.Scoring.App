@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -51,14 +50,12 @@ fun MainScreenContent() {
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
-    val captainViewModel: CaptainViewModel = viewModel()
-
-    NavHost(navController = navController, startDestination = "homepage") {
+        NavHost(navController = navController, startDestination = "homepage") {
         composable("homepage") { HomePage(navController = navController) }
         composable("playermgt") { PlayerMgtPage() }
         composable("newmatch") { NewMatchPage(navController = navController) }
-        composable("team1PlayerSelection") { Team1PlayerSelectionPage(navController = navController, captainViewModel = captainViewModel)}
-        composable("team2PlayerSelection") { Team2PlayerSelectionPage(navController = navController, captainViewModel = captainViewModel)}
+        composable("team1PlayerSelection") { Team1PlayerSelectionPage()}
+        composable("team2PlayerSelection") { Team2PlayerSelectionPage()}
         composable("startnewmatch") { StartNewMatchPage() }
     //composable("existingmatches") { ExistingMatchesPage() }
     }

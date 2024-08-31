@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import java.time.LocalDate
@@ -58,8 +59,8 @@ fun NewMatchPage(navController: NavHostController) {
     var openingBowler by remember { mutableStateOf<Player?>(null) }
     var openingKeeper by remember { mutableStateOf<Player?>(null) }
 
-    team1Captain = Player(dbHelper.getCaptain(matchId, 1))
-    team2Captain = Player(dbHelper.getCaptain(matchId, 2))
+    team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
+    team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
 
     var expanded1 by remember { mutableStateOf(false) }
     var expanded2 by remember { mutableStateOf(false) }
@@ -211,7 +212,7 @@ fun NewMatchPage(navController: NavHostController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Buttons to navigate to team player selection pages
-                    if (dbHelper.getCaptain(matchId, 1) != "") {
+                    if (dbHelper.getCaptainForTeam(matchId, 1) != "") {
                         Button(
                             onClick = {
                                 navController.navigate("team1PlayerSelection")
@@ -221,9 +222,10 @@ fun NewMatchPage(navController: NavHostController) {
                             shape = RectangleShape,
                             content = {
                                 Text(
-                                    text = "Select Team ${team1Captain?.name} Players",
+                                    text = "Select Team Players",
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth() // Ensure text takes full width of the button
+                                    modifier = Modifier.fillMaxWidth(),
+                                    fontSize = 16.sp
                                 )
                             }
                         )
@@ -245,7 +247,7 @@ fun NewMatchPage(navController: NavHostController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    if (dbHelper.getCaptain(matchId, 2) != "") {
+                    if (dbHelper.getCaptainForTeam(matchId, 2) != "") {
                         Button(
                             onClick = {
                                 navController.navigate("team2PlayerSelection")
@@ -254,9 +256,10 @@ fun NewMatchPage(navController: NavHostController) {
                             shape = RectangleShape,
                             content = {
                                 Text(
-                                    text = "Select Team ${team2Captain?.name} Players",
+                                    text = "Select Team Players",
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth() // Ensure text takes full width of the button
+                                    modifier = Modifier.fillMaxWidth(),
+                                    fontSize = 16.sp
                                 )
                             }
                         )
@@ -274,7 +277,7 @@ fun NewMatchPage(navController: NavHostController) {
 
         if ((dbHelper.getTeamSize(matchId,1) == 6) && (dbHelper.getTeamSize(matchId,2) == 6))
         {
-            // Select Batting Team
+            // Select Batting Team Captain
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -308,6 +311,7 @@ fun NewMatchPage(navController: NavHostController) {
                                     onClick = {
                                         team1Captain?.let { captain ->
                                             battingTeamCaptain = captain
+                                            dbHelper.updateMatchFirstBattingTeamCaptain(matchId,captain.name)
                                         }
                                         expanded3 = false
                                         facingBatsman = null
@@ -357,7 +361,7 @@ fun NewMatchPage(navController: NavHostController) {
                     bowlingTeamList.addAll(dbHelper.getTeamPlayers(matchId,bowlingTeamId,1))
                 }
 
-                // Facing Batsman
+                // Facing Batsman (Striker)
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -387,6 +391,12 @@ fun NewMatchPage(navController: NavHostController) {
                                         text = { Text(text = player.name) },
                                         onClick = {
                                             facingBatsman = player
+                                            if (battingTeamId != null) {
+                                                facingBatsman?.name?.let {
+                                                    dbHelper.updateTeamPlayerBattingStatus(matchId, battingTeamId,
+                                                        it,"striker")
+                                                }
+                                            }
                                             expanded4 = false
                                         }
                                     )
@@ -396,7 +406,7 @@ fun NewMatchPage(navController: NavHostController) {
                     }
                 }
 
-                // Second Batsman
+                // Second Batsman (Non Striker)
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -426,6 +436,12 @@ fun NewMatchPage(navController: NavHostController) {
                                         text = { Text(text = player.name) },
                                         onClick = {
                                             secondBatsman = player
+                                            if (battingTeamId != null) {
+                                                secondBatsman?.name?.let {
+                                                    dbHelper.updateTeamPlayerBattingStatus(matchId, battingTeamId,
+                                                        it,"non-striker")
+                                                }
+                                            }
                                             expanded5 = false
                                         }
                                     )
