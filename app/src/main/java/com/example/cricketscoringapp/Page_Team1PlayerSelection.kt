@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,19 +21,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 
 @Composable
 fun Team1PlayerSelectionPage(
-    navController: NavHostController,
-    captainViewModel: CaptainViewModel
+    //captainViewModel: CaptainViewModel
 ) {
     val context = LocalContext.current
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
 
-    val team1CaptainName = Player(dbHelper.getCaptain(matchId, 1))
-    val team2CaptainName = Player(dbHelper.getCaptain(matchId, 2))
+    val team1CaptainName = Player(dbHelper.getCaptainForTeam(matchId, 1))
+    val team2CaptainName = Player(dbHelper.getCaptainForTeam(matchId, 2))
 
     val playersList = remember { mutableStateListOf<Player>() }
     playersList.clear()
@@ -83,8 +80,8 @@ fun Team1PlayerSelectionPage(
                             if (checked) {
                                 if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
                                     selectedPlayers.add(player)
-                                    captainViewModel.addTeam1Player(player)
-                                    dbHelper.addTeamPlayer(matchId, 1, player.name, 0, 0)
+                                    //captainViewModel.addTeam1Player(player)
+                                    dbHelper.addTeamPlayer(matchId, 1, player.name, 0)
                                 } else {
                                     Toast.makeText(
                                         context,
@@ -94,7 +91,7 @@ fun Team1PlayerSelectionPage(
                                 }
                             } else {
                                 selectedPlayers.remove(player)
-                                captainViewModel.removeTeam1Player(player)
+                                //captainViewModel.removeTeam1Player(player)
                                 dbHelper.removeTeamPlayer(matchId, 1, player.name)
                             }
                         }

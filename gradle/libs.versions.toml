@@ -3,9 +3,11 @@ agp = "8.5.2"
 coreKtxVersion = "1.10.0"
 googleApiClientAndroid = "2.6.0"
 googleApiServicesSheets = "v4-rev614-1.25.0"
+googleApisSheets = "v4-rev20230822-2.0.0"
 googleAuthLibraryOauth2Http = "1.24.1"
 googleOauthClientJetty = "1.36.0"
 gradle = "8.5.2"
+gson = "2.10.1"
 kotlin = "1.9.0"
 coreKtx = "1.10.1"
 junit = "4.13.2"
@@ -21,11 +23,15 @@ identityJvm = "202408.1"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.13.1" }
 androidx-core-ktx-v1100 = { module = "androidx.core:core-ktx", version = "1.13.1" }
+google-api-client = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClientAndroid" }
 google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClientAndroid" }
+google-api-services-sheet = { module = "com.google.apis:google-api-services-sheet" }
 google-api-services-sheets = { module = "com.google.apis:google-api-services-sheets", version = "v4-rev20240730-2.0.0" }
+google-apis-sheets = { module = "com.google.apis:google-apis-sheets", version.ref = "googleApisSheets" }
 google-auth-library-oauth2-http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleAuthLibraryOauth2Http" }
 google-oauth-client-jetty = { module = "com.google.oauth-client:google-oauth-client-jetty", version.ref = "googleOauthClientJetty" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

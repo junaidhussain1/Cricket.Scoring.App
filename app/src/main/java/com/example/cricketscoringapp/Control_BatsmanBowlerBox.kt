@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,9 +39,9 @@ fun BatsmanBowlerBox(col1: String,
             if (makeBatsmanTouchable) {
                 Button(
                     onClick = onClick,
-                    shape = CircleShape,
+                    shape = RectangleShape,
                     modifier = Modifier
-                        .size(16.dp)
+                        .size(24.dp)
                         .weight(3f),
                     contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -51,7 +52,8 @@ fun BatsmanBowlerBox(col1: String,
                     Text(
                         text = col1,
                         fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onPrimary, // Ensure text color is suitable for the button color
+                        //color = MaterialTheme.colorScheme.onPrimary, // Ensure text color is suitable for the button color
+                        color = Color.White,
                         modifier = Modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically)  // Aligns text vertically center
