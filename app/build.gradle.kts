@@ -45,6 +45,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "/META-INF/DEPENDENCIES"
         }
     }
 }
@@ -84,5 +86,31 @@ dependencies {
 //    implementation(libs.gradle)
 //
 //    implementation(libs.androidx.core.ktx.v1100)
+
+    // Google APIs Client Library for Java
+    //implementation(libs.google.api.client)
+
+    // OAuth2 for handling authentication and authorization
+    //implementation(libs.google.oauth.client.jetty)
+
+    // Google Sheets API specific library
+
+    //implementation(libs.google.api.services.sheets)
+    //implementation(libs.google.api.services.sheet)
+
+
+    implementation("com.google.api-client:google-api-client:2.6.0")
+    implementation("com.google.api-client:google-api-client-android:2.6.0")
+    implementation("com.google.oauth-client:google-oauth-client-jetty:1.36.0")
+    implementation("com.google.http-client:google-http-client-gson:1.44.2")
+    implementation(libs.google.api.services.sheets)
+
+
+//      implementation("com.google.api-client:google-api-client-android:2.6.0")
+//      implementation(libs.google.api.services.sheets)
+      implementation("com.google.auth:google-auth-library-oauth2-http:1.24.1")
+
+    // Optional, for easier JSON handling if needed
+    implementation(libs.gson)
 
 }

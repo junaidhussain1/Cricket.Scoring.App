@@ -57,7 +57,7 @@ fun AppNavHost(navController: NavHostController) {
         composable("team1PlayerSelection") { Team1PlayerSelectionPage()}
         composable("team2PlayerSelection") { Team2PlayerSelectionPage()}
         composable("startnewmatch") { StartNewMatchPage() }
-    //composable("existingmatches") { ExistingMatchesPage() }
+        composable("existingmatches") { ExistingMatchesPage() }
     }
 }
 

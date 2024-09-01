@@ -52,7 +52,6 @@ fun NewMatchPage(navController: NavHostController) {
 
     var team1Captain by remember { mutableStateOf<Player?>(null) }
     var team2Captain by remember { mutableStateOf<Player?>(null) }
-
     var battingTeamCaptain by remember { mutableStateOf<Player?>(null) }
     var facingBatsman by remember { mutableStateOf<Player?>(null) }
     var secondBatsman by remember { mutableStateOf<Player?>(null) }
@@ -61,6 +60,11 @@ fun NewMatchPage(navController: NavHostController) {
 
     team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
     team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
+    battingTeamCaptain = Player((dbHelper.getFirstBattingTeamCaptain(matchId)))
+    facingBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"striker"))
+    secondBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"non-striker"))
+    openingBowler = Player(dbHelper.getCurrentBowler(matchId))
+    openingKeeper = Player(dbHelper.getCurrentKeeper(matchId))
 
     var expanded1 by remember { mutableStateOf(false) }
     var expanded2 by remember { mutableStateOf(false) }
@@ -324,13 +328,37 @@ fun NewMatchPage(navController: NavHostController) {
                                 onClick = {
                                     team2Captain?.let { captain ->
                                         battingTeamCaptain = captain
+                                        dbHelper.updateMatch(matchId, captain.name)
                                     }
                                     expanded3 = false
+                                    facingBatsman = null
+                                    secondBatsman = null
                                 }
                             )
                         }
                     }
                 }
+            }
+
+            val battingTeamId =
+                battingTeamCaptain?.name?.let {
+                    dbHelper.getTeamForPlayer(matchId,
+                        it
+                    )
+                }
+
+            val bowlingTeamId = if (battingTeamId == 1) {
+                2
+            } else {
+                1
+            }
+
+            if (battingTeamId != null) {
+                battingTeamList.clear()
+                battingTeamList.addAll(dbHelper.getTeamPlayers(matchId,battingTeamId,1))
+
+                bowlingTeamList.clear()
+                bowlingTeamList.addAll(dbHelper.getTeamPlayers(matchId,bowlingTeamId,1))
             }
 
             // Row to hold both Facing Batsman and Second Batsman
@@ -340,26 +368,6 @@ fun NewMatchPage(navController: NavHostController) {
                     .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val battingTeamId =
-                    battingTeamCaptain?.name?.let {
-                        dbHelper.getTeamForPlayer(matchId,
-                            it
-                        )
-                    }
-
-                val bowlingTeamId = if (battingTeamId == 1) {
-                    2
-                } else {
-                    1
-                }
-
-                if (battingTeamId != null) {
-                    battingTeamList.clear()
-                    battingTeamList.addAll(dbHelper.getTeamPlayers(matchId,battingTeamId,1))
-
-                    bowlingTeamList.clear()
-                    bowlingTeamList.addAll(dbHelper.getTeamPlayers(matchId,bowlingTeamId,1))
-                }
 
                 // Facing Batsman (Striker)
                 Column(
@@ -487,6 +495,7 @@ fun NewMatchPage(navController: NavHostController) {
                                         text = { Text(text = player.name) },
                                         onClick = {
                                             openingBowler = player
+                                            dbHelper.addBowlingStats(matchId,bowlingTeamId,player.name,1,"bowling")
                                             expanded6 = false
                                         }
                                     )
@@ -526,6 +535,7 @@ fun NewMatchPage(navController: NavHostController) {
                                         text = { Text(text = player.name) },
                                         onClick = {
                                             openingKeeper = player
+                                            dbHelper.updateBowlingStatsKeeper(matchId,bowlingTeamId,1,player.name)
                                             expanded7 = false
                                         }
                                     )

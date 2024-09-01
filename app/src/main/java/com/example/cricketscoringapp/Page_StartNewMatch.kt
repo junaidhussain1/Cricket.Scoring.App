@@ -89,7 +89,7 @@ fun StartNewMatchPage() {
 
         val firstBatsmanStats = remember {
             BatsmanStats(
-                name = mutableStateOf("Tanveer"),
+                name = mutableStateOf(dbHelper.getBatsmanByStatus(matchId,"striker")),
                 runs = mutableIntStateOf(value = 0),
                 balls = mutableIntStateOf(value = 0),
                 fours = mutableIntStateOf(value = 0),
@@ -100,7 +100,7 @@ fun StartNewMatchPage() {
 
         val secondBatsmanStats = remember {
             BatsmanStats(
-                name = mutableStateOf("Fahid"),
+                name = mutableStateOf(dbHelper.getBatsmanByStatus(matchId,"non-striker")),
                 runs = mutableIntStateOf(value = 0),
                 balls = mutableIntStateOf(value = 0),
                 fours = mutableIntStateOf(value = 0),
@@ -111,7 +111,7 @@ fun StartNewMatchPage() {
 
         val bowlerStats = remember {
             BowlerStats(
-                name = mutableStateOf("Adnan"),
+                name = mutableStateOf(dbHelper.getCurrentBowler(matchId)),
                 over = mutableDoubleStateOf(.0),
                 maiden = mutableIntStateOf(0),
                 runs = mutableIntStateOf(0),
