@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -26,11 +28,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
 
+
 @Composable
 fun StartNewMatchPage() {
     val context = LocalContext.current
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
+
+    val showWidesDialog = remember { mutableStateOf(false) }
+    val selectedWidesOption = remember { mutableStateOf("") }
+    val showNoBallDialog = remember { mutableStateOf(false) }
+    val selectedNoBallOption = remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -387,27 +395,151 @@ fun StartNewMatchPage() {
                 )
             }
             CircleButton("WIDE", fontSize = 16) {
-                updateStats(
-                    balls,
-                    "W",
-                    bowlerStats,
-                    firstBatsmanStats,
-                    secondBatsmanStats,
-                    firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    runsToWin
+                showWidesDialog.value = true
+            }
+            if (showWidesDialog.value) {
+                AlertDialog(
+                    onDismissRequest = { showWidesDialog.value = false },
+                    title = { Text("Select WIDE Option") },
+                    text = {
+                        Column {
+                            // List of options to choose from
+                            TextButton(onClick = {
+                                selectedWidesOption.value = "W"
+                                showWidesDialog.value = false
+                                updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("WIDE", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedWidesOption.value = "W+1"
+                                showWidesDialog.value = false
+                                updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("WIDE + 1", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedWidesOption.value = "W+2"
+                                showWidesDialog.value = false
+                                updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("WIDE + 2", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedWidesOption.value = "W+3"
+                                showWidesDialog.value = false
+                                updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("WIDE + 3", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedWidesOption.value = "W+4"
+                                showWidesDialog.value = false
+                                updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("WIDE + 4", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedWidesOption.value = "W+5"
+                                showWidesDialog.value = false
+                                updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("WIDE + 5", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedWidesOption.value = "W+6"
+                                showWidesDialog.value = false
+                                updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("WIDE + 6", fontSize = 20.sp)
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showWidesDialog.value = false }) {
+                            Text("Cancel")
+                        }
+                    }
                 )
             }
+
             CircleButton("NO BALL", fontSize = 16) {
-                updateStats(
-                    balls,
-                    "NB",
-                    bowlerStats,
-                    firstBatsmanStats,
-                    secondBatsmanStats,
-                    firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    runsToWin
+                showNoBallDialog.value = true
+//                updateStats(
+//                    navController,
+//                    balls,
+//                    "NB",
+//                    bowlerStats,
+//                    firstBatsmanStats,
+//                    secondBatsmanStats,
+//                    firstBattingTeamStats,
+//                    secondBattingTeamStats,
+//                    runsToWin
+//                )
+            }
+            if (showNoBallDialog.value) {
+                AlertDialog(
+                    onDismissRequest = { showNoBallDialog.value = false },
+                    title = { Text("Select NO BALL Option") },
+                    text = {
+                        Column {
+                            // List of options to choose from
+                            TextButton(onClick = {
+                                selectedNoBallOption.value = "NB"
+                                showNoBallDialog.value = false
+                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("NO BALL", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedNoBallOption.value = "NB+1"
+                                showNoBallDialog.value = false
+                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("NO BALL + 1", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedNoBallOption.value = "NB+2"
+                                showNoBallDialog.value = false
+                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("NO BALL + 2", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedNoBallOption.value = "NB+3"
+                                showNoBallDialog.value = false
+                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("NO BALL + 3", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedNoBallOption.value = "NB+4"
+                                showNoBallDialog.value = false
+                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("NO BALL + 4", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedNoBallOption.value = "NB+5"
+                                showNoBallDialog.value = false
+                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("NO BALL + 5", fontSize = 20.sp)
+                            }
+                            TextButton(onClick = {
+                                selectedNoBallOption.value = "NB+6"
+                                showNoBallDialog.value = false
+                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                            }) {
+                                Text("NO BALL + 6", fontSize = 20.sp)
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showNoBallDialog.value = false }) {
+                            Text("Cancel")
+                        }
+                    }
                 )
             }
         }

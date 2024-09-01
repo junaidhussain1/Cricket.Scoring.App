@@ -1,6 +1,7 @@
 package com.example.cricketscoringapp
 
 import androidx.compose.runtime.MutableState
+import androidx.navigation.NavHostController
 import java.util.Locale
 import kotlin.math.abs
 
@@ -19,13 +20,14 @@ fun updateStats(balls: MutableList<String>,
                 firstTeamStats: TeamStats,
                 secondTeamStats: TeamStats,
                 runsToWinTxt: MutableState<String>) {
+    val excludedValues = setOf("W","W+1","W+2","W+3","W+4","W+5","W+6","NB","NB+1","NB+2","NB+3","NB+4","NB+5","NB+6")
     if (newValue != "UNDO") {
         var overCompleted = false
         for (i in balls.indices) {
             if (balls[i].isEmpty()) {
                 balls[i] = newValue
                 // Increment the bowlerOver by 0.1 only if it's a valid ball value
-                if (newValue != "W" && newValue != "NB") {
+                if (newValue !in excludedValues) {
                     bowlerStats.over.value += 0.1f
                     updateBatsman("balls",firstBatsmanStats,secondBatsmanStats,1)
                     updateTeam("overs",firstTeamStats,secondTeamStats,0.1)
@@ -71,13 +73,60 @@ fun updateStats(balls: MutableList<String>,
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,6.0)
                     }
                     "W" -> {
-
                         bowlerStats.runs.value += 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,1.0)
+                    }
+                    "W+1" -> {
+                        bowlerStats.runs.value += 2
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,2.0)
+                    }
+                    "W+2" -> {
+                        bowlerStats.runs.value += 3
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,3.0)
+                    }
+                    "W+3" -> {
+                        bowlerStats.runs.value += 4
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,4.0)
+                    }
+                    "W+4" -> {
+                        bowlerStats.runs.value += 5
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,5.0)
+                    }
+                    "W+5" -> {
+                        bowlerStats.runs.value += 6
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,6.0)
+                    }
+                    "W+6" -> {
+                        bowlerStats.runs.value += 7
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,7.0)
                     }
                     "NB" -> {
                         bowlerStats.runs.value += 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,1.0)
+                    }
+                    "NB+1" -> {
+                        bowlerStats.runs.value += 2
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,2.0)
+                    }
+                    "NB+2" -> {
+                        bowlerStats.runs.value += 3
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,3.0)
+                    }
+                    "NB+3" -> {
+                        bowlerStats.runs.value += 4
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,4.0)
+                    }
+                    "NB+4" -> {
+                        bowlerStats.runs.value += 5
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,5.0)
+                    }
+                    "NB+5" -> {
+                        bowlerStats.runs.value += 6
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,6.0)
+                    }
+                    "NB+6" -> {
+                        bowlerStats.runs.value += 7
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,7.0)
                     }
                     "B" -> {
                         bowlerStats.runs.value += 1
@@ -103,7 +152,7 @@ fun updateStats(balls: MutableList<String>,
         for (i in balls.size - 1 downTo 0) {
             if (balls[i].isNotEmpty()) {
                 // Decrement the bowlerOver by 0.1 only if last ball was a valid ball value
-                if (balls[i] != "W" && balls[i] != "NB") {
+                if (balls[i] !in excludedValues) {
                     bowlerStats.over.value -= 0.1f
                     updateBatsman("balls",firstBatsmanStats,secondBatsmanStats,-1)
                     updateTeam("overs",firstTeamStats,secondTeamStats,-0.1)
@@ -152,10 +201,58 @@ fun updateStats(balls: MutableList<String>,
                         bowlerStats.runs.value -= 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-1.0)
                     }
+                    "W+1" -> {
+                        bowlerStats.runs.value -= 2
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-2.0)
+                    }
+                    "W+2" -> {
+                        bowlerStats.runs.value -= 3
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-3.0)
+                    }
+                    "W+3" -> {
+                        bowlerStats.runs.value -= 4
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-4.0)
+                    }
+                    "W+4" -> {
+                        bowlerStats.runs.value -= 5
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-5.0)
+                    }
+                    "W+5" -> {
+                        bowlerStats.runs.value -= 6
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-6.0)
+                    }
+                    "W+6" -> {
+                        bowlerStats.runs.value -= 7
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-7.0)
+                    }
 
                     "NB" -> {
                         bowlerStats.runs.value -= 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-1.0)
+                    }
+                    "NB+1" -> {
+                        bowlerStats.runs.value -= 2
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-2.0)
+                    }
+                    "NB+2" -> {
+                        bowlerStats.runs.value -= 3
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-3.0)
+                    }
+                    "NB+3" -> {
+                        bowlerStats.runs.value -= 4
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-4.0)
+                    }
+                    "NB+4" -> {
+                        bowlerStats.runs.value -= 5
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-5.0)
+                    }
+                    "NB+5" -> {
+                        bowlerStats.runs.value -= 6
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-6.0)
+                    }
+                    "NB+6" -> {
+                        bowlerStats.runs.value -= 7
+                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-7.0)
                     }
 
                     "B" -> {

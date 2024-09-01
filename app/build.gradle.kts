@@ -98,6 +98,7 @@ dependencies {
     //implementation(libs.google.api.services.sheets)
     //implementation(libs.google.api.services.sheet)
 
+    implementation("androidx.compose.material:material:1.6.8")
 
     implementation("com.google.api-client:google-api-client:2.6.0")
     implementation("com.google.api-client:google-api-client-android:2.6.0")
