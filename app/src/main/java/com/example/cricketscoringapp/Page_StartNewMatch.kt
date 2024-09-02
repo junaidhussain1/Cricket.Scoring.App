@@ -62,28 +62,7 @@ fun StartNewMatchPage() {
         }
 
         val balls = remember {
-            mutableStateListOf(
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
-            )
+            mutableStateListOf<String>()
         }
         val runsToWin = remember { mutableStateOf("") }
 
