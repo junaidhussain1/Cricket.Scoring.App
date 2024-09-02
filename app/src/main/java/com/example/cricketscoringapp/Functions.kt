@@ -84,22 +84,6 @@ fun updateStats(balls: MutableList<String>,
                         bowlerStats.runs.value += 3
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,3.0)
                     }
-                    "W+3" -> {
-                        bowlerStats.runs.value += 4
-                        updateTeam("inningScore",firstTeamStats,secondTeamStats,4.0)
-                    }
-                    "W+4" -> {
-                        bowlerStats.runs.value += 5
-                        updateTeam("inningScore",firstTeamStats,secondTeamStats,5.0)
-                    }
-                    "W+5" -> {
-                        bowlerStats.runs.value += 6
-                        updateTeam("inningScore",firstTeamStats,secondTeamStats,6.0)
-                    }
-                    "W+6" -> {
-                        bowlerStats.runs.value += 7
-                        updateTeam("inningScore",firstTeamStats,secondTeamStats,7.0)
-                    }
                     "NB" -> {
                         bowlerStats.runs.value += 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,1.0)
@@ -209,23 +193,6 @@ fun updateStats(balls: MutableList<String>,
                         bowlerStats.runs.value -= 3
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-3.0)
                     }
-                    "W+3" -> {
-                        bowlerStats.runs.value -= 4
-                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-4.0)
-                    }
-                    "W+4" -> {
-                        bowlerStats.runs.value -= 5
-                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-5.0)
-                    }
-                    "W+5" -> {
-                        bowlerStats.runs.value -= 6
-                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-6.0)
-                    }
-                    "W+6" -> {
-                        bowlerStats.runs.value -= 7
-                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-7.0)
-                    }
-
                     "NB" -> {
                         bowlerStats.runs.value -= 1
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-1.0)
@@ -245,10 +212,6 @@ fun updateStats(balls: MutableList<String>,
                     "NB+4" -> {
                         bowlerStats.runs.value -= 5
                         updateTeam("inningScore",firstTeamStats,secondTeamStats,-5.0)
-                    }
-                    "NB+5" -> {
-                        bowlerStats.runs.value -= 6
-                        updateTeam("inningScore",firstTeamStats,secondTeamStats,-6.0)
                     }
                     "NB+6" -> {
                         bowlerStats.runs.value -= 7

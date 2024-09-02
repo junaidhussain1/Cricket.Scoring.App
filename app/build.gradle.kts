@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
+    //implementation(libs.androidx.room.compiler)
     //implementation(libs.identity.jvm)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -113,5 +114,7 @@ dependencies {
 
     // Optional, for easier JSON handling if needed
     implementation(libs.gson)
+
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
 
 }
