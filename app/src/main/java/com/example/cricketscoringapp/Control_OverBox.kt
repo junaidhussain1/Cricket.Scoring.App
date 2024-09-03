@@ -21,7 +21,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun OverBox(
     heading1: String,
-    balls: List<String>,
+    //balls: List<String>,
+    balls: List<Ball>,
     headingFontBold1: FontWeight,
     ballsFontBold1: FontWeight,
     fontColor1: Color,
@@ -30,7 +31,7 @@ fun OverBox(
     val lazyListState = rememberLazyListState() // Remember the list state
 
     // Find the index of the last non-blank ball
-    val lastNonBlankIndex = balls.indexOfLast { it.isNotBlank() }
+    val lastNonBlankIndex = balls.indexOfLast { it.action.isNotBlank() }
 
     LaunchedEffect(balls, lastNonBlankIndex) {
         if (lastNonBlankIndex != -1) {
@@ -76,14 +77,14 @@ fun OverBox(
                         .heightIn(max = 56.dp) // Set a maximum height for the LazyRow
                 ) {
                     items(balls.size) { index ->
-                        val fontColor2 = if (balls[index].contains("WI", ignoreCase = true)) {
+                        val fontColor2 = if (balls[index].action.contains("WI", ignoreCase = true)) {
                             Color.Red
                         } else {
                             Color.Black
                         }
 
                         Text(
-                            text = balls[index],
+                            text = balls[index].action,
                             fontWeight = ballsFontBold1,
                             fontSize = 22.sp,
                             color = fontColor2,

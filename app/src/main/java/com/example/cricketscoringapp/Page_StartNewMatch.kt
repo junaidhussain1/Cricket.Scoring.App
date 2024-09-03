@@ -61,8 +61,11 @@ fun StartNewMatchPage() {
             team1Captain = firstBattingTeamCaptain
         }
 
+//        val balls = remember {
+//            mutableStateListOf<String>()
+//        }
         val balls = remember {
-            mutableStateListOf<String>()
+            mutableStateListOf<Ball>()
         }
         val runsToWin = remember { mutableStateOf("") }
 

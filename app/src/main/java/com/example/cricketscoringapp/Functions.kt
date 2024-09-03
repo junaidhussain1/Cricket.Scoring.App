@@ -8,8 +8,14 @@ fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats) {
     batsman2.active.value = tempActive
 }
 
+fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats, actionForBatsman: String) {
+    if (((batsman1.name.value == actionForBatsman) && (!batsman1.active.value)) || ((batsman2.name.value == actionForBatsman) && (!batsman2.active.value))) {
+        swapBatsmen(batsman1,batsman2)
+    }
+}
+
 // Function to update the stats
-fun updateStats(balls: MutableList<String>,
+fun updateStats(balls: MutableList<Ball>,
                 newValue: String,
                 bowlerStats: BowlerStats,
                 firstBatsmanStats: BatsmanStats,
@@ -18,19 +24,27 @@ fun updateStats(balls: MutableList<String>,
                 secondTeamStats: TeamStats,
                 runsToWinTxt: MutableState<String>) {
     val excludedValues = setOf("W","W+1","W+2","W+3","W+4","W+5","W+6","NB","NB+1","NB+2","NB+3","NB+4","NB+5","NB+6")
+
+    val activeBatsman = if (firstBatsmanStats.active.value) {
+        firstBatsmanStats.name.value
+    } else {
+        secondBatsmanStats.name.value
+    }
+
     if (newValue != "UNDO") {
-        val emptyIndex = balls.indexOfFirst { it.isEmpty() }
+        val emptyIndex = balls.indexOfFirst { it.action.isEmpty() }
         if (emptyIndex == -1) {
-            balls.add(newValue) // Add new value if no empty spot is found
+            balls.add(Ball(newValue,activeBatsman)) // Add new value if no empty spot is found
         } else {
-            balls[emptyIndex] = newValue // Update the first empty spot
+            balls[emptyIndex] = Ball(newValue,activeBatsman) // Update the first empty spot
         }
 
-        if (balls.size == 7) {
+        val includedBallsCount = balls.count { it.action !in excludedValues }
+        if (includedBallsCount == 7) {
             if (emptyIndex == -1) {
                 balls.removeLast() // Remove the last item if added
             } else {
-                balls[emptyIndex] = "" // Reset the value at the empty index
+                balls[emptyIndex] = Ball("",activeBatsman) // Reset the value at the empty index
             }
             return
         }
@@ -144,22 +158,21 @@ fun updateStats(balls: MutableList<String>,
             }
         }
 
-        if (balls.take(6).all { it == "0" }) {
+        if (balls.take(6).all { it.action == "0" }) {
             bowlerStats.maiden.value += 1
         }
 
     } else {
         //Handle the UNDO option
-        val lastNonEmptyIndex = balls.indexOfLast { it.isNotEmpty() }
-        var lastBall = ""
+        val lastNonEmptyIndex = balls.indexOfLast { it.action.isNotEmpty() }
         if (lastNonEmptyIndex == -1) return
 
-        lastBall = balls[lastNonEmptyIndex]
+        val lastBall = balls[lastNonEmptyIndex].action
 
         // Decrement the bowlerOver by 0.1 only if the last ball was a valid ball value
         if (lastBall !in excludedValues) {
-            if ((lastBall == "1") or (lastBall == "2")) {
-                swapBatsmen(firstBatsmanStats,secondBatsmanStats)
+            if ((lastBall == "1") || (lastBall == "2")) {
+                swapBatsmen(firstBatsmanStats,secondBatsmanStats,balls[lastNonEmptyIndex].batsman)
             }
             bowlerStats.over.value -= 0.1f
             updateBatsman("balls", firstBatsmanStats, secondBatsmanStats, -1)
@@ -167,20 +180,18 @@ fun updateStats(balls: MutableList<String>,
         }
 
         // Check if the first 5 balls were "0" and last index is 5
-        if (lastNonEmptyIndex == 5 && balls.take(5).all { it == "0" }) {
+        if (lastNonEmptyIndex == 5 && balls.take(5).all { it.action == "0" }) {
             bowlerStats.maiden.value -= 1
         }
 
         when(lastBall) {
             "1" -> {
-                //swapBatsmen(firstBatsmanStats,secondBatsmanStats)
                 bowlerStats.runs.value -= 1
                 updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,-1)
                 updateTeam("inningScore",firstTeamStats,secondTeamStats,-1.0)
             }
 
             "2" -> {
-                //swapBatsmen(firstBatsmanStats,secondBatsmanStats)
                 bowlerStats.runs.value -= 2
                 updateBatsman("runs",firstBatsmanStats,secondBatsmanStats,-2)
                 updateTeam("inningScore",firstTeamStats,secondTeamStats,-2.0)
@@ -260,7 +271,7 @@ fun updateStats(balls: MutableList<String>,
             }
         }
 
-        balls[lastNonEmptyIndex] = ""
+        balls[lastNonEmptyIndex] = Ball("",activeBatsman)
     }
 
     val ballsRemaining: Int
