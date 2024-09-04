@@ -3,9 +3,9 @@ package com.example.cricketscoringapp
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -28,15 +28,15 @@ fun BatsmanBowlerBox(col1: String,
                      col5: String,
                      fontBold1: FontWeight,
                      fontColor1: Color,
-                     makeBatsmanTouchable: Boolean,
+                     makePlayerTouchable: Boolean,
                      onClick: () -> Unit) {
     Surface(color = Color.White, modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                //.padding(6.dp)  // Optional padding
+                .padding(6.dp)  // Optional padding
         ) {
-            if (makeBatsmanTouchable) {
+            if (makePlayerTouchable) {
                 Button(
                     onClick = onClick,
                     shape = RectangleShape,

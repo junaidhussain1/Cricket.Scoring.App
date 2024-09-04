@@ -6,11 +6,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -128,8 +132,8 @@ fun StartNewMatchPage() {
             modifier = Modifier
                 .padding(8.dp)
                 .border(
-                    BorderStroke(2.dp, Color.Black),
-                    shape = RoundedCornerShape(8.dp)
+                    BorderStroke(2.dp, Color.White),
+                    //shape = RoundedCornerShape(8.dp)
                 ) // Set border thickness and color
                 .fillMaxWidth()
         ) {
@@ -170,7 +174,7 @@ fun StartNewMatchPage() {
                                 "%d",
                                 secondBattingTeamStats.inningWickets.value
                             ),
-                    color1 = Color.LightGray
+                    color1 = Color.Black
                 )
             }
         }
@@ -185,8 +189,8 @@ fun StartNewMatchPage() {
             modifier = Modifier
                 .padding(8.dp)
                 .border(
-                    BorderStroke(2.dp, Color.Black),
-                    shape = RoundedCornerShape(8.dp)
+                    BorderStroke(2.dp, Color.White),
+                    //shape = RoundedCornerShape(8.dp)
                 ) // Set border thickness and color
                 .fillMaxWidth()
         ) {
@@ -199,7 +203,7 @@ fun StartNewMatchPage() {
                     col5 = "6s",
                     fontBold1 = FontWeight.Bold,
                     fontColor1 = Color.Gray,
-                    makeBatsmanTouchable = false
+                    makePlayerTouchable = false
                 ) {}
 
                 val fontColor2: Color
@@ -226,7 +230,7 @@ fun StartNewMatchPage() {
                     col5 = String.format(Locale.UK, "%d", firstBatsmanStats.sixes.value),
                     fontBold1 = fontBold2,
                     fontColor1 = fontColor2,
-                    makeBatsmanTouchable = true
+                    makePlayerTouchable = true
                 ) {
                     swapBatsmen(firstBatsmanStats, secondBatsmanStats)
                 }
@@ -239,7 +243,7 @@ fun StartNewMatchPage() {
                     col5 = String.format(Locale.UK, "%d", secondBatsmanStats.sixes.value),
                     fontBold1 = fontBold3,
                     fontColor1 = fontColor3,
-                    makeBatsmanTouchable = true
+                    makePlayerTouchable = true
                 ) {
                     swapBatsmen(firstBatsmanStats, secondBatsmanStats)
                 }
@@ -252,7 +256,7 @@ fun StartNewMatchPage() {
                 .padding(8.dp)
                 .border(
                     BorderStroke(2.dp, Color.Black),
-                    shape = RoundedCornerShape(8.dp)
+                    //shape = RoundedCornerShape(8.dp)
                 ) // Set border thickness and color
                 .fillMaxWidth()
         ) {
@@ -265,7 +269,7 @@ fun StartNewMatchPage() {
                     col5 = "W",
                     fontBold1 = FontWeight.Bold,
                     fontColor1 = Color.Gray,
-                    makeBatsmanTouchable = false
+                    makePlayerTouchable = false
                 ) {}
                 BatsmanBowlerBox(
                     col1 = bowlerStats.name.value,
@@ -275,8 +279,11 @@ fun StartNewMatchPage() {
                     col5 = String.format(Locale.UK, "%d", bowlerStats.wickets.value),
                     fontBold1 = FontWeight.Bold,
                     fontColor1 = Color(19, 207, 69),
-                    makeBatsmanTouchable = false
-                ) {}
+                    makePlayerTouchable = true
+                ) {
+                    //validate to make sure it is start of over.
+                    //if it is start of over, then show lookup to change bowler.
+                }
             }
         }
 
@@ -286,7 +293,7 @@ fun StartNewMatchPage() {
                 .padding(8.dp)
                 .border(
                     BorderStroke(2.dp, Color.Black),
-                    shape = RoundedCornerShape(8.dp)
+                    //shape = RoundedCornerShape(8.dp)
                 ) // Set border thickness and color
                 .fillMaxWidth()
         ) {
@@ -439,96 +446,80 @@ fun StartNewMatchPage() {
                     onDismissRequest = { showNoBallDialog.value = false },
                     title = { Text("Select NO BALL Option") },
                     text = {
+                        // Define the grid using Column and Row
                         Column {
-                            // List of options to choose from
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NB"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NB+1"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL + 1", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NB+2"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL + 2", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NB+3"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL + 3", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NB+4"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL + 4", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NB+6"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL + 6", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NBL1"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL (L) 1", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NBL3"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL (L) 2", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NBL3"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL (L) 3", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NBB1"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL (B) 1", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NBB2"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL (B) 2", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = {
-                                selectedNoBallOption.value = "NBB3"
-                                showNoBallDialog.value = false
-                                updateStats(balls,selectedNoBallOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
-                            }) {
-                                Text("NO BALL (B) 3", fontSize = 20.sp)
+                            // 3 Rows with 4 Buttons each (12 options)
+                            for (row in 0..4) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                ) {
+                                    // Create buttons in each row
+                                    for (col in 1..3) {
+                                        val optionIndex = row * 3 + col
+                                        val optionText = when (optionIndex) {
+                                            1 -> "NB"
+                                            2 -> ""
+                                            3 -> ""
+                                            4 -> "NB+1"
+                                            5 -> "NB+2"
+                                            6 -> "NB+3"
+                                            7 -> "NB+4"
+                                            8 -> ""
+                                            9 -> "NB+6"
+                                            10 -> "NBL1"
+                                            11 -> "NBL2"
+                                            12 -> "NBL3"
+                                            13 -> "NBB1"
+                                            14 -> "NBB2"
+                                            15 -> "NBB3"
+                                            else -> ""
+                                        }
+
+                                        if (optionText != "") {
+                                            val backgroundColor = when {
+                                                optionText.startsWith("NBL") -> Color.Green // Green for NBL buttons
+                                                optionText.startsWith("NBB") -> Color.Yellow   // Red for NBB buttons
+                                                else -> Color.Unspecified  // Default color for other buttons
+                                            }
+                                            Button(
+                                                onClick = {
+                                                    selectedNoBallOption.value = optionText
+                                                    showNoBallDialog.value = false
+                                                    updateStats(
+                                                        balls,
+                                                        selectedNoBallOption.value,
+                                                        bowlerStats,
+                                                        firstBatsmanStats,
+                                                        secondBatsmanStats,
+                                                        firstBattingTeamStats,
+                                                        secondBattingTeamStats,
+                                                        runsToWin
+                                                    )
+                                                },
+                                                colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
+                                                modifier = Modifier
+                                                    .padding(0.dp)
+                                                    .weight(1f) // Ensures equal space distribution for buttons
+                                            ) {
+                                                Text(optionText,
+                                                    fontSize = 16.sp)
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (row == 2) {  // Assuming the NBL buttons are in row 2
+                                    Spacer(modifier = Modifier.height(16.dp)) // Add space of 16.dp between NBL and NBB
+                                }
+                                if (row == 3) {  // Assuming the NBL buttons are in row 2
+                                    Spacer(modifier = Modifier.height(16.dp)) // Add space of 16.dp between NBL and NBB
+                                }
                             }
                         }
                     },
                     confirmButton = {
-                        TextButton(onClick = { showNoBallDialog.value = false }) {
+                        Button(onClick = { showNoBallDialog.value = false }) {
                             Text("Cancel")
                         }
                     }
@@ -741,6 +732,21 @@ fun StartNewMatchPage() {
                                         TextButton(onClick = {
                                             showNextBatsmanDialog.value = false
                                             updateStats(balls,selectedWicketsOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                            if (firstBatsmanStats.active.value) {
+                                                firstBatsmanStats.name.value = player.name
+                                                firstBatsmanStats.active.value = true
+                                                firstBatsmanStats.runs.value = 0
+                                                firstBatsmanStats.balls.value = 0
+                                                firstBatsmanStats.fours.value = 0
+                                                firstBatsmanStats.sixes.value = 0
+                                            } else {
+                                                secondBatsmanStats.name.value = player.name
+                                                secondBatsmanStats.active.value = true
+                                                secondBatsmanStats.runs.value = 0
+                                                secondBatsmanStats.balls.value = 0
+                                                secondBatsmanStats.fours.value = 0
+                                                secondBatsmanStats.sixes.value = 0
+                                            }
                                         }) {
                                             Text(player.name, fontSize = 20.sp)
                                         }

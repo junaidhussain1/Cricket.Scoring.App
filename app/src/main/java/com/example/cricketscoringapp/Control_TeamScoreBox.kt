@@ -29,8 +29,11 @@ fun TeamScoreBox(name1: String,
             Text(
                 text = "Team $name1!",
                 fontSize = 18.sp,  // Increase the font size here
+                color =  Color.White,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f) // This pushes the next Text to the right
+                modifier = Modifier
+                    .weight(1f)// This pushes the next Text to the right
+
             )
             Text(
                 text = overs1,
