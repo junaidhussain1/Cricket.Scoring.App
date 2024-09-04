@@ -64,6 +64,7 @@ fun NewMatchPage(navController: NavHostController) {
     facingBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"striker"))
     secondBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"non-striker"))
     openingBowler = Player(dbHelper.getCurrentBowler(matchId))
+    //openingKeeper = dbHelper.getCurrentKeeper(matchId)?.let { Player(it) }
     openingKeeper = Player(dbHelper.getCurrentKeeper(matchId))
 
     var expanded1 by remember { mutableStateOf(false) }

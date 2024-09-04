@@ -1,7 +1,9 @@
 package com.example.cricketscoringapp
 
+//import com.google.api.client.extensions.android.http.AndroidHttp
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,12 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -25,15 +29,12 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.JsonFactory
-import com.google.api.client.util.store.FileDataStoreFactory
-import java.io.File
-import java.io.InputStreamReader
-//import com.google.api.client.extensions.android.http.AndroidHttp
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.json.gson.GsonFactory
+import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.model.ValueRange
-import java.io.InputStream
+import java.io.File
+import java.io.InputStreamReader
 
 
 @Composable
@@ -50,6 +51,14 @@ fun HomePage(navController: NavHostController) {
             fontSize = 22.sp)
 
         Spacer(modifier = Modifier.height(20.dp))
+
+        Image(
+            painter = painterResource(id = R.drawable.logo2), // Replace with your app icon resource
+            contentDescription = "App Icon",
+            modifier = Modifier
+                .size(200.dp) // Set the desired size of the image
+                .padding(8.dp)
+        )
 
         Button(onClick = { navController.navigate("playermgt") },
             modifier = Modifier.fillMaxWidth()) {

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.5.2"
+agp = "8.6.0"
 coreKtxVersion = "1.10.0"
 googleApiClientAndroid = "2.6.0"
 googleApiServicesSheets = "v4-rev614-1.25.0"

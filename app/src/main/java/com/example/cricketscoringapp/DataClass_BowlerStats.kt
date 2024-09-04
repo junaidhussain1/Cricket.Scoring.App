@@ -7,5 +7,9 @@ data class BowlerStats(
     var over: MutableState<Double>,
     var maiden: MutableState<Int>,
     var runs: MutableState<Int>,
-    var wickets: MutableState<Int>
+    var wickets: MutableState<Int>,
+    var noballs: MutableState<Int>,
+    var wides: MutableState<Int>,
+    var byes: MutableState<Int>,
+    var legbyes: MutableState<Int>
 )
