@@ -39,7 +39,7 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewMatchPage(navController: NavHostController) {
+fun NewMatchSetupPage(navController: NavHostController) {
     val context = LocalContext.current
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
