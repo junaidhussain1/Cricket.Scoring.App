@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -21,6 +22,9 @@ fun CircleButton(
     fontSize: Int,
     onClick: () -> Unit
 ) {
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+
     // Determine the color based on the label
     val buttonColor = when (label) {
         "WICKET" -> Color.Red // Red color for "WICKET"
@@ -31,7 +35,7 @@ fun CircleButton(
     Button(
         onClick = onClick,
         shape = CircleShape,
-        modifier = Modifier.size(80.dp),
+        modifier = if (isTablet) Modifier.size(130.dp) else Modifier.size(80.dp),
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = buttonColor,

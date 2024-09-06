@@ -9,11 +9,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
 fun PlayerRow(player: String, onDelete: () -> Unit) {
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -23,9 +27,10 @@ fun PlayerRow(player: String, onDelete: () -> Unit) {
     ) {
         Text(text = player,
             modifier = Modifier.weight(1f),
-            fontSize = 22.sp)
+            fontSize = if (isTablet) 32.sp else 22.sp)
         Button(onClick = onDelete) {
-            Text(text = "Delete")
+            Text(text = "Delete",
+                fontSize = if (isTablet) 32.sp else 22.sp)
         }
     }
 }

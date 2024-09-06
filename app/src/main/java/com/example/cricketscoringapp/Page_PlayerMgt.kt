@@ -26,10 +26,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun PlayerMgtPage() {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -49,7 +54,8 @@ fun PlayerMgtPage() {
         OutlinedTextField(
             value = playerName,
             onValueChange = { playerName = it },
-            label = { Text("Enter Player Name", fontSize = 20.sp) },
+            label = { Text("Enter Player Name", fontSize = if (isTablet) 22.sp else 14.sp) },
+            textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -74,7 +80,7 @@ fun PlayerMgtPage() {
                 }
             }
         ) {
-            Text("Add Player", fontSize = 20.sp)
+            Text("Add Player", fontSize = if (isTablet) 32.sp else 20.sp) // Larger font size for tablets)
         }
 
         Spacer(modifier = Modifier.height(16.dp))

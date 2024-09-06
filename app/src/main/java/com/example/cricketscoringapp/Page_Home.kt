@@ -35,63 +35,87 @@ import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.model.ValueRange
 import java.io.File
 import java.io.InputStreamReader
+import androidx.compose.ui.platform.LocalConfiguration
 
 
 @Composable
 fun HomePage(navController: NavHostController) {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+
+    // Check screen size and adjust the layout accordingly
+    val isTablet = configuration.screenWidthDp >= 600
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(if (isTablet) 32.dp else 16.dp), // Increase padding for tablets
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Welcome to Cricket Scoring App",
-            fontSize = 24.sp)
+        Text(
+            text = "Welcome to Cricket Scoring App",
+            fontSize = if (isTablet) 32.sp else 20.sp // Larger font size for tablets
+        )
 
         Image(
-            painter = painterResource(id = R.drawable.logo2), // Replace with your app icon resource
+            painter = painterResource(id = R.drawable.designer), // Replace with your app icon resource
             contentDescription = "App Icon",
             modifier = Modifier
-                .size(200.dp) // Set the desired size of the image
+                .size(if (isTablet) 400.dp else 300.dp) // Larger image size for tablets
                 .padding(8.dp)
         )
 
-        Button(onClick = { navController.navigate("playermgt") },
-            modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Player Management",
-                fontSize = 22.sp)
+        Button(
+            onClick = { navController.navigate("playermgt") },
+            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f) // Adjust button width for tablets
+        ) {
+            Text(
+                text = "Player Management",
+                fontSize = if (isTablet) 26.sp else 22.sp // Larger font size for tablets
+            )
         }
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Button(onClick = { navController.navigate("newmatch") },
-            modifier = Modifier.fillMaxWidth()) {
-            Text(text = "New Match",
-                fontSize = 22.sp)
+        Button(
+            onClick = { navController.navigate("newmatch") },
+            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f)
+        ) {
+            Text(
+                text = "New Match",
+                fontSize = if (isTablet) 26.sp else 22.sp
+            )
         }
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Button(onClick = { navController.navigate("existingmatches") },
-            modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Existing Matches",
-                fontSize = 22.sp)
+        Button(
+            onClick = { navController.navigate("existingmatches") },
+            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f)
+        ) {
+            Text(
+                text = "Existing Matches",
+                fontSize = if (isTablet) 26.sp else 22.sp
+            )
         }
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Button(onClick = {
-
-            Toast.makeText(context, getDataFromSheet(context), Toast.LENGTH_SHORT).show()
-        },
-            modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Google Sheet Test",
-                fontSize = 22.sp)
+        Button(
+            onClick = {
+                Toast.makeText(context, getDataFromSheet(context), Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f)
+        ) {
+            Text(
+                text = "Google Sheet Test",
+                fontSize = if (isTablet) 26.sp else 22.sp
+            )
         }
     }
 }
+
 
 fun getSheetsService(context: Context): Sheets {
     val jsonFactory = GsonFactory.getDefaultInstance()
