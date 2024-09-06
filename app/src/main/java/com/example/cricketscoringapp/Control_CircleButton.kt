@@ -35,7 +35,7 @@ fun CircleButton(
     Button(
         onClick = onClick,
         shape = CircleShape,
-        modifier = if (isTablet) Modifier.size(130.dp) else Modifier.size(80.dp),
+        modifier = if (isTablet) Modifier.size(120.dp) else Modifier.size(80.dp),
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = buttonColor,

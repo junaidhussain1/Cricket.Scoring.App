@@ -260,13 +260,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Text(text = team1Captain!!.name, color = textColor, fontSize = if (isTablet) 22.sp else 16.sp)
+                        Text(text = team1Captain!!.name, color = textColor, fontSize = if (isTablet) 30.sp else 16.sp)
 
                         val team1Players = dbHelper.getTeamPlayers(matchId, 1, 0)
 
                         for (player in team1Players) {
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = player.name, color = textColor, fontSize = if (isTablet) 22.sp else 16.sp)
+                            Text(text = player.name, color = textColor, fontSize = if (isTablet) 30.sp else 16.sp)
                         }
                     }
                 }
@@ -301,13 +301,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Text(text = team2Captain!!.name, color = textColor, fontSize = if (isTablet) 22.sp else 16.sp)
+                        Text(text = team2Captain!!.name, color = textColor, fontSize = if (isTablet) 30.sp else 16.sp)
 
                         val team2Players = dbHelper.getTeamPlayers(matchId, 2, 0)
 
                         for (player in team2Players) {
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = player.name, color = textColor, fontSize = if (isTablet) 22.sp else 16.sp)
+                            Text(text = player.name, color = textColor, fontSize = if (isTablet) 30.sp else 16.sp)
                         }
                     }
                 }
