@@ -23,9 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Team1PlayerSelectionPage(
-    //captainViewModel: CaptainViewModel
-) {
+fun Team1PlayerSelectionPage() {
     val context = LocalContext.current
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
@@ -58,7 +56,9 @@ fun Team1PlayerSelectionPage(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        val filteredPlayers = playersList.filter { it != team1Captain && it != team2Captain && it !in team2PlayersDB }
+        Text(text = "Mid Bowlers",modifier = Modifier.align(Alignment.End))
+
+        val filteredPlayers = playersList.filter { it != team2Captain && it !in team2PlayersDB }
 
         // Player Selection for Team 1
         LazyColumn(
@@ -66,21 +66,21 @@ fun Team1PlayerSelectionPage(
         ) {
             items(filteredPlayers.size) { index ->
                 val player = filteredPlayers[index]
-                val isSelected = selectedPlayers.contains(player)
+                val isSelected = selectedPlayers.contains(player) || (player == team1Captain)
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(8.dp)
+                    ,verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(
+                        modifier = Modifier.padding(start = 2.dp),
                         checked = isSelected,
                         onCheckedChange = { checked ->
                             if (checked) {
                                 if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
                                     selectedPlayers.add(player)
-                                    //captainViewModel.addTeam1Player(player)
                                     dbHelper.addTeamPlayer(matchId, 1, player.name, 0)
                                 } else {
                                     Toast.makeText(
@@ -91,12 +91,15 @@ fun Team1PlayerSelectionPage(
                                 }
                             } else {
                                 selectedPlayers.remove(player)
-                                //captainViewModel.removeTeam1Player(player)
                                 dbHelper.removeTeamPlayer(matchId, 1, player.name)
                             }
                         }
                     )
-                    Text(text = player.name)
+                    Text(text = player.name, modifier = Modifier.padding(start = 8.dp))
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Checkbox(checked = false, onCheckedChange = {})
                 }
             }
         }

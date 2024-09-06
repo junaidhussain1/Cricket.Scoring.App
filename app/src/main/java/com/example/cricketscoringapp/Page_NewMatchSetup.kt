@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -43,6 +44,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
     val context = LocalContext.current
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
+    val matchStarted = dbHelper.getIsMatchStarted(matchId)
     val playersList = remember { mutableStateListOf<Player>() }
     val battingTeamList = remember { mutableStateListOf<Player>() }
     val bowlingTeamList = remember { mutableStateListOf<Player>() }
@@ -60,11 +62,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
     team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
     team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
-    battingTeamCaptain = Player((dbHelper.getFirstBattingTeamCaptain(matchId)))
+    battingTeamCaptain = Player((dbHelper.getBattingTeamCaptain(matchId,1)))
     facingBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"striker"))
     secondBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"non-striker"))
     openingBowler = Player(dbHelper.getCurrentBowler(matchId))
-    //openingKeeper = dbHelper.getCurrentKeeper(matchId)?.let { Player(it) }
     openingKeeper = Player(dbHelper.getCurrentKeeper(matchId))
 
     var expanded1 by remember { mutableStateOf(false) }
@@ -125,9 +126,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
             ) {
                 ExposedDropdownMenuBox(
                     expanded = expanded1,
-                    onExpandedChange = { expanded1 = !expanded1 }
+                    onExpandedChange = {
+                        if (!matchStarted) {
+                            expanded1 = !expanded1
+                        }
+                    }
                 ) {
                     OutlinedTextField(
+                        enabled = !matchStarted,
                         readOnly = true,
                         value = team1Captain?.name ?: "Select Captain",
                         onValueChange = { },
@@ -142,6 +148,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     ) {
                         playersList.forEach { player ->
                             androidx.compose.material3.DropdownMenuItem(
+                                enabled = !matchStarted,
                                 text = { Text(text = player.name) },
                                 onClick = {
                                     team1Captain = player
@@ -166,9 +173,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
             ) {
                 ExposedDropdownMenuBox(
                     expanded = expanded2,
-                    onExpandedChange = { expanded2 = !expanded2 }
+                    onExpandedChange = {
+                        if (!matchStarted) {
+                            expanded2 = !expanded2
+                        }
+                    }
                 ) {
                     OutlinedTextField(
+                        enabled = !matchStarted,
                         readOnly = true,
                         value = team2Captain?.name ?: "Select Captain",
                         onValueChange = { },
@@ -184,6 +196,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                         val remainingPlayers = playersList.filter { it != team1Captain }
                         remainingPlayers.forEach { player ->
                             androidx.compose.material3.DropdownMenuItem(
+                                enabled = !matchStarted,
                                 text = { Text(text = player.name) },
                                 onClick = {
                                     team2Captain = player
@@ -199,8 +212,9 @@ fun NewMatchSetupPage(navController: NavHostController) {
             }
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+        val textColor = if (!matchStarted) Color.White else Color.Gray
 
         if ((team1Captain!!.name != "") && (team2Captain!!.name != "")) {
             Row(
@@ -219,10 +233,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     // Buttons to navigate to team player selection pages
                     if (dbHelper.getCaptainForTeam(matchId, 1) != "") {
                         Button(
+                            enabled = !matchStarted,
                             onClick = {
                                 navController.navigate("team1PlayerSelection")
                             },
-                            //shape = ButtonDefaults.shape.,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RectangleShape,
                             content = {
@@ -235,9 +249,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             }
                         )
 
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(text = team1Captain!!.name, color = textColor)
+
                         val team1Players = dbHelper.getTeamPlayers(matchId, 1, 0)
+
                         for (player in team1Players) {
-                            Text(text = player.name)
+                            Text(text = player.name, color = textColor)
                         }
                     }
                 }
@@ -254,6 +273,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                     if (dbHelper.getCaptainForTeam(matchId, 2) != "") {
                         Button(
+                            enabled = !matchStarted,
                             onClick = {
                                 navController.navigate("team2PlayerSelection")
                             },
@@ -269,16 +289,21 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             }
                         )
 
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(text = team2Captain!!.name, color = textColor)
+
                         val team2Players = dbHelper.getTeamPlayers(matchId, 2, 0)
+
                         for (player in team2Players) {
-                            Text(text = player.name)
+                            Text(text = player.name, color = textColor)
                         }
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         if ((dbHelper.getTeamSize(matchId,1) == 6) && (dbHelper.getTeamSize(matchId,2) == 6))
         {
@@ -296,9 +321,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 ) {
                     ExposedDropdownMenuBox(
                         expanded = expanded3,
-                        onExpandedChange = { expanded3 = !expanded3 }
+                        onExpandedChange = {
+                            if (!matchStarted) {
+                                expanded3 = !expanded3
+                            }
+                        }
                     ) {
                         OutlinedTextField(
+                            enabled = !matchStarted,
                             readOnly = true,
                             value = battingTeamCaptain?.name ?: "Select Captain",
                             onValueChange = { },
@@ -312,11 +342,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             onDismissRequest = { expanded3 = false }
                         ) {
                             androidx.compose.material3.DropdownMenuItem(
+                                enabled = !matchStarted,
                                     text = { team1Captain?.name?.let { Text(text = it) } },
                                     onClick = {
                                         team1Captain?.let { captain ->
                                             battingTeamCaptain = captain
-                                            dbHelper.updateMatch(matchId, captain.name)
+                                            dbHelper.updateMatchCaptain(matchId, 1, captain.name)
+                                            dbHelper.updateMatchCaptain(matchId, 2, team2Captain!!.name)
                                         }
                                         expanded3 = false
                                         facingBatsman = null
@@ -325,11 +357,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 )
 
                             androidx.compose.material3.DropdownMenuItem(
+                                enabled = !matchStarted,
                                 text = { team2Captain?.name?.let { Text(text = it) } },
                                 onClick = {
                                     team2Captain?.let { captain ->
                                         battingTeamCaptain = captain
-                                        dbHelper.updateMatch(matchId, captain.name)
+                                        dbHelper.updateMatchCaptain(matchId, 1, captain.name)
+                                        dbHelper.updateMatchCaptain(matchId, 2, team1Captain!!.name)
                                     }
                                     expanded3 = false
                                     facingBatsman = null
@@ -379,9 +413,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 ) {
                     ExposedDropdownMenuBox(
                         expanded = expanded4,
-                        onExpandedChange = { expanded4 = !expanded4 }
+                        onExpandedChange = {
+                            if (!matchStarted) {
+                                expanded4 = !expanded4
+                            }
+                        }
                     ) {
                         OutlinedTextField(
+                            enabled = !matchStarted,
                             readOnly = true,
                             value = facingBatsman?.name ?: "Select Batsman",
                             onValueChange = { },
@@ -397,6 +436,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             battingTeamList.forEach { player ->
                                 if (player.name != secondBatsman?.name) {
                                     androidx.compose.material3.DropdownMenuItem(
+                                        enabled = !matchStarted,
                                         text = { Text(text = player.name) },
                                         onClick = {
                                             facingBatsman = player
@@ -423,9 +463,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 ) {
                     ExposedDropdownMenuBox(
                         expanded = expanded5,
-                        onExpandedChange = { expanded5= !expanded5 }
+                        onExpandedChange = {
+                            if (!matchStarted) {
+                                expanded5 = !expanded5
+                            }
+                        }
                     ) {
                         OutlinedTextField(
+                            enabled = !matchStarted,
                             readOnly = true,
                             value = secondBatsman?.name ?: "Select Batsman",
                             onValueChange = { },
@@ -441,6 +486,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             battingTeamList.forEach { player ->
                                 if (player.name != facingBatsman?.name) {
                                     androidx.compose.material3.DropdownMenuItem(
+                                        enabled = !matchStarted,
                                         text = { Text(text = player.name) },
                                         onClick = {
                                             secondBatsman = player
@@ -475,9 +521,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 ) {
                     ExposedDropdownMenuBox(
                         expanded = expanded6,
-                        onExpandedChange = { expanded6 = !expanded6 }
+                        onExpandedChange = {
+                            if (!matchStarted) {
+                                expanded6 = !expanded6
+                            }
+                        }
                     ) {
                         OutlinedTextField(
+                            enabled = !matchStarted,
                             readOnly = true,
                             value = openingBowler?.name ?: "Select Bowler",
                             onValueChange = { },
@@ -493,6 +544,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             bowlingTeamList.forEach { player ->
                                 if (player.name != openingKeeper?.name) {
                                     androidx.compose.material3.DropdownMenuItem(
+                                        enabled = !matchStarted,
                                         text = { Text(text = player.name) },
                                         onClick = {
                                             openingBowler = player
@@ -515,9 +567,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 ) {
                     ExposedDropdownMenuBox(
                         expanded = expanded7,
-                        onExpandedChange = { expanded7 = !expanded7 }
+                        onExpandedChange = {
+                            if (!matchStarted) {
+                                expanded7 = !expanded7
+                            }
+                        }
                     ) {
                         OutlinedTextField(
+                            enabled = !matchStarted,
                             readOnly = true,
                             value = openingKeeper?.name ?: "Select Keeper",
                             onValueChange = { },
@@ -533,6 +590,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             bowlingTeamList.forEach { player ->
                                 if (player.name != openingBowler?.name) {
                                     androidx.compose.material3.DropdownMenuItem(
+                                        enabled = !matchStarted,
                                         text = { Text(text = player.name) },
                                         onClick = {
                                             openingKeeper = player
@@ -547,7 +605,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             //Only show if both teams contain 6 players and batting team, keeper and bowler have been set
             if ((dbHelper.getTeamSize(matchId,1) == 6)
@@ -557,13 +615,20 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 && (openingBowler != null)
                 && (openingKeeper != null))
             {
-                Button(onClick = { navController.navigate("startnewmatch") },
+                Button(onClick = {
+                    if (!matchStarted) dbHelper.updateMatchIsStarted(matchId)
+                    navController.navigate("startnewmatch")
+                                 },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 8.dp)
                         .padding(end = 8.dp),
                     shape = RectangleShape) {
-                    Text(text = "Start New Match")
+                    if (!matchStarted) {
+                        Text(text = "Start New Match")
+                    } else {
+                        Text(text = "Continue Match")
+                    }
                 }
             }
         }

@@ -4,6 +4,8 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 // SQLite helper class
@@ -12,7 +14,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 3
+        const val DATABASE_VERSION = 6
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -33,9 +35,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     private val createMATCHESTABLE = """
         CREATE TABLE $TABLE_MATCHES (
             match_id TEXT PRIMARY KEY,
+            match_date TEXT,
             first_batting_team_captain TEXT,
+            second_batting_team_captain TEXT,
             winning_team_captain TEXT,
-            losing_team_captain TEXT,
+            is_started INTEGER,
             is_synced INTEGER
         )
     """
@@ -114,7 +118,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        db?.execSQL("DROP TABLE IF EXISTS $TABLE_PLAYERS")
+        //db?.execSQL("DROP TABLE IF EXISTS $TABLE_PLAYERS")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_MATCHES")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_TEAMS")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_BATTINGSTATS")
@@ -160,7 +164,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     fun getMatchId(): String {
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_MATCHES WHERE winning_team_captain = ? AND losing_team_captain = ? LIMIT 1", arrayOf("",""))
+        val cursor = db.rawQuery("SELECT match_id FROM $TABLE_MATCHES WHERE winning_team_captain = ? LIMIT 1", arrayOf(""))
         val matchId:String
 
         if (cursor.moveToFirst()) {
@@ -178,19 +182,29 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     private fun addMatch(matchId: String) {
         val db = this.writableDatabase
         val values = ContentValues()
+        val currentDate = LocalDate.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // Define the format
+        val formattedDate = currentDate.format(formatter)
         values.put("match_id", matchId)
+        values.put("match_date",formattedDate)
         values.put("first_batting_team_captain","")
+        values.put("second_batting_team_captain","")
         values.put("winning_team_captain","")
-        values.put("losing_team_captain","")
+        values.put("is_started",0)
         values.put("is_synced",0)
         db.insert(TABLE_MATCHES, null, values)
         db.close()
     }
 
-    fun updateMatch(matchId: String, firstBattingTeamCaptain: String) : Int {
+    fun updateMatchCaptain(matchId: String, whichTeam: Int, captain: String) : Int {
         val db = writableDatabase
+        val batsman = if (whichTeam == 2) {
+            "second_batting_team_captain"
+        } else {
+            "first_batting_team_captain"
+        }
         val contentValues = ContentValues().apply {
-            put("first_batting_team_captain", firstBattingTeamCaptain)
+            put(batsman, captain)
         }
         val whereClause = "match_id = ?"
         val whereArgs = arrayOf(matchId)
@@ -198,13 +212,31 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun getFirstBattingTeamCaptain(matchId: String) : String {
+    fun updateMatchIsStarted(matchId: String) : Int {
+        val db = writableDatabase
+        val contentValues = ContentValues().apply {
+            put("is_started", 1)
+        }
+        val whereClause = "match_id = ?"
+        val whereArgs = arrayOf(matchId)
+
+        return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
+    }
+
+    fun getBattingTeamCaptain(matchId: String, whichTeam: Int) : String {
         val db = readableDatabase
-        val query = "SELECT first_batting_team_captain FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
+
+        val batsman = if (whichTeam == 2) {
+            "second_batting_team_captain"
+        } else {
+            "first_batting_team_captain"
+        }
+
+        val query = "SELECT $batsman FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
         val captainName = if (cursor.moveToFirst()) {
-            cursor.getString(cursor.getColumnIndexOrThrow("first_batting_team_captain"))
+            cursor.getString(cursor.getColumnIndexOrThrow(batsman))
         } else {
             ""
         }
@@ -221,11 +253,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db.delete(TABLE_MATCHES, "match_id = ?", arrayOf(matchId))
     }
 
-    fun updateMatch(matchId: String, winningTeamCaptain: String, losingTeamCaptain: String) : Int {
+    fun updateMatchWinner(matchId: String, winningTeamCaptain: String) : Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("winning_team_captain", winningTeamCaptain)
-            put("losing_team_captain", losingTeamCaptain)
         }
         val whereClause = "match_id = ?"
         val whereArgs = arrayOf(matchId)
@@ -241,18 +272,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, "match_id = ?", arrayOf(matchId))
     }
 
-    //Delete team players except captain
-//    fun clearTeam(matchId: String, teamId: Int): Int {
-//        val db = writableDatabase
-//        return db.delete(TABLE_TEAMS, "match_id = ? AND team_id = ? AND is_captain = 0", arrayOf(matchId,teamId.toString()))
-//    }
-
-    //match_id TEXT PRIMARY KEY,
-    //            first_batting_team_captain TEXT,
-    //            winning_team_captain TEXT,
-    //            losing_team_captain TEXT,
-    //            is_synced INTEGER
-
     fun getMatches() : List<Match> {
         val matches = mutableListOf<Match>()
         val db = readableDatabase
@@ -260,10 +279,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         while (cursor.moveToNext()) {
             val matchId = cursor.getString(cursor.getColumnIndexOrThrow("match_id"))
             val firstBattingTeamCaptain = cursor.getString(cursor.getColumnIndexOrThrow("first_batting_team_captain"))
+            val secondBattingTeamCaptain = cursor.getString(cursor.getColumnIndexOrThrow("second_batting_team_captain"))
             val winningTeamCaptain = cursor.getString(cursor.getColumnIndexOrThrow("winning_team_captain"))
-            val losingTeamCaptain = cursor.getString(cursor.getColumnIndexOrThrow("losing_team_captain"))
+            val isStarted = cursor.getString(cursor.getColumnIndexOrThrow("is_started")).toBoolean()
             val isSynced = cursor.getString(cursor.getColumnIndexOrThrow("is_synced")).toBoolean()
-            matches.add(Match(matchId,firstBattingTeamCaptain,winningTeamCaptain,losingTeamCaptain,isSynced))
+            matches.add(Match(matchId,firstBattingTeamCaptain,secondBattingTeamCaptain,winningTeamCaptain,isStarted,isSynced))
         }
         cursor.close()
         return matches
@@ -558,5 +578,15 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         }
         cursor.close()
         return players
+    }
+
+    fun getIsMatchStarted(matchId: String): Boolean {
+        val db = readableDatabase
+        val query = "SELECT 1 FROM $TABLE_MATCHES WHERE match_id = ? AND is_started = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId,"1"))
+
+        val exists = cursor.moveToFirst() // returns true if the query returned a row, false otherwise
+        cursor.close()
+        return exists
     }
 }

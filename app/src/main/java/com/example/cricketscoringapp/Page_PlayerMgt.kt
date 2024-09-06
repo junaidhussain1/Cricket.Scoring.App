@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun PlayerMgtPage() {
@@ -48,7 +49,7 @@ fun PlayerMgtPage() {
         OutlinedTextField(
             value = playerName,
             onValueChange = { playerName = it },
-            label = { Text("Enter Player Name") },
+            label = { Text("Enter Player Name", fontSize = 20.sp) },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -73,14 +74,14 @@ fun PlayerMgtPage() {
                 }
             }
         ) {
-            Text("Add Player")
+            Text("Add Player", fontSize = 20.sp)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Display the list of players in a scrollable LazyColumn
         if (playersList.isNotEmpty()) {
-            Text("Player List:" + playersList.size.toString(), style = MaterialTheme.typography.headlineSmall)
+            Text("Player List: " + playersList.size.toString(), style = MaterialTheme.typography.headlineSmall)
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(modifier = Modifier

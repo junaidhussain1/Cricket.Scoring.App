@@ -48,9 +48,7 @@ fun HomePage(navController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "Welcome to Cricket Scoring App",
-            fontSize = 22.sp)
-
-        Spacer(modifier = Modifier.height(20.dp))
+            fontSize = 24.sp)
 
         Image(
             painter = painterResource(id = R.drawable.logo2), // Replace with your app icon resource
@@ -63,26 +61,26 @@ fun HomePage(navController: NavHostController) {
         Button(onClick = { navController.navigate("playermgt") },
             modifier = Modifier.fillMaxWidth()) {
             Text(text = "Player Management",
-                fontSize = 18.sp)
+                fontSize = 22.sp)
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
         Button(onClick = { navController.navigate("newmatch") },
             modifier = Modifier.fillMaxWidth()) {
             Text(text = "New Match",
-                fontSize = 18.sp)
+                fontSize = 22.sp)
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
         Button(onClick = { navController.navigate("existingmatches") },
             modifier = Modifier.fillMaxWidth()) {
             Text(text = "Existing Matches",
-                fontSize = 18.sp)
+                fontSize = 22.sp)
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
         Button(onClick = {
 
@@ -90,7 +88,7 @@ fun HomePage(navController: NavHostController) {
         },
             modifier = Modifier.fillMaxWidth()) {
             Text(text = "Google Sheet Test",
-                fontSize = 18.sp)
+                fontSize = 22.sp)
         }
     }
 }

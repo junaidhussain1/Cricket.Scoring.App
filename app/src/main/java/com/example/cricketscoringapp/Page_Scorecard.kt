@@ -59,7 +59,7 @@ fun ScoreCardPage() {
         // Retrieve the captain names from the view model
         var team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
         var team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
-        val firstBattingTeamCaptain = Player(dbHelper.getFirstBattingTeamCaptain(matchId))
+        val firstBattingTeamCaptain = Player(dbHelper.getBattingTeamCaptain(matchId,1))
         if (team1Captain != firstBattingTeamCaptain) {
             team2Captain = team1Captain
             team1Captain = firstBattingTeamCaptain

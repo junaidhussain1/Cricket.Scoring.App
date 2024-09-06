@@ -319,6 +319,7 @@ fun updateStats(balls: MutableList<Ball>,
     }
 
     val ballsRemaining: Int
+    var oversRemaining = 0.00
     var runsToWin = 0
     var winningTeam = ""
     if (firstTeamStats.active.value) {
@@ -329,6 +330,7 @@ fun updateStats(balls: MutableList<Ball>,
             }
         }
         ballsRemaining = calculateBalls(12.00) - calculateBalls(firstTeamStats.overs.value)
+        oversRemaining = calculateOversRemaining(ballsRemaining)
     } else {
         if (firstTeamStats.inningScore.value != 0) {
             runsToWin = firstTeamStats.inningScore.value - secondTeamStats.inningScore.value + 1
@@ -337,13 +339,14 @@ fun updateStats(balls: MutableList<Ball>,
             }
         }
         ballsRemaining = calculateBalls(12.00) - calculateBalls(secondTeamStats.overs.value)
+        oversRemaining = calculateOversRemaining(ballsRemaining)
     }
 
     if (winningTeam.isNotEmpty()) {
         runsToWinTxt.value = "Team $winningTeam is the winner!"
     } else {
         if (firstTeamStats.overs.value.toInt() == 0  ||  secondTeamStats.overs.value.toInt() == 0) {
-            runsToWinTxt.value = "$ballsRemaining balls remaining!"
+            runsToWinTxt.value = "$oversRemaining overs remaining!"
         } else {
             runsToWinTxt.value = "$runsToWin runs to win from $ballsRemaining balls!"
         }
@@ -427,4 +430,10 @@ fun calculateBalls(overs: Double): Int {
 
     // Total balls = (6 balls per over * number of full overs) + extra balls
     return (fullOvers * 6) + extraBalls
+}
+
+fun calculateOversRemaining(ballsRemaining: Int): Double {
+    val overs = ballsRemaining / 6
+    val balls = ballsRemaining % 6
+    return overs + balls / 10.0
 }

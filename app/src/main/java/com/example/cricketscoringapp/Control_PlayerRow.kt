@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun PlayerRow(player: String, onDelete: () -> Unit) {
@@ -20,7 +21,9 @@ fun PlayerRow(player: String, onDelete: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = player, modifier = Modifier.weight(1f))
+        Text(text = player,
+            modifier = Modifier.weight(1f),
+            fontSize = 22.sp)
         Button(onClick = onDelete) {
             Text(text = "Delete")
         }
