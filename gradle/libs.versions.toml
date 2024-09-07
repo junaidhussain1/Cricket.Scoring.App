@@ -1,11 +1,16 @@
 [versions]
 agp = "8.6.0"
 coreKtxVersion = "1.10.0"
+googleApiClient = "1.32.1"
 googleApiClientAndroid = "2.6.0"
+googleApiClientAndroidVersion = "1.23.0"
 googleApiServicesSheets = "v4-rev614-1.25.0"
+googleApiServicesTasks = "v1-rev48-1.23.0"
 googleApisSheets = "v4-rev20230822-2.0.0"
 googleAuthLibraryOauth2Http = "1.24.1"
+googleHttpClientGson = "1.23.0"
 googleOauthClientJetty = "1.36.0"
+googleOauthClientJettyVersion = "1.32.1"
 gradle = "8.5.2"
 gson = "2.10.1"
 kotlin = "1.9.0"
@@ -17,20 +22,29 @@ kotlinxCoroutinesAndroid = "1.8.1"
 lifecycleRuntimeKtx = "2.8.4"
 activityCompose = "1.9.1"
 composeBom = "2024.08.00"
+materialIconsExtended = "1.6.8"
 navigationCompose = "2.7.7"
 identityJvm = "202408.1"
+playServicesIdentity = "7.3.0"
 roomCompiler = "2.6.1"
+appcompat = "1.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.13.1" }
 androidx-core-ktx-v1100 = { module = "androidx.core:core-ktx", version = "1.13.1" }
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 google-api-client = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClientAndroid" }
 google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClientAndroid" }
+google-api-client-android-v1230 = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClientAndroidVersion" }
+google-api-client-v1321 = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClient" }
 google-api-services-sheet = { module = "com.google.apis:google-api-services-sheet" }
 google-api-services-sheets = { module = "com.google.apis:google-api-services-sheets", version = "v4-rev20240730-2.0.0" }
+google-api-services-tasks = { module = "com.google.apis:google-api-services-tasks", version.ref = "googleApiServicesTasks" }
 google-apis-sheets = { module = "com.google.apis:google-apis-sheets", version.ref = "googleApisSheets" }
 google-auth-library-oauth2-http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleAuthLibraryOauth2Http" }
+google-http-client-gson = { module = "com.google.http-client:google-http-client-gson", version.ref = "googleHttpClientGson" }
 google-oauth-client-jetty = { module = "com.google.oauth-client:google-oauth-client-jetty", version.ref = "googleOauthClientJetty" }
+google-oauth-client-jetty-v1321 = { module = "com.google.oauth-client:google-oauth-client-jetty", version.ref = "googleOauthClientJettyVersion" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -50,6 +64,8 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 identity-jvm = { group = "com.android.identity", name = "identity-jvm", version.ref = "identityJvm" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
+play-services-identity = { module = "com.google.android.gms:play-services-identity", version.ref = "playServicesIdentity" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

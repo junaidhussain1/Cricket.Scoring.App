@@ -1,7 +1,6 @@
 package com.example.cricketscoringapp
 
 //import com.google.api.client.extensions.android.http.AndroidHttp
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -17,25 +16,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.google.api.client.auth.oauth2.Credential
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
-import com.google.api.client.json.JsonFactory
-import com.google.api.client.json.gson.GsonFactory
-import com.google.api.client.util.store.FileDataStoreFactory
-import com.google.api.services.sheets.v4.Sheets
-import com.google.api.services.sheets.v4.model.ValueRange
-import java.io.File
-import java.io.InputStreamReader
-import androidx.compose.ui.platform.LocalConfiguration
 
 
 @Composable
@@ -104,7 +90,11 @@ fun HomePage(navController: NavHostController) {
 
         Button(
             onClick = {
-                Toast.makeText(context, getDataFromSheet(context), Toast.LENGTH_SHORT).show()
+                //Toast.makeText(context, getDataFromSheet(context), Toast.LENGTH_SHORT).show()
+                val gs: GoogleSheets = GoogleSheets()
+
+                val cellvalue = gs.doCallGoogleSheetAPI()
+                Toast.makeText(context, cellvalue, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f)
         ) {
@@ -117,35 +107,35 @@ fun HomePage(navController: NavHostController) {
 }
 
 
-fun getSheetsService(context: Context): Sheets {
-    val jsonFactory = GsonFactory.getDefaultInstance()
-    val transport =  GoogleNetHttpTransport.newTrustedTransport()
-
-    val credentials = getCredentials(context) // Use the function from the previous setup
-        //.createScoped(listOf("https://www.googleapis.com/auth/spreadsheets.readonly"))
-
-    return Sheets.Builder(transport, jsonFactory, credentials)
-        .setApplicationName("Your App Name")
-        .build()
-}
-
-fun getDataFromSheet(context: Context) : String{
-    val service = getSheetsService(context)
-    val spreadsheetId = "196kJAI0SoRTozes3IafUYXuRh-SncXEsOPEoJ-SExrY"
-    val range = "Test!A1"
-
-    val response: ValueRange = service.spreadsheets().values()
-        .get(spreadsheetId, range)
-        .execute()
-
-    val values = response.getValues()
-    if (values != null && values.isNotEmpty()) {
-        val cellValue = values[0][0] as String
-        return cellValue
-    } else {
-        return "No data found."
-    }
-}
+//fun getSheetsService(context: Context): Sheets {
+//    val jsonFactory = GsonFactory.getDefaultInstance()
+//    val transport =  GoogleNetHttpTransport.newTrustedTransport()
+//
+//    val credentials = getCredentials(context) // Use the function from the previous setup
+//        //.createScoped(listOf("https://www.googleapis.com/auth/spreadsheets.readonly"))
+//
+//    return Sheets.Builder(transport, jsonFactory, credentials)
+//        .setApplicationName("Your App Name")
+//        .build()
+//}
+//
+//fun getDataFromSheet(context: Context) : String{
+//    val service = getSheetsService(context)
+//    val spreadsheetId = "196kJAI0SoRTozes3IafUYXuRh-SncXEsOPEoJ-SExrY"
+//    val range = "Test!A1"
+//
+//    val response: ValueRange = service.spreadsheets().values()
+//        .get(spreadsheetId, range)
+//        .execute()
+//
+//    val values = response.getValues()
+//    if (values != null && values.isNotEmpty()) {
+//        val cellValue = values[0][0] as String
+//        return cellValue
+//    } else {
+//        return "No data found."
+//    }
+//}
 
 /*
 fun accessGoogleSheetsAPI(context: Context): Sheets {
@@ -185,38 +175,38 @@ fun getCellValue(context: Context): String? {
  */
 
 // Get OAuth 2.0 credentials for accessing Google Sheets
-fun getCredentials(context: Context): Credential {
-    // Define necessary constants
-    val CREDENTIALS_FILE_PATH = "clientsecret.json"  // Replace with your JSON file name
-    val TOKENS_DIRECTORY_PATH = "tokens"
-    val APPLICATION_NAME = "CricClient"
-    val SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly"
-
-    val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
-    val jsonFactory: JsonFactory = GsonFactory.getDefaultInstance()
-
-    // Load client secrets
-    val clientSecrets = loadClientSecrets(context)
-
-    // Create data store directory for storing tokens
-    val dataStoreDir = File(context.filesDir, TOKENS_DIRECTORY_PATH)
-    val dataStoreFactory = FileDataStoreFactory(dataStoreDir)
-
-    // Set up the authorization flow
-    val flow = GoogleAuthorizationCodeFlow.Builder(
-        httpTransport, jsonFactory, clientSecrets, listOf(SHEETS_SCOPE)
-    )
-        .setDataStoreFactory(dataStoreFactory)
-        .setAccessType("offline")
-        .build()
-
-    // Authorize the user
-    return AuthorizationCodeInstalledApp(flow, LocalServerReceiver()).authorize("user")
-}
-
-// Load client secrets from the raw resource folder
-fun loadClientSecrets(context: Context): GoogleClientSecrets {
-    val jsonFactory: JsonFactory = GsonFactory.getDefaultInstance()
-    val inputStream = context.resources.openRawResource(R.raw.clientsecret) // Replace with the correct file name
-    return GoogleClientSecrets.load(jsonFactory, InputStreamReader(inputStream))
-}
+//fun getCredentials(context: Context): Credential {
+//    // Define necessary constants
+//    val CREDENTIALS_FILE_PATH = "clientsecret.json"  // Replace with your JSON file name
+//    val TOKENS_DIRECTORY_PATH = "tokens"
+//    val APPLICATION_NAME = "CricClient"
+//    val SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly"
+//
+//    val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
+//    val jsonFactory: JsonFactory = GsonFactory.getDefaultInstance()
+//
+//    // Load client secrets
+//    val clientSecrets = loadClientSecrets(context)
+//
+//    // Create data store directory for storing tokens
+//    val dataStoreDir = File(context.filesDir, TOKENS_DIRECTORY_PATH)
+//    val dataStoreFactory = FileDataStoreFactory(dataStoreDir)
+//
+//    // Set up the authorization flow
+//    val flow = GoogleAuthorizationCodeFlow.Builder(
+//        httpTransport, jsonFactory, clientSecrets, listOf(SHEETS_SCOPE)
+//    )
+//        .setDataStoreFactory(dataStoreFactory)
+//        .setAccessType("offline")
+//        .build()
+//
+//    // Authorize the user
+//    return AuthorizationCodeInstalledApp(flow, LocalServerReceiver()).authorize("user")
+//}
+//
+//// Load client secrets from the raw resource folder
+//fun loadClientSecrets(context: Context): GoogleClientSecrets {
+//    val jsonFactory: JsonFactory = GsonFactory.getDefaultInstance()
+//    val inputStream = context.resources.openRawResource(R.raw.clientsecret) // Replace with the correct file name
+//    return GoogleClientSecrets.load(jsonFactory, InputStreamReader(inputStream))
+//}

@@ -49,6 +49,13 @@ android {
             excludes += "/META-INF/DEPENDENCIES"
         }
     }
+    configurations.all {
+        resolutionStrategy {
+            force("org.jetbrains:annotations:23.0.0")
+            exclude(group = "com.intellij", module = "annotations")
+        }
+    }
+
 }
 
 dependencies {
@@ -62,6 +69,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.room.compiler)
+    implementation(libs.androidx.appcompat)
     //implementation(libs.androidx.room.compiler)
     //implementation(libs.identity.jvm)
     testImplementation(libs.junit)
@@ -72,49 +81,20 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Retrofit for networking
-    //implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    //implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    //Additional dependencies
+    //implementation("com.google.api-client:google-api-client-android:2.6.0")
+    //implementation("com.google.oauth-client:google-oauth-client:1.36.0")
+    //implementation("com.google.oauth-client:google-oauth-client-java6:1.36.0")
+    //implementation("com.google.oauth-client:google-oauth-client-jetty:1.36.0")
+    //implementation("com.google.api-client:google-api-client-android:2.6.0")
 
-    // Coroutine support for networking
-//    implementation(libs.kotlinx.coroutines.android)
-//
-//    implementation(libs.google.api.client.android)
-//    implementation(libs.google.api.services.sheets)
-//    implementation(libs.google.oauth.client.jetty)
-//    implementation(libs.google.auth.library.oauth2.http)
-//
-//    implementation(libs.gradle)
-//
-//    implementation(libs.androidx.core.ktx.v1100)
-
-    // Google APIs Client Library for Java
-    //implementation(libs.google.api.client)
-
-    // OAuth2 for handling authentication and authorization
-    //implementation(libs.google.oauth.client.jetty)
-
-    // Google Sheets API specific library
-
-    //implementation(libs.google.api.services.sheets)
-    //implementation(libs.google.api.services.sheet)
-
-    implementation("androidx.compose.material:material:1.6.8")
-
-    implementation("com.google.api-client:google-api-client:2.6.0")
-    implementation("com.google.api-client:google-api-client-android:2.6.0")
-    implementation("com.google.oauth-client:google-oauth-client-jetty:1.36.0")
-    implementation("com.google.http-client:google-http-client-gson:1.44.2")
+    implementation(libs.google.api.services.tasks)
+    implementation(libs.google.api.client.android.v1230)
+    implementation(libs.google.http.client.gson)
+    //implementation(libs.play.services.identity)
+    implementation(libs.google.api.client.v1321)
+    implementation(libs.google.oauth.client.jetty.v1321)
     implementation(libs.google.api.services.sheets)
-
-
-//      implementation("com.google.api-client:google-api-client-android:2.6.0")
-//      implementation(libs.google.api.services.sheets)
-      implementation("com.google.auth:google-auth-library-oauth2-http:1.24.1")
-
-    // Optional, for easier JSON handling if needed
-    implementation(libs.gson)
-
-    implementation("androidx.compose.material:material-icons-extended:1.6.8")
-
+    implementation(libs.androidx.material.icons.extended)
+    implementation("com.google.android.gms:play-services-auth:20.5.0")
 }

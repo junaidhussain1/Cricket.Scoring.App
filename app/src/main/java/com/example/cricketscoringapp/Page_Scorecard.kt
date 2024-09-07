@@ -36,6 +36,8 @@ import java.util.Locale
 @Composable
 fun ScoreCardPage() {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
 
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
@@ -134,7 +136,6 @@ fun ScoreCardPage() {
                 .padding(8.dp)
                 .border(
                     BorderStroke(2.dp, Color.White),
-                    //shape = RoundedCornerShape(8.dp)
                 ) // Set border thickness and color
                 .fillMaxWidth()
         ) {
