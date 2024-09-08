@@ -75,7 +75,7 @@ fun HomePage(navController: NavHostController) {
             onClick = { navController.navigate("playermgt") },
             modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f), // Adjust button width for tablets
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Gray // Set the background color
+                containerColor = Color(255, 252, 228) // Set the background color
                     )
         ) {
             Text(
@@ -91,7 +91,7 @@ fun HomePage(navController: NavHostController) {
             onClick = { navController.navigate("newmatch") },
             modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Gray // Set the background color
+                containerColor = Color(255, 252, 228) // Set the background color
             )
         ) {
             Text(
@@ -107,7 +107,7 @@ fun HomePage(navController: NavHostController) {
             onClick = { navController.navigate("existingmatches") },
             modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Gray // Set the background color
+                containerColor = Color(255, 252, 228) // Set the background color
             )
         ) {
             Text(
@@ -125,7 +125,7 @@ fun HomePage(navController: NavHostController) {
             },
             modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Gray // Set the background color
+                containerColor = Color(255, 252, 228) // Set the background color
             )
         ) {
             Text(
