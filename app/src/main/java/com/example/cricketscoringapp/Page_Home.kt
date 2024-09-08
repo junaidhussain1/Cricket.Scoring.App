@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -36,6 +38,8 @@ import com.google.api.services.sheets.v4.model.ValueRange
 import java.io.File
 import java.io.InputStreamReader
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 
 
 @Composable
@@ -54,8 +58,9 @@ fun HomePage(navController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Welcome to Cricket Scoring App",
-            fontSize = if (isTablet) 32.sp else 20.sp // Larger font size for tablets
+            text = "The Gotham City Scoresheet App",
+            fontSize = if (isTablet) 32.sp else 20.sp,// Larger font size for tablets
+            color = Color(255, 252, 228)
         )
 
         Image(
@@ -68,11 +73,15 @@ fun HomePage(navController: NavHostController) {
 
         Button(
             onClick = { navController.navigate("playermgt") },
-            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f) // Adjust button width for tablets
+            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f), // Adjust button width for tablets
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Gray // Set the background color
+                    )
         ) {
             Text(
                 text = "Player Management",
-                fontSize = if (isTablet) 26.sp else 22.sp // Larger font size for tablets
+                fontSize = if (isTablet) 26.sp else 22.sp,
+                color = Color(8, 20, 28)// Larger font size for tablets
             )
         }
 
@@ -80,11 +89,15 @@ fun HomePage(navController: NavHostController) {
 
         Button(
             onClick = { navController.navigate("newmatch") },
-            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f)
+            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Gray // Set the background color
+            )
         ) {
             Text(
                 text = "New Match",
-                fontSize = if (isTablet) 26.sp else 22.sp
+                fontSize = if (isTablet) 26.sp else 22.sp,
+                color = Color(8, 20, 28)
             )
         }
 
@@ -92,11 +105,15 @@ fun HomePage(navController: NavHostController) {
 
         Button(
             onClick = { navController.navigate("existingmatches") },
-            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f)
+            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Gray // Set the background color
+            )
         ) {
             Text(
                 text = "Existing Matches",
-                fontSize = if (isTablet) 26.sp else 22.sp
+                fontSize = if (isTablet) 26.sp else 22.sp,
+                color = Color(8, 20, 28)
             )
         }
 
@@ -106,11 +123,16 @@ fun HomePage(navController: NavHostController) {
             onClick = {
                 Toast.makeText(context, getDataFromSheet(context), Toast.LENGTH_SHORT).show()
             },
-            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f)
+            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Gray // Set the background color
+            )
         ) {
             Text(
                 text = "Google Sheet Test",
-                fontSize = if (isTablet) 26.sp else 22.sp
+                fontSize = if (isTablet) 26.sp else 22.sp,
+                color = Color(8, 20, 28)
+
             )
         }
     }

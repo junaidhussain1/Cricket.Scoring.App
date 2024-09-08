@@ -638,8 +638,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 8.dp)
-                        .padding(end = 8.dp),
-                    shape = RectangleShape) {
+                        .padding(end = 8.dp)) {
                     if (!matchStarted) {
                         Text(text = "Start New Match", fontSize = if (isTablet) 22.sp else 16.sp)
                     } else {

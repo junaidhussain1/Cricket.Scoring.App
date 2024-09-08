@@ -133,7 +133,7 @@ fun ScoreCardPage() {
             modifier = Modifier
                 .padding(8.dp)
                 .border(
-                    BorderStroke(2.dp, Color.White),
+                    BorderStroke(2.dp, Color.Red),
                     //shape = RoundedCornerShape(8.dp)
                 ) // Set border thickness and color
                 .fillMaxWidth()
