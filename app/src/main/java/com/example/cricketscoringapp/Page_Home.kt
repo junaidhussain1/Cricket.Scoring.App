@@ -51,7 +51,7 @@ fun HomePage(navController: NavHostController) {
 
     Surface(
         modifier = Modifier.fillMaxSize(), // This makes the Surface fill the entire screen
-        color = Color(10, 18, 30)
+        color = Color(10, 18, 32)
     ) {
 
         Column(
