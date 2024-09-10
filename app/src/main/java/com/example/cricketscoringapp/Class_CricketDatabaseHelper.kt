@@ -14,7 +14,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 6
+        const val DATABASE_VERSION = 7
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -50,6 +50,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             team_id INTEGER,
             player_name TEXT,
             is_captain INTEGER,
+            is_midbowler INTEGER,
             PRIMARY KEY (match_id, player_name)
         )
     """
@@ -109,7 +110,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     """
     
     override fun onCreate(db: SQLiteDatabase?) {
-        db?.execSQL(createPLAYERSTABLE)
+        //db?.execSQL(createPLAYERSTABLE)
         db?.execSQL(createMATCHESTABLE)
         db?.execSQL(createTEAMSTABLE)
         db?.execSQL(createBATTINGSTATS)
@@ -319,13 +320,14 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return teamId
     }
 
-    fun addTeamPlayer(matchId: String, teamId: Int, playerName: String, isCaptain: Int) {
+    fun addTeamPlayer(matchId: String, teamId: Int, playerName: String, isCaptain: Int, isMidBowler: Int) {
         val db = this.writableDatabase
         val values = ContentValues()
         values.put("match_id", matchId)
         values.put("team_id", teamId)
         values.put("player_name", playerName)
         values.put("is_captain",isCaptain)
+        values.put("is_midbowler",isMidBowler)
         db.insert(TABLE_TEAMS, null, values)
         db.close()
     }

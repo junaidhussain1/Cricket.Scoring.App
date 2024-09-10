@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,12 +37,15 @@ fun Team1PlayerSelectionPage() {
     playersList.addAll(dbHelper.getAllPlayers())
 
     // Get players already selected for Team 1 from the DB
-    val initialTeam1Players = dbHelper.getTeamPlayers(matchId, 1,0)
+    val initialTeam1Players = dbHelper.getTeamPlayers(matchId, 1, 0)
 
     // State to keep track of selected players
     val selectedPlayers = remember { mutableStateListOf<Player>().apply { addAll(initialTeam1Players) } }
 
-    val team2PlayersDB = dbHelper.getTeamPlayers(matchId, 2,0)
+    // State to keep track of midbowler selection for each player
+    val midBowlers = remember { mutableStateOf(mutableMapOf<Player, Boolean>()) }
+
+    val team2PlayersDB = dbHelper.getTeamPlayers(matchId, 2, 0)
     val team1Captain = playersList.find { it.name == team1CaptainName.name }
     val team2Captain = playersList.find { it.name == team2CaptainName.name }
 
@@ -56,7 +60,7 @@ fun Team1PlayerSelectionPage() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Mid Bowlers",modifier = Modifier.align(Alignment.End))
+        //Text(text = "Mid Bowlers", modifier = Modifier.align(Alignment.End))
 
         val filteredPlayers = playersList.filter { it != team2Captain && it !in team2PlayersDB }
 
@@ -67,13 +71,15 @@ fun Team1PlayerSelectionPage() {
             items(filteredPlayers.size) { index ->
                 val player = filteredPlayers[index]
                 val isSelected = selectedPlayers.contains(player) || (player == team1Captain)
+                val isMidBowlerSelected = midBowlers.value[player] ?: false
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
-                    ,verticalAlignment = Alignment.CenterVertically
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Checkbox for player selection
                     Checkbox(
                         modifier = Modifier.padding(start = 2.dp),
                         checked = isSelected,
@@ -81,7 +87,7 @@ fun Team1PlayerSelectionPage() {
                             if (checked) {
                                 if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
                                     selectedPlayers.add(player)
-                                    dbHelper.addTeamPlayer(matchId, 1, player.name, 0)
+                                    dbHelper.addTeamPlayer(matchId, 1, player.name, 0,if (isMidBowlerSelected) 1 else 0)
                                 } else {
                                     Toast.makeText(
                                         context,
@@ -89,17 +95,29 @@ fun Team1PlayerSelectionPage() {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
-                            } else {
+                            } else if (player.name != team1CaptainName.name) {
                                 selectedPlayers.remove(player)
                                 dbHelper.removeTeamPlayer(matchId, 1, player.name)
                             }
                         }
                     )
+
                     Text(text = player.name, modifier = Modifier.padding(start = 8.dp))
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    Checkbox(checked = false, onCheckedChange = {})
+                    // Checkbox for midbowler selection
+//                    Checkbox(
+//                        checked = isMidBowlerSelected,
+//                        onCheckedChange = { checked ->
+//                            // Update the midbowler map
+//                            midBowlers.value[player] = checked
+//                            // Update the player's midbowler status in the database if they are already selected
+//                            if (selectedPlayers.contains(player)) {
+//                                dbHelper.addTeamPlayer(matchId, 1, player.name, 0,if (checked) 1 else 0)
+//                            }
+//                        }
+//                    )
                 }
             }
         }

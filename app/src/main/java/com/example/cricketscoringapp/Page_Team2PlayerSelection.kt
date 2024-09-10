@@ -56,7 +56,7 @@ fun Team2PlayerSelectionPage() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Mid Bowlers",modifier = Modifier.align(Alignment.End))
+        //Text(text = "Mid Bowlers",modifier = Modifier.align(Alignment.End))
 
         val filteredPlayers = playersList.filter { it != team1Captain && it !in team1PlayersDB}
 
@@ -80,7 +80,7 @@ fun Team2PlayerSelectionPage() {
                             if (checked) {
                                 if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
                                     selectedPlayers.add(player)
-                                    dbHelper.addTeamPlayer(matchId,2,player.name,0)
+                                    dbHelper.addTeamPlayer(matchId,2,player.name,0,0)
                                 } else {
                                     Toast.makeText(
                                         context,
@@ -88,7 +88,7 @@ fun Team2PlayerSelectionPage() {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
-                            } else {
+                            } else if (player.name != team2CaptainName.name) {
                                 selectedPlayers.remove(player)
                                 dbHelper.removeTeamPlayer(matchId,2,player.name)
                             }
@@ -98,7 +98,7 @@ fun Team2PlayerSelectionPage() {
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    Checkbox(checked = false, onCheckedChange = {})
+                    //Checkbox(checked = false, onCheckedChange = {})
                 }
             }
         }

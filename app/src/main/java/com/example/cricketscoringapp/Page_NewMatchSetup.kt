@@ -161,7 +161,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 onClick = {
                                     team1Captain = player
                                     team1Captain?.let {
-                                        dbHelper.addTeamPlayer(matchId, 1, player.name, 1)
+                                        dbHelper.addTeamPlayer(matchId, 1, player.name, 1,0)
                                     }
                                     expanded1 = false
                                 }
@@ -210,7 +210,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 onClick = {
                                     team2Captain = player
                                     team2Captain?.let {
-                                        dbHelper.addTeamPlayer(matchId, 2, player.name, 1)
+                                        dbHelper.addTeamPlayer(matchId, 2, player.name, 1,0)
                                     }
                                     expanded2 = false
                                 }

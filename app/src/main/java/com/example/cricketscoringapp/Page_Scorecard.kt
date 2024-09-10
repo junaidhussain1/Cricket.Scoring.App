@@ -39,6 +39,9 @@ fun ScoreCardPage() {
 
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
+    val currentBowler = remember { mutableStateOf(dbHelper.getCurrentBowler(matchId)) }
+    val bowlingTeamId = dbHelper.getTeamForPlayer(matchId,currentBowler.value)
+    val bowlingTeam = bowlingTeamId?.let { dbHelper.getTeamPlayers(matchId, it,1) }
 
     val showWidesDialog = remember { mutableStateOf(false) }
     val selectedWidesOption = remember { mutableStateOf("") }
@@ -51,6 +54,8 @@ fun ScoreCardPage() {
     val showWicketsDialog = remember { mutableStateOf(false) }
     val selectedWicketsOption = remember { mutableStateOf("") }
     val showNextBatsmanDialog = remember { mutableStateOf(false) }
+
+    val showBowlerChangeDialog = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -116,7 +121,7 @@ fun ScoreCardPage() {
 
         val bowlerStats = remember {
             BowlerStats(
-                name = mutableStateOf(dbHelper.getCurrentBowler(matchId)),
+                name = mutableStateOf(currentBowler.value),
                 over = mutableDoubleStateOf(.0),
                 maiden = mutableIntStateOf(0),
                 runs = mutableIntStateOf(0),
@@ -284,6 +289,33 @@ fun ScoreCardPage() {
                 ) {
                     //validate to make sure it is start of over.
                     //if it is start of over, then show lookup to change bowler.
+                    showBowlerChangeDialog.value = true
+
+                }
+
+                if (showBowlerChangeDialog.value) {
+                    AlertDialog(
+                        onDismissRequest = { showBowlerChangeDialog.value = false },
+                        confirmButton = {
+                            Button(onClick = { showBowlerChangeDialog.value = false }) {
+                                Text("OK")
+                            }
+                        },
+                        title = { Text("Change Bowler") },
+                        text = {
+                            Column {
+                                //Need to remove current bowler.
+                                bowlingTeam?.forEach { player ->
+                                    // List of options to choose from
+                                    TextButton(onClick = {
+
+                                    }){
+                                        Text(player.name, fontSize = 20.sp)
+                                    }
+                                }
+                            }
+                        }
+                    )
                 }
             }
         }
