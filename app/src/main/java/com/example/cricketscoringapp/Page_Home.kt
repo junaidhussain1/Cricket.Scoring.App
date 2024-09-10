@@ -1,6 +1,7 @@
 package com.example.cricketscoringapp
 
 //import com.google.api.client.extensions.android.http.AndroidHttp
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
 
 
@@ -91,10 +93,13 @@ fun HomePage(navController: NavHostController) {
         Button(
             onClick = {
                 //Toast.makeText(context, getDataFromSheet(context), Toast.LENGTH_SHORT).show()
-                val gs: GoogleSheets = GoogleSheets()
+                //val gs: GoogleSheets = GoogleSheets()
 
-                val cellvalue = gs.doCallGoogleSheetAPI()
-                Toast.makeText(context, cellvalue, Toast.LENGTH_SHORT).show()
+                //val cellvalue = gs.doCallGoogleSheetAPI()
+                val intent = Intent(context, GoogleSheets::class.java)
+                startActivity(context,intent, null)
+
+                //Toast.makeText(context, cellvalue, Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f)
         ) {
@@ -210,3 +215,4 @@ fun getCellValue(context: Context): String? {
 //    val inputStream = context.resources.openRawResource(R.raw.clientsecret) // Replace with the correct file name
 //    return GoogleClientSecrets.load(jsonFactory, InputStreamReader(inputStream))
 //}
+

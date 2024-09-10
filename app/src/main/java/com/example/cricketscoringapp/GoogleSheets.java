@@ -46,6 +46,11 @@ public class GoogleSheets extends AppCompatActivity {
                     GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(this, SCOPES);
                     credential.setSelectedAccountName(accountName);
                     credentialFuture.complete(credential); // Complete the future with the selected credential
+
+                    // Call the Google Sheets API after credentials are obtained
+                    String resultMessage = doCallGoogleSheetAPI();
+                    // You can handle the result here, for example, by displaying it in the UI
+                    System.out.println(resultMessage);  // Replace with appropriate UI handling code
                 } else {
                     credentialFuture.completeExceptionally(new Exception("No account selected"));
                 }
@@ -65,37 +70,40 @@ public class GoogleSheets extends AppCompatActivity {
         accountPickerLauncher.launch(signInIntent);
     }
 
-    public CompletableFuture<GoogleAccountCredential> getCredentialFuture() {
-        return credentialFuture;
-    }
+    public String doCallGoogleSheetAPI() {
+        try {
+            final HttpTransport HTTP_TRANSPORT = AndroidHttp.newCompatibleTransport(); // Use AndroidHttp for Android-specific transport
+            final String spreadsheetId = "196kJAI0SoRTozes3IafUYXuRh-SncXEsOPEoJ-SExrY";
+            final String range = "Test!A1";
 
-    public String doCallGoogleSheetAPI() throws IOException, GeneralSecurityException, InterruptedException, java.util.concurrent.ExecutionException {
-        final HttpTransport HTTP_TRANSPORT = AndroidHttp.newCompatibleTransport(); // Use AndroidHttp for Android-specific transport
-        final String spreadsheetId = "196kJAI0SoRTozes3IafUYXuRh-SncXEsOPEoJ-SExrY";
-        final String range = "Test!A1";
+            // Get the GoogleAccountCredential for authorization
+            GoogleAccountCredential credential = credentialFuture.get(); // Wait for the result
 
-        // Get the GoogleAccountCredential for authorization
-        GoogleAccountCredential credential = getCredentialFuture().get(); // Wait for the result
+            // Build the Sheets service with the Android GoogleAccountCredential
+            Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
 
-        // Build the Sheets service with the Android GoogleAccountCredential
-        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
+            // Make the API call
+            ValueRange response = service.spreadsheets().values()
+                    .get(spreadsheetId, range)
+                    .execute();
 
-        // Make the API call
-        ValueRange response = service.spreadsheets().values()
-                .get(spreadsheetId, range)
-                .execute();
-
-        List<List<Object>> values = response.getValues();
-        if (values == null || values.isEmpty()) {
-            return "No data found.";
-        } else {
-            for (List<Object> row : values) {
-                return row.get(0).toString();  // Returning the first value found in the row
+            List<List<Object>> values = response.getValues();
+            if (values == null || values.isEmpty()) {
+                return "No data found.";
+            } else {
+                for (List<Object> row : values) {
+                    return row.get(0).toString();  // Returning the first value found in the row
+                }
             }
+        } catch (IOException | InterruptedException | java.util.concurrent.ExecutionException e) {
+            // Catch and return any exceptions
+            return "Error: " + e.getMessage();
+        } catch (Exception e) {
+            // Catch any other potential runtime exceptions (like NullPointerException)
+            return "Error: " + e.toString();
         }
-        return "Error Occurred";
+        return "Unknown error occurred.";
     }
 }
-
