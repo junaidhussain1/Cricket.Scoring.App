@@ -19,13 +19,19 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun Team2PlayerSelectionPage() {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+
     val dbHelper = CricketDatabaseHelper(context)
+
     val matchId = dbHelper.getMatchId()
 
     val team1CaptainName = Player(dbHelper.getCaptainForTeam(matchId,1))
@@ -94,11 +100,10 @@ fun Team2PlayerSelectionPage() {
                             }
                         }
                     )
-                    Text(text = player.name, modifier = Modifier.padding(start = 8.dp))
+
+                    Text(player.name, fontSize = if (isTablet) 32.sp else 20.sp, modifier = Modifier.padding(start = 8.dp))
 
                     Spacer(modifier = Modifier.weight(1f))
-
-                    //Checkbox(checked = false, onCheckedChange = {})
                 }
             }
         }

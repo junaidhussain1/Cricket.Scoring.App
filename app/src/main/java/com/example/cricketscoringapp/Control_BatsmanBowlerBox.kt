@@ -3,6 +3,7 @@ package com.example.cricketscoringapp
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,6 +32,9 @@ fun BatsmanBowlerBox(col1: String,
                      fontColor1: Color,
                      makePlayerTouchable: Boolean,
                      onClick: () -> Unit) {
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+
     Surface(color = Color.White, modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -41,7 +46,7 @@ fun BatsmanBowlerBox(col1: String,
                     onClick = onClick,
                     shape = RectangleShape,
                     modifier = Modifier
-                        .size(24.dp)
+                        .height((if (isTablet) 50.dp else 30.dp))
                         .weight(3f),
                     contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -51,8 +56,7 @@ fun BatsmanBowlerBox(col1: String,
                 ) {
                     Text(
                         text = col1,
-                        fontSize = 16.sp,
-                        //color = MaterialTheme.colorScheme.onPrimary, // Ensure text color is suitable for the button color
+                        fontSize = if (isTablet) 24.sp else 16.sp,
                         color = Color.White,
                         modifier = Modifier
                             .weight(1f)
@@ -64,6 +68,7 @@ fun BatsmanBowlerBox(col1: String,
                 Text(
                     text = col1,
                     fontWeight = fontBold1,
+                    fontSize = if (isTablet) 26.sp else 18.sp,
                     color = fontColor1,
                     modifier = Modifier.weight(3f) // This pushes the next Text to the right
                 )
@@ -72,6 +77,7 @@ fun BatsmanBowlerBox(col1: String,
             Text(
                 text = col2,
                 fontWeight = fontBold1,
+                fontSize = if (isTablet) 26.sp else 18.sp,
                 color = fontColor1,
                 modifier = Modifier
                     .weight(1f)
@@ -81,6 +87,7 @@ fun BatsmanBowlerBox(col1: String,
             Text(
                 text = col3,
                 fontWeight = fontBold1,
+                fontSize = if (isTablet) 26.sp else 18.sp,
                 color = fontColor1,
                 modifier = Modifier
                     .weight(1f)
@@ -90,6 +97,7 @@ fun BatsmanBowlerBox(col1: String,
             Text(
                 text = col4,
                 fontWeight = fontBold1,
+                fontSize = if (isTablet) 26.sp else 18.sp,
                 color = fontColor1,
                 modifier = Modifier
                     .weight(1f)
@@ -99,6 +107,7 @@ fun BatsmanBowlerBox(col1: String,
             Text(
                 text = col5,
                 fontWeight = fontBold1,
+                fontSize = if (isTablet) 26.sp else 18.sp,
                 color = fontColor1,
                 modifier = Modifier
                     .weight(1f)

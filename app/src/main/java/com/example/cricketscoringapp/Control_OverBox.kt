@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +23,9 @@ fun OverBox(
     fontColor1: Color,
     backcolor1: Color
 ) {
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+
     Surface(color = backcolor1, modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
@@ -31,14 +35,16 @@ fun OverBox(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp)
+                    .height(if (isTablet) 30.dp else 20.dp)
             ) {
                 Text(
                     text = heading1,
-                    fontSize = 20.sp,
+                    fontSize = if (isTablet) 30.sp else 20.sp,
                     fontWeight = headingFontBold1,
-                    color = fontColor1,
+                    color = Color.Gray,
                     modifier = Modifier
                         .padding(end = 8.dp)
+                        .height((if (isTablet) 30.dp else 20.dp))
                 )
 
                 LazyRow(
@@ -48,16 +54,18 @@ fun OverBox(
                 ) {
                     items(balls.size) { index ->
                         Row(
-                            verticalAlignment = Alignment.CenterVertically, // Ensure items are centered vertically
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .padding(horizontal = 8.dp)
                         ) {
-                            // Check if action is "WI"
+                            // Check if action is "WK"
                             if (balls[index].action.startsWith("WK")) {
-                                // Draw a red circle if the action is "WI"
+                                // Draw a red circle if the action is "WK"
                                 Canvas(
                                     modifier = Modifier
-                                        .size(24.dp) // Size of the circle
+                                        .size(24.dp)
+                                        .align(Alignment.CenterVertically)
+                                        .offset(y = 5.dp) // Slight offset to adjust vertical alignment
                                 ) {
                                     drawCircle(
                                         color = Color.Red,
@@ -69,8 +77,10 @@ fun OverBox(
                                 Text(
                                     text = balls[index].action,
                                     fontWeight = ballsFontBold1,
-                                    fontSize = 22.sp,
-                                    color = Color.Black
+                                    fontSize = if (isTablet) 30.sp else 22.sp,
+                                    color = Color.Black,
+                                    modifier = Modifier
+                                        .align(Alignment.CenterVertically)
                                 )
                             }
                         }

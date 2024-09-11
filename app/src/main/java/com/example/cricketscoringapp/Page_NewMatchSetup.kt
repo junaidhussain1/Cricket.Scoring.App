@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
@@ -246,7 +247,9 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             onClick = {
                                 navController.navigate("team1PlayerSelection")
                             },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(60.dp),
                             shape = RectangleShape,
                             content = {
                                 Text(
@@ -287,7 +290,9 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             onClick = {
                                 navController.navigate("team2PlayerSelection")
                             },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(60.dp),
                             shape = RectangleShape,
                             content = {
                                 Text(
@@ -638,7 +643,8 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 8.dp)
-                        .padding(end = 8.dp),
+                        .padding(end = 8.dp)
+                        .height(60.dp),
                     shape = RectangleShape) {
                     if (!matchStarted) {
                         Text(text = "Start New Match", fontSize = if (isTablet) 22.sp else 16.sp)
