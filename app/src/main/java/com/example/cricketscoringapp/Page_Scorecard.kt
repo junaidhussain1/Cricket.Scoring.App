@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
@@ -36,9 +37,14 @@ import java.util.Locale
 @Composable
 fun ScoreCardPage() {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
 
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
+    val currentBowler = remember { mutableStateOf(dbHelper.getCurrentBowler(matchId)) }
+    val bowlingTeamId = dbHelper.getTeamForPlayer(matchId,currentBowler.value)
+    val bowlingTeam = bowlingTeamId?.let { dbHelper.getTeamPlayers(matchId, it,1) }
 
     val showWidesDialog = remember { mutableStateOf(false) }
     val selectedWidesOption = remember { mutableStateOf("") }
@@ -51,6 +57,8 @@ fun ScoreCardPage() {
     val showWicketsDialog = remember { mutableStateOf(false) }
     val selectedWicketsOption = remember { mutableStateOf("") }
     val showNextBatsmanDialog = remember { mutableStateOf(false) }
+
+    val showBowlerChangeDialog = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -116,7 +124,7 @@ fun ScoreCardPage() {
 
         val bowlerStats = remember {
             BowlerStats(
-                name = mutableStateOf(dbHelper.getCurrentBowler(matchId)),
+                name = mutableStateOf(currentBowler.value),
                 over = mutableDoubleStateOf(.0),
                 maiden = mutableIntStateOf(0),
                 runs = mutableIntStateOf(0),
@@ -134,8 +142,7 @@ fun ScoreCardPage() {
                 .padding(8.dp)
                 .border(
                     BorderStroke(2.dp, Color.White),
-                    //shape = RoundedCornerShape(8.dp)
-                ) // Set border thickness and color
+                )
                 .fillMaxWidth()
         ) {
             Column {
@@ -191,8 +198,7 @@ fun ScoreCardPage() {
                 .padding(8.dp)
                 .border(
                     BorderStroke(2.dp, Color.White),
-                    //shape = RoundedCornerShape(8.dp)
-                ) // Set border thickness and color
+                )
                 .fillMaxWidth()
         ) {
             Column {
@@ -257,8 +263,7 @@ fun ScoreCardPage() {
                 .padding(8.dp)
                 .border(
                     BorderStroke(2.dp, Color.Black),
-                    //shape = RoundedCornerShape(8.dp)
-                ) // Set border thickness and color
+                )
                 .fillMaxWidth()
         ) {
             Column {
@@ -282,8 +287,50 @@ fun ScoreCardPage() {
                     fontColor1 = Color(19, 207, 69),
                     makePlayerTouchable = true
                 ) {
-                    //validate to make sure it is start of over.
-                    //if it is start of over, then show lookup to change bowler.
+                    showBowlerChangeDialog.value = true
+                }
+                val bowlers = bowlingTeamId?.let { dbHelper.getBowlingStats(matchId, it) }
+                if (showBowlerChangeDialog.value) {
+                    AlertDialog(
+                        onDismissRequest = { showBowlerChangeDialog.value = false },
+                        confirmButton = {
+                            Button(onClick = {
+                                showBowlerChangeDialog.value = false }) {
+                                Text("Cancel")
+                            }
+                        },
+                        title = { Text("Change Bowler") },
+                        text = {
+                            Column {
+                                bowlingTeam?.forEach { player ->
+                                    if (bowlerStats.name.value != player.name) {
+                                        val matchingBowler =
+                                            bowlers?.find { it.name == player.name }
+                                        val oversBowled = matchingBowler?.overs ?: 0.0
+
+                                        Button(onClick = {
+                                            dbHelper.updateBowlingStats(matchId,"bowled")
+                                            dbHelper.addBowlingStats(matchId,bowlingTeamId,player.name,1,"bowling")
+                                            showBowlerChangeDialog.value = false
+                                            setCurrentBowler(bowlerStats, player.name)
+                                        }, modifier = Modifier.fillMaxWidth()) {
+                                            Text(
+                                                player.name,
+                                                fontSize = if (isTablet) 26.sp else 20.sp,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            Text(
+                                                oversBowled.toInt().toString(),
+                                                fontSize = if (isTablet) 26.sp else 20.sp,
+                                                textAlign = TextAlign.Right
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                    }
+                                }
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -294,8 +341,7 @@ fun ScoreCardPage() {
                 .padding(8.dp)
                 .border(
                     BorderStroke(2.dp, Color.Black),
-                    //shape = RoundedCornerShape(8.dp)
-                ) // Set border thickness and color
+                )
                 .fillMaxWidth()
         ) {
             Column {
@@ -314,10 +360,10 @@ fun ScoreCardPage() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(6.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            CircleButton("0", fontSize = 40) {
+            CircleButton("0", if (isTablet) 50 else 40) {
                 updateStats(
                     balls,
                     "0",
@@ -329,7 +375,7 @@ fun ScoreCardPage() {
                     runsToWin
                 )
             }
-            CircleButton("1", fontSize = 40) {
+            CircleButton("1", if (isTablet) 50 else 40) {
                 updateStats(
                     balls,
                     "1",
@@ -341,7 +387,7 @@ fun ScoreCardPage() {
                     runsToWin
                 )
             }
-            CircleButton("2", fontSize = 40) {
+            CircleButton("2", if (isTablet) 50 else 40) {
                 updateStats(
                     balls,
                     "2",
@@ -353,7 +399,7 @@ fun ScoreCardPage() {
                     runsToWin
                 )
             }
-            CircleButton("3", fontSize = 40) {
+            CircleButton("3", if (isTablet) 50 else 40) {
                 updateStats(
                     balls,
                     "3",
@@ -371,10 +417,10 @@ fun ScoreCardPage() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(6.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            CircleButton("4", fontSize = 40) {
+            CircleButton("4", if (isTablet) 50 else 40) {
                 updateStats(
                     balls,
                     "4",
@@ -386,7 +432,7 @@ fun ScoreCardPage() {
                     runsToWin
                 )
             }
-            CircleButton("6", fontSize = 40) {
+            CircleButton("6", if (isTablet) 50 else 40) {
                 updateStats(
                     balls,
                     "6",
@@ -398,7 +444,7 @@ fun ScoreCardPage() {
                     runsToWin
                 )
             }
-            CircleButton("WIDE", fontSize = 16) {
+            CircleButton("WIDE", if (isTablet) 26 else 16) {
                 showWidesDialog.value = true
             }
             if (showWidesDialog.value) {
@@ -408,26 +454,28 @@ fun ScoreCardPage() {
                     text = {
                         Column {
                             // List of options to choose from
-                            TextButton(onClick = {
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W"
                                 showWidesDialog.value = false
                                 updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
-                                Text("WIDE", fontSize = 20.sp)
+                                Text("WIDE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W+1"
                                 showWidesDialog.value = false
                                 updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
-                                Text("WIDE + 1", fontSize = 20.sp)
+                                Text("WIDE + 1", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W+2"
                                 showWidesDialog.value = false
                                 updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
-                                Text("WIDE + 2", fontSize = 20.sp)
+                                Text("WIDE + 2", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                         }
                     },
@@ -439,7 +487,7 @@ fun ScoreCardPage() {
                 )
             }
 
-            CircleButton("NO BALL", fontSize = 16) {
+            CircleButton("NO BALL", if (isTablet) 26 else 16) {
                 showNoBallDialog.value = true
             }
             if (showNoBallDialog.value) {
@@ -504,18 +552,12 @@ fun ScoreCardPage() {
                                                     .weight(1f) // Ensures equal space distribution for buttons
                                             ) {
                                                 Text(optionText,
-                                                    fontSize = 16.sp)
+                                                    fontSize = if (isTablet) 26.sp else 16.sp)
                                             }
                                         }
                                     }
                                 }
-
-                                if (row == 2) {  // Assuming the NBL buttons are in row 2
-                                    Spacer(modifier = Modifier.height(16.dp)) // Add space of 16.dp between NBL and NBB
-                                }
-                                if (row == 3) {  // Assuming the NBL buttons are in row 2
-                                    Spacer(modifier = Modifier.height(16.dp)) // Add space of 16.dp between NBL and NBB
-                                }
+                                Spacer(modifier = Modifier.height(16.dp)) // Add space of 16.dp between NBL and NBB
                             }
                         }
                     },
@@ -532,10 +574,10 @@ fun ScoreCardPage() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(6.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            CircleButton("BYE", fontSize = 16) {
+            CircleButton("BYE", if (isTablet) 26 else 16) {
                 showByesDialog.value = true
             }
             if (showByesDialog.value) {
@@ -545,26 +587,28 @@ fun ScoreCardPage() {
                     text = {
                         Column {
                             // List of options to choose from
-                            TextButton(onClick = {
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedByesOption.value = "B1"
                                 showByesDialog.value = false
                                 updateStats(balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
-                                Text("1 BYE", fontSize = 20.sp)
+                                Text("1 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedNoBallOption.value = "B2"
                                 showByesDialog.value = false
                                 updateStats(balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
-                                Text("2 BYE", fontSize = 20.sp)
+                                Text("2 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedNoBallOption.value = "B3"
                                 showByesDialog.value = false
                                 updateStats(balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
-                                Text("3 BYE", fontSize = 20.sp)
+                                Text("3 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                         }
                     },
@@ -575,7 +619,7 @@ fun ScoreCardPage() {
                     }
                 )
             }
-            CircleButton("LEG BYE", fontSize = 16) {
+            CircleButton("LEG BYE", if (isTablet) 26 else 16) {
                 showLegByesDialog.value = true
             }
             if (showLegByesDialog.value) {
@@ -585,26 +629,28 @@ fun ScoreCardPage() {
                     text = {
                         Column {
                             // List of options to choose from
-                            TextButton(onClick = {
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB1"
                                 showLegByesDialog.value = false
                                 updateStats(balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
-                                Text("1 LEG-BYE", fontSize = 20.sp)
+                                Text("1 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB2"
                                 showLegByesDialog.value = false
                                 updateStats(balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
-                                Text("2 LEG-BYE", fontSize = 20.sp)
+                                Text("2 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB3"
                                 showLegByesDialog.value = false
                                 updateStats(balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
-                                Text("3 LEG-BYE", fontSize = 20.sp)
+                                Text("3 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                         }
                     },
@@ -615,7 +661,7 @@ fun ScoreCardPage() {
                     }
                 )
             }
-            CircleButton("WICKET", fontSize = 16) {
+            CircleButton("WICKET", if (isTablet) 26 else 16) {
                 showWicketsDialog.value = true
             }
             if (showWicketsDialog.value) {
@@ -625,68 +671,76 @@ fun ScoreCardPage() {
                     text = {
                         Column {
                             // List of options to choose from
-                            TextButton(onClick = {
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKB"
                                 showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
                             }) {
-                                Text("Bowled", fontSize = 20.sp)
+                                Text("Bowled", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKCB"
                                 showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
                             }) {
-                                Text("Caught Behind", fontSize = 20.sp)
+                                Text("Caught Behind", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKC"
                                 showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
                             }) {
-                                Text("Caught", fontSize = 20.sp)
+                                Text("Caught", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKRO"
                                 showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
                             }) {
-                                Text("Run Out", fontSize = 20.sp)
+                                Text("Run Out", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKRONB"
                                 showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
                             }) {
-                                Text("Run Out NB", fontSize = 20.sp)
+                                Text("Run Out NB", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKST"
                                 showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
                             }) {
-                                Text("Stumped", fontSize = 20.sp)
+                                Text("Stumped", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKSTW"
                                 showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
                             }) {
-                                Text("Stumped Wide", fontSize = 20.sp)
+                                Text("Stumped Wide", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKHW"
                                 showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
                             }) {
-                                Text("Hit Wicket", fontSize = 20.sp)
+                                Text("Hit Wicket", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                            TextButton(onClick = {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKLB"
                                 showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
                             }) {
-                                Text("LBW", fontSize = 20.sp)
+                                Text("LBW", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                         }
                     },
@@ -730,7 +784,7 @@ fun ScoreCardPage() {
                                 availablePlayers != null -> {
                                     availablePlayers.forEach { player ->
                                         // List of options to choose from
-                                        TextButton(onClick = {
+                                        Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                             showNextBatsmanDialog.value = false
                                             updateStats(balls,selectedWicketsOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                                             if (firstBatsmanStats.active.value) {
@@ -749,8 +803,9 @@ fun ScoreCardPage() {
                                                 secondBatsmanStats.sixes.value = 0
                                             }
                                         }) {
-                                            Text(player.name, fontSize = 20.sp)
+                                            Text(player.name, fontSize = if (isTablet) 30.sp else 20.sp)
                                         }
+                                        Spacer(modifier = Modifier.height(16.dp))
                                     }
                                 }
                             }
@@ -763,7 +818,7 @@ fun ScoreCardPage() {
                     }
                 )
             }
-            CircleButton("UNDO", fontSize = 16) {
+            CircleButton("UNDO", if (isTablet) 26 else 16) {
                 updateStats(
                     balls,
                     "UNDO",
@@ -777,4 +832,16 @@ fun ScoreCardPage() {
             }
         }
     }
+}
+
+fun setCurrentBowler(bowlerStats: BowlerStats, name: String) {
+    bowlerStats.name.value = name
+    bowlerStats.over.value = 0.0
+    bowlerStats.maiden.value = 0
+    bowlerStats.runs.value = 0
+    bowlerStats.wickets.value = 0
+    bowlerStats.noballs.value = 0
+    bowlerStats.wides.value = 0
+    bowlerStats.byes.value = 0
+    bowlerStats.legbyes.value = 0
 }

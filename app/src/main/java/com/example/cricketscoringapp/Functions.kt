@@ -1,6 +1,9 @@
 package com.example.cricketscoringapp
 
+import android.widget.Toast
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.platform.LocalContext
 
 fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats) {
     val tempActive = batsman1.active.value
@@ -244,6 +247,7 @@ fun updateStats(balls: MutableList<Ball>,
                 firstTeamStats: TeamStats,
                 secondTeamStats: TeamStats,
                 runsToWinTxt: MutableState<String>) {
+    //val context = LocalContext.current
     val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3")
     val excludedValuesFromBallsFaced = setOf("W","W+1","W+2")
 
@@ -287,6 +291,13 @@ fun updateStats(balls: MutableList<Ball>,
         if (balls.size == 6 && balls.take(6).all { it.action == "0" }) {
             bowlerStats.maiden.value += 1
         }
+
+        //end of over handling
+        if (balls.filter { it.action !in excludedValuesFromBallsFaced }.size >= 6) {
+            //Toast.makeText(context, "Condition met", Toast.LENGTH_SHORT).show()
+        }
+
+
 
     } else {
         //Handle the UNDO option

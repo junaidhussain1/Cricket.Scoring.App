@@ -1,15 +1,18 @@
 package com.example.cricketscoringapp
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 
 data class BowlerStats(
-    var name: MutableState<String>,
-    var over: MutableState<Double>,
-    var maiden: MutableState<Int>,
-    var runs: MutableState<Int>,
-    var wickets: MutableState<Int>,
-    var noballs: MutableState<Int>,
-    var wides: MutableState<Int>,
-    var byes: MutableState<Int>,
-    var legbyes: MutableState<Int>
+    var name: MutableState<String> = mutableStateOf(""),
+    var over: MutableState<Double> = mutableDoubleStateOf(0.0),
+    var maiden: MutableState<Int> = mutableIntStateOf(0),
+    var runs: MutableState<Int> = mutableIntStateOf(0),
+    var wickets: MutableState<Int> = mutableIntStateOf(0),
+    var noballs: MutableState<Int> = mutableIntStateOf(0),
+    var wides: MutableState<Int> = mutableIntStateOf(0),
+    var byes: MutableState<Int> = mutableIntStateOf(0),
+    var legbyes: MutableState<Int> = mutableIntStateOf(0)
 )

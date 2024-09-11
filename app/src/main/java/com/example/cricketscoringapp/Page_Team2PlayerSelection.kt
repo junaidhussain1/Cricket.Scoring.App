@@ -19,13 +19,19 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun Team2PlayerSelectionPage() {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+
     val dbHelper = CricketDatabaseHelper(context)
+
     val matchId = dbHelper.getMatchId()
 
     val team1CaptainName = Player(dbHelper.getCaptainForTeam(matchId,1))
@@ -56,7 +62,7 @@ fun Team2PlayerSelectionPage() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Mid Bowlers",modifier = Modifier.align(Alignment.End))
+        //Text(text = "Mid Bowlers",modifier = Modifier.align(Alignment.End))
 
         val filteredPlayers = playersList.filter { it != team1Captain && it !in team1PlayersDB}
 
@@ -80,7 +86,7 @@ fun Team2PlayerSelectionPage() {
                             if (checked) {
                                 if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
                                     selectedPlayers.add(player)
-                                    dbHelper.addTeamPlayer(matchId,2,player.name,0)
+                                    dbHelper.addTeamPlayer(matchId,2,player.name,0,0)
                                 } else {
                                     Toast.makeText(
                                         context,
@@ -88,17 +94,16 @@ fun Team2PlayerSelectionPage() {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
-                            } else {
+                            } else if (player.name != team2CaptainName.name) {
                                 selectedPlayers.remove(player)
                                 dbHelper.removeTeamPlayer(matchId,2,player.name)
                             }
                         }
                     )
-                    Text(text = player.name, modifier = Modifier.padding(start = 8.dp))
+
+                    Text(player.name, fontSize = if (isTablet) 32.sp else 20.sp, modifier = Modifier.padding(start = 8.dp))
 
                     Spacer(modifier = Modifier.weight(1f))
-
-                    Checkbox(checked = false, onCheckedChange = {})
                 }
             }
         }
