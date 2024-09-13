@@ -224,7 +224,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        val textColor = if (!matchStarted) Color.White else Color.Gray
+        val textColor = if (!matchStarted) Color.White else Color(105, 105, 105)
 
         if ((team1Captain!!.name != "") && (team2Captain!!.name != "")) {
             Row(
@@ -249,14 +249,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(60.dp),
+                                .height(if (isTablet) 60.dp else 45.dp),
                             shape = RectangleShape,
                             content = {
                                 Text(
                                     text = "Select Team Players",
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                     modifier = Modifier.fillMaxWidth(),
-                                    fontSize = if (isTablet) 22.sp else 16.sp
+                                    fontSize = if (isTablet) 22.sp else 12.sp
                                 )
                             }
                         )
@@ -292,14 +292,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(60.dp),
+                                .height(if (isTablet) 60.dp else 45.dp),
                             shape = RectangleShape,
                             content = {
                                 Text(
                                     text = "Select Team Players",
                                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                     modifier = Modifier.fillMaxWidth(),
-                                    fontSize = if (isTablet) 22.sp else 16.sp
+                                    fontSize = if (isTablet) 22.sp else 12.sp
                                 )
                             }
                         )

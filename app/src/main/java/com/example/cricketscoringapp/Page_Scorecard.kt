@@ -262,7 +262,7 @@ fun ScoreCardPage() {
             modifier = Modifier
                 .padding(8.dp)
                 .border(
-                    BorderStroke(2.dp, Color.Black),
+                    BorderStroke(2.dp, Color.White),
                 )
                 .fillMaxWidth()
         ) {
@@ -287,7 +287,9 @@ fun ScoreCardPage() {
                     fontColor1 = Color(19, 207, 69),
                     makePlayerTouchable = true
                 ) {
-                    showBowlerChangeDialog.value = true
+                    if (balls.isEmpty() || balls.all { it.action.isBlank() }) {
+                        showBowlerChangeDialog.value = true
+                    }
                 }
                 val bowlers = bowlingTeamId?.let { dbHelper.getBowlingStats(matchId, it) }
                 if (showBowlerChangeDialog.value) {
@@ -340,7 +342,7 @@ fun ScoreCardPage() {
             modifier = Modifier
                 .padding(8.dp)
                 .border(
-                    BorderStroke(2.dp, Color.Black),
+                    BorderStroke(2.dp, Color.White),
                 )
                 .fillMaxWidth()
         ) {
@@ -411,6 +413,11 @@ fun ScoreCardPage() {
                     runsToWin
                 )
             }
+
+            if (balls.size == 6) {
+                balls.clear()
+                showBowlerChangeDialog.value = true
+            }
         }
 
         // 2nd Row with 4 circle buttons
@@ -479,8 +486,9 @@ fun ScoreCardPage() {
                             }
                         }
                     },
+
                     confirmButton = {
-                        TextButton(onClick = { showWidesDialog.value = false }) {
+                        Button(onClick = { showWidesDialog.value = false }) {
                             Text("Cancel")
                         }
                     }
@@ -613,7 +621,7 @@ fun ScoreCardPage() {
                         }
                     },
                     confirmButton = {
-                        TextButton(onClick = { showByesDialog.value = false }) {
+                        Button(onClick = { showByesDialog.value = false }) {
                             Text("Cancel")
                         }
                     }
@@ -655,7 +663,7 @@ fun ScoreCardPage() {
                         }
                     },
                     confirmButton = {
-                        TextButton(onClick = { showLegByesDialog.value = false }) {
+                        Button(onClick = { showLegByesDialog.value = false }) {
                             Text("Cancel")
                         }
                     }
@@ -745,7 +753,7 @@ fun ScoreCardPage() {
                         }
                     },
                     confirmButton = {
-                        TextButton(onClick = { showWicketsDialog.value = false }) {
+                        Button(onClick = { showWicketsDialog.value = false }) {
                             Text("Cancel")
                         }
                     }
@@ -786,6 +794,7 @@ fun ScoreCardPage() {
                                         // List of options to choose from
                                         Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                             showNextBatsmanDialog.value = false
+                                            selectedWicketsOption.value += "." + player.name
                                             updateStats(balls,selectedWicketsOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                                             if (firstBatsmanStats.active.value) {
                                                 firstBatsmanStats.name.value = player.name
