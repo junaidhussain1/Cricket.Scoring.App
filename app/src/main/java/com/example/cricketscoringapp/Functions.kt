@@ -1,7 +1,20 @@
 package com.example.cricketscoringapp
 
-import android.widget.Toast
+import android.content.Context
 import androidx.compose.runtime.MutableState
+
+fun swapBatsmenDB(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats) {
+    swapBatsmen(batsman1,batsman2)
+
+    val dbHelper = CricketDatabaseHelper(context)
+    if (batsman1.active.value) {
+        dbHelper.updateBattingStats(matchId,batsman1.name.value,"non-striker","striker")
+        dbHelper.updateBattingStats(matchId,batsman2.name.value,"striker","non-striker")
+    } else {
+        dbHelper.updateBattingStats(matchId,batsman1.name.value,"striker","non-striker")
+        dbHelper.updateBattingStats(matchId,batsman2.name.value,"non-striker","striker")
+    }
+}
 
 fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats) {
     val tempActive = batsman1.active.value
@@ -18,7 +31,7 @@ fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats, actionForBatsman
 fun doUpdateStats(newValue: String, multiplier: Int, bowlerStats: BowlerStats, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, firstTeamStats: TeamStats, secondTeamStats: TeamStats) {
     if (newValue.contains("WK"))
     {
-        val dotPosition = newValue.indexOf('.')
+        val dotPosition = newValue.indexOf('|')
         when (newValue.substring(0, dotPosition)) {
             "WKB" -> {
                 bowlerStats.wickets.value += (1 * multiplier)
@@ -243,7 +256,8 @@ fun doUpdateStats(newValue: String, multiplier: Int, bowlerStats: BowlerStats, f
 }
 
 // Function to update the stats
-fun updateStats(balls: MutableList<Ball>,
+fun updateStats(context: Context,
+                balls: MutableList<Ball>,
                 newValue: String,
                 bowlerStats: BowlerStats,
                 firstBatsmanStats: BatsmanStats,
@@ -251,7 +265,8 @@ fun updateStats(balls: MutableList<Ball>,
                 firstTeamStats: TeamStats,
                 secondTeamStats: TeamStats,
                 runsToWinTxt: MutableState<String>) {
-
+    val dbHelper = CricketDatabaseHelper(context)
+    val matchId = dbHelper.getMatchId()
     val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3")
     val excludedValuesFromBallsFaced = setOf("W","W+1","W+2")
 
@@ -319,9 +334,30 @@ fun updateStats(balls: MutableList<Ball>,
 
         if (lastBall !in excludedValuesFromBallsFaced) {
             if (lastBall.contains("WK")) {
-                val dotPosition = lastBall.indexOf('.')
-                val batsmanToRestore = lastBall.substring(dotPosition+1)
+                //Restore out batsman
+                val parts = lastBall.split("|")
+                val batsmanOut = parts[1]
+                val newBatsman = parts[2]
 
+                val batsmanOutFromDB = dbHelper.getBatsmanStats(matchId,batsmanOut)
+                dbHelper.deleteBatsman(matchId,newBatsman)
+                dbHelper.updateBattingStats(matchId,batsmanOutFromDB.name.value,"out","striker")
+                dbHelper.updateBattingStats(matchId,"striker",batsmanOutFromDB.runs.value,batsmanOutFromDB.balls.value - 1,batsmanOutFromDB.fours.value,batsmanOutFromDB.sixes.value)
+
+
+                if (firstBatsmanStats.name.value == newBatsman) {
+                    firstBatsmanStats.name.value = batsmanOut
+                    firstBatsmanStats.runs.value = batsmanOutFromDB.runs.value
+                    firstBatsmanStats.balls.value = batsmanOutFromDB.balls.value - 1
+                    firstBatsmanStats.fours.value = batsmanOutFromDB.fours.value
+                    firstBatsmanStats.sixes.value = batsmanOutFromDB.sixes.value
+                } else if (secondBatsmanStats.name.value == newBatsman) {
+                    secondBatsmanStats.name.value = batsmanOut
+                    secondBatsmanStats.runs.value = batsmanOutFromDB.runs.value
+                    secondBatsmanStats.balls.value = batsmanOutFromDB.balls.value - 1
+                    secondBatsmanStats.fours.value = batsmanOutFromDB.fours.value
+                    secondBatsmanStats.sixes.value = batsmanOutFromDB.sixes.value
+                }
             } else {
                 updateBatsman("balls", firstBatsmanStats, secondBatsmanStats, -1)
             }

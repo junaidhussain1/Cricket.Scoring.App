@@ -9,4 +9,6 @@ data class BatsmanStats(
     var fours: MutableState<Int>,
     var sixes: MutableState<Int>,
     var active: MutableState<Boolean>
+
 )
+

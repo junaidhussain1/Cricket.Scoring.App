@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
@@ -69,8 +68,8 @@ fun NewMatchSetupPage(navController: NavHostController) {
     team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
     team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
     battingTeamCaptain = Player((dbHelper.getBattingTeamCaptain(matchId,1)))
-    facingBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"striker"))
-    secondBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"non-striker"))
+    facingBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"striker").name.value)
+    secondBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"non-striker").name.value)
     openingBowler = Player(dbHelper.getCurrentBowler(matchId))
     openingKeeper = Player(dbHelper.getCurrentKeeper(matchId))
 
@@ -460,7 +459,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                             facingBatsman = player
                                             if (battingTeamId != null) {
                                                 facingBatsman?.name?.let {
-                                                    dbHelper.addBattingStats(matchId,battingTeamId,it,1,"striker")
+                                                    dbHelper.addBattingStats(matchId,battingTeamId,it,"striker")
                                                 }
                                             }
                                             expanded4 = false
@@ -511,7 +510,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                             secondBatsman = player
                                             if (battingTeamId != null) {
                                                 secondBatsman?.name?.let {
-                                                    dbHelper.addBattingStats(matchId,battingTeamId,it,1,"non-striker")
+                                                    dbHelper.addBattingStats(matchId,battingTeamId,it,"non-striker")
                                                 }
                                             }
                                             expanded5 = false

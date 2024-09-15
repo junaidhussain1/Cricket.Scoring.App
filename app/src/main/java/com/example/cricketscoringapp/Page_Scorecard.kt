@@ -1,5 +1,6 @@
 package com.example.cricketscoringapp
 
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
+import android.media.MediaPlayer
 
 
 @Composable
@@ -100,25 +102,27 @@ fun ScoreCardPage() {
             )
         }
 
+        val firstBatsman = dbHelper.getBatsmanByStatus(matchId,"striker")
         val firstBatsmanStats = remember {
             BatsmanStats(
-                name = mutableStateOf(dbHelper.getBatsmanByStatus(matchId,"striker")),
-                runs = mutableIntStateOf(value = 0),
-                balls = mutableIntStateOf(value = 0),
-                fours = mutableIntStateOf(value = 0),
-                sixes = mutableIntStateOf(value = 0),
-                active = mutableStateOf(value = true)
+                name = mutableStateOf(value = firstBatsman.name.value),
+                runs = mutableIntStateOf(value = firstBatsman.runs.value),
+                balls = mutableIntStateOf(value = firstBatsman.balls.value),
+                fours = mutableIntStateOf(value = firstBatsman.fours.value),
+                sixes = mutableIntStateOf(value = firstBatsman.sixes.value),
+                active = mutableStateOf(value = firstBatsman.active.value)
             )
         }
 
+        val secondBatsman = dbHelper.getBatsmanByStatus(matchId,"non-striker")
         val secondBatsmanStats = remember {
             BatsmanStats(
-                name = mutableStateOf(dbHelper.getBatsmanByStatus(matchId,"non-striker")),
-                runs = mutableIntStateOf(value = 0),
-                balls = mutableIntStateOf(value = 0),
-                fours = mutableIntStateOf(value = 0),
-                sixes = mutableIntStateOf(value = 0),
-                active = mutableStateOf(value = false)
+                name = mutableStateOf(value = secondBatsman.name.value),
+                runs = mutableIntStateOf(value = secondBatsman.runs.value),
+                balls = mutableIntStateOf(value = secondBatsman.balls.value),
+                fours = mutableIntStateOf(value = secondBatsman.fours.value),
+                sixes = mutableIntStateOf(value = secondBatsman.sixes.value),
+                active = mutableStateOf(value = secondBatsman.active.value)
             )
         }
 
@@ -239,7 +243,7 @@ fun ScoreCardPage() {
                     fontColor1 = fontColor2,
                     makePlayerTouchable = true
                 ) {
-                    swapBatsmen(firstBatsmanStats, secondBatsmanStats)
+                    swapBatsmenDB(context,matchId,firstBatsmanStats, secondBatsmanStats)
                 }
 
                 BatsmanBowlerBox(
@@ -252,7 +256,7 @@ fun ScoreCardPage() {
                     fontColor1 = fontColor3,
                     makePlayerTouchable = true
                 ) {
-                    swapBatsmen(firstBatsmanStats, secondBatsmanStats)
+                    swapBatsmenDB(context,matchId,firstBatsmanStats, secondBatsmanStats)
                 }
             }
         }
@@ -367,6 +371,7 @@ fun ScoreCardPage() {
         ) {
             CircleButton("0", if (isTablet) 50 else 40) {
                 updateStats(
+                    context,
                     balls,
                     "0",
                     bowlerStats,
@@ -379,6 +384,7 @@ fun ScoreCardPage() {
             }
             CircleButton("1", if (isTablet) 50 else 40) {
                 updateStats(
+                    context,
                     balls,
                     "1",
                     bowlerStats,
@@ -391,6 +397,7 @@ fun ScoreCardPage() {
             }
             CircleButton("2", if (isTablet) 50 else 40) {
                 updateStats(
+                    context,
                     balls,
                     "2",
                     bowlerStats,
@@ -403,6 +410,7 @@ fun ScoreCardPage() {
             }
             CircleButton("3", if (isTablet) 50 else 40) {
                 updateStats(
+                    context,
                     balls,
                     "3",
                     bowlerStats,
@@ -429,6 +437,7 @@ fun ScoreCardPage() {
         ) {
             CircleButton("4", if (isTablet) 50 else 40) {
                 updateStats(
+                    context,
                     balls,
                     "4",
                     bowlerStats,
@@ -441,6 +450,7 @@ fun ScoreCardPage() {
             }
             CircleButton("6", if (isTablet) 50 else 40) {
                 updateStats(
+                    context,
                     balls,
                     "6",
                     bowlerStats,
@@ -464,7 +474,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W"
                                 showWidesDialog.value = false
-                                updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("WIDE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -472,7 +482,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W+1"
                                 showWidesDialog.value = false
-                                updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("WIDE + 1", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -480,7 +490,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W+2"
                                 showWidesDialog.value = false
-                                updateStats(balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("WIDE + 2", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -544,6 +554,7 @@ fun ScoreCardPage() {
                                                     selectedNoBallOption.value = optionText
                                                     showNoBallDialog.value = false
                                                     updateStats(
+                                                        context,
                                                         balls,
                                                         selectedNoBallOption.value,
                                                         bowlerStats,
@@ -598,7 +609,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedByesOption.value = "B1"
                                 showByesDialog.value = false
-                                updateStats(balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("1 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -606,7 +617,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedNoBallOption.value = "B2"
                                 showByesDialog.value = false
-                                updateStats(balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("2 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -614,7 +625,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedNoBallOption.value = "B3"
                                 showByesDialog.value = false
-                                updateStats(balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("3 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -640,7 +651,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB1"
                                 showLegByesDialog.value = false
-                                updateStats(balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("1 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -648,7 +659,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB2"
                                 showLegByesDialog.value = false
-                                updateStats(balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("2 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -656,7 +667,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB3"
                                 showLegByesDialog.value = false
-                                updateStats(balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("3 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -794,23 +805,44 @@ fun ScoreCardPage() {
                                         // List of options to choose from
                                         Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                             showNextBatsmanDialog.value = false
-                                            selectedWicketsOption.value += "." + player.name
-                                            updateStats(balls,selectedWicketsOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                            val batsmanOut:String
+                                            val duckOut: Boolean
                                             if (firstBatsmanStats.active.value) {
-                                                firstBatsmanStats.name.value = player.name
+                                                batsmanOut = firstBatsmanStats.name.value
+                                                duckOut = firstBatsmanStats.runs.value == 0
+                                            } else {
+                                                batsmanOut = secondBatsmanStats.name.value
+                                                duckOut = secondBatsmanStats.runs.value == 0
+                                            }
+
+                                            if (duckOut) playDuckSound(context)
+
+                                            val newBatsman = player.name
+                                            selectedWicketsOption.value += "|$batsmanOut|$newBatsman"
+                                            updateStats(context,balls,selectedWicketsOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+
+                                            if (firstBatsmanStats.active.value) {
+                                                //save out batsman to database
+                                                dbHelper.updateBattingStats(matchId,"out",firstBatsmanStats.runs.value,firstBatsmanStats.balls.value,firstBatsmanStats.fours.value,firstBatsmanStats.sixes.value)
+                                                
+                                                firstBatsmanStats.name.value = newBatsman
                                                 firstBatsmanStats.active.value = true
                                                 firstBatsmanStats.runs.value = 0
                                                 firstBatsmanStats.balls.value = 0
                                                 firstBatsmanStats.fours.value = 0
                                                 firstBatsmanStats.sixes.value = 0
                                             } else {
-                                                secondBatsmanStats.name.value = player.name
+                                                //save out batsman to database
+                                                dbHelper.updateBattingStats(matchId,"out",secondBatsmanStats.runs.value,secondBatsmanStats.balls.value,secondBatsmanStats.fours.value,secondBatsmanStats.sixes.value)
+
+                                                secondBatsmanStats.name.value = newBatsman
                                                 secondBatsmanStats.active.value = true
                                                 secondBatsmanStats.runs.value = 0
                                                 secondBatsmanStats.balls.value = 0
                                                 secondBatsmanStats.fours.value = 0
                                                 secondBatsmanStats.sixes.value = 0
                                             }
+                                            dbHelper.addBattingStats(matchId,teamId,newBatsman,"striker")
                                         }) {
                                             Text(player.name, fontSize = if (isTablet) 30.sp else 20.sp)
                                         }
@@ -829,6 +861,7 @@ fun ScoreCardPage() {
             }
             CircleButton("UNDO", if (isTablet) 26 else 16) {
                 updateStats(
+                    context,
                     balls,
                     "UNDO",
                     bowlerStats,
@@ -841,6 +874,17 @@ fun ScoreCardPage() {
             }
         }
     }
+}
+
+fun playDuckSound(context: Context) {
+    var mediaPlayer = MediaPlayer.create(context, R.raw.duckonrepeat)
+
+    if (mediaPlayer.isPlaying) {
+        mediaPlayer.stop()
+        mediaPlayer.reset()
+        mediaPlayer = MediaPlayer.create(context, R.raw.duckonrepeat)
+    }
+    mediaPlayer.start()
 }
 
 fun setCurrentBowler(bowlerStats: BowlerStats, name: String) {
