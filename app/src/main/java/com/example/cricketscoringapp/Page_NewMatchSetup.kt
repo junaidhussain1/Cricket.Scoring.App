@@ -12,12 +12,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -67,9 +69,9 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
     team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
     team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
-    battingTeamCaptain = Player((dbHelper.getBattingTeamCaptain(matchId,1)))
-    facingBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"striker"))
-    secondBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"non-striker"))
+    battingTeamCaptain = Player((dbHelper.getBattingTeamCaptain(matchId, 1)))
+    facingBatsman = Player(dbHelper.getBatsmanByStatus(matchId, "striker"))
+    secondBatsman = Player(dbHelper.getBatsmanByStatus(matchId, "non-striker"))
     openingBowler = Player(dbHelper.getCurrentBowler(matchId))
     openingKeeper = Player(dbHelper.getCurrentKeeper(matchId))
 
@@ -81,286 +83,350 @@ fun NewMatchSetupPage(navController: NavHostController) {
     var expanded6 by remember { mutableStateOf(false) }
     var expanded7 by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(10, 18, 32)
     ) {
-        // Row to hold Recycle Bin Button and "New Match" text in the same row
-        Row(
+
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val currentDate = LocalDate.now()
-            val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy") // Define the format
-            val formattedDate = currentDate.format(formatter)
-            Text(text = "Match: $formattedDate",
-                 style = MaterialTheme.typography.headlineSmall,
-                 fontSize = if (isTablet) 40.sp else 22.sp)
-
-            IconButton(
-                onClick = {
-                    dbHelper.deleteMatch(matchId)
-                    navController.navigate("homepage")
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Recycle Bin"
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Row to hold both Team 1 Captain and Team 2 Captain dropdowns
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Team 1 Captain Dropdown
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                ExposedDropdownMenuBox(
-                    expanded = expanded1,
-                    onExpandedChange = {
-                        if (!matchStarted) {
-                            expanded1 = !expanded1
-                        }
-                    }
-                ) {
-                    OutlinedTextField(
-                        enabled = !matchStarted,
-                        readOnly = true,
-                        value = team1Captain?.name ?: "Select Captain",
-                        onValueChange = { },
-                        label = { Text("Team 1 Captain",fontSize = if (isTablet) 22.sp else 14.sp) },
-                        textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded1,
-                        onDismissRequest = { expanded1 = false }
-                    ) {
-                        playersList.forEach { player ->
-                            androidx.compose.material3.DropdownMenuItem(
-                                enabled = !matchStarted,
-                                text = { Text(text = player.name, fontSize = if (isTablet) 30.sp else 14.sp) },
-                                onClick = {
-                                    team1Captain = player
-                                    team1Captain?.let {
-                                        dbHelper.addTeamPlayer(matchId, 1, player.name, 1)
-                                    }
-                                    expanded1 = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-
-            // Team 2 Captain Dropdown
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                ExposedDropdownMenuBox(
-                    expanded = expanded2,
-                    onExpandedChange = {
-                        if (!matchStarted) {
-                            expanded2 = !expanded2
-                        }
-                    }
-                ) {
-                    OutlinedTextField(
-                        enabled = !matchStarted,
-                        readOnly = true,
-                        value = team2Captain?.name ?: "Select Captain",
-                        onValueChange = { },
-                        label = { Text("Team 2 Captain",fontSize = if (isTablet) 22.sp else 14.sp) },
-                        textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded2,
-                        onDismissRequest = { expanded2 = false }
-                    ) {
-                        val remainingPlayers = playersList.filter { it != team1Captain }
-                        remainingPlayers.forEach { player ->
-                            androidx.compose.material3.DropdownMenuItem(
-                                enabled = !matchStarted,
-                                text = { Text(text = player.name, fontSize = if (isTablet) 30.sp else 14.sp) },
-                                onClick = {
-                                    team2Captain = player
-                                    team2Captain?.let {
-                                        dbHelper.addTeamPlayer(matchId, 2, player.name, 1)
-                                    }
-                                    expanded2 = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        val textColor = if (!matchStarted) Color.White else Color.Gray
-
-        if ((team1Captain!!.name != "") && (team2Captain!!.name != "")) {
+            // Row to hold Recycle Bin Button and "New Match" text in the same row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Team 1 column: Button + Players List
+                val currentDate = LocalDate.now()
+                val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy") // Define the format
+                val formattedDate = currentDate.format(formatter)
+                Text(
+                    text = "Match: $formattedDate",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontSize = if (isTablet) 40.sp else 22.sp,
+                    color = Color(255, 252, 228)
+                )
+
+                IconButton(
+                    onClick = {
+                        dbHelper.deleteMatch(matchId)
+                        navController.navigate("homepage")
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Recycle Bin",
+                        tint = Color(255, 252, 228)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Row to hold both Team 1 Captain and Team 2 Captain dropdowns
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Team 1 Captain Dropdown
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Buttons to navigate to team player selection pages
-                    if (dbHelper.getCaptainForTeam(matchId, 1) != "") {
-                        Button(
-                            enabled = !matchStarted,
-                            onClick = {
-                                navController.navigate("team1PlayerSelection")
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RectangleShape,
-                            content = {
-                                Text(
-                                    text = "Select Team Players",
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    fontSize = if (isTablet) 22.sp else 16.sp
-                                )
-                            }
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(text = team1Captain!!.name, color = textColor, fontSize = if (isTablet) 30.sp else 16.sp)
-
-                        val team1Players = dbHelper.getTeamPlayers(matchId, 1, 0)
-
-                        for (player in team1Players) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = player.name, color = textColor, fontSize = if (isTablet) 30.sp else 16.sp)
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Team 2 column: Button + Players List
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    if (dbHelper.getCaptainForTeam(matchId, 2) != "") {
-                        Button(
-                            enabled = !matchStarted,
-                            onClick = {
-                                navController.navigate("team2PlayerSelection")
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RectangleShape,
-                            content = {
-                                Text(
-                                    text = "Select Team Players",
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    fontSize = if (isTablet) 22.sp else 16.sp
-                                )
-                            }
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(text = team2Captain!!.name, color = textColor, fontSize = if (isTablet) 30.sp else 16.sp)
-
-                        val team2Players = dbHelper.getTeamPlayers(matchId, 2, 0)
-
-                        for (player in team2Players) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = player.name, color = textColor, fontSize = if (isTablet) 30.sp else 16.sp)
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if ((dbHelper.getTeamSize(matchId,1) == 6) && (dbHelper.getTeamSize(matchId,2) == 6))
-        {
-            // Select Batting Team Captain
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
                     ExposedDropdownMenuBox(
-                        expanded = expanded3,
+                        expanded = expanded1,
                         onExpandedChange = {
                             if (!matchStarted) {
-                                expanded3 = !expanded3
+                                expanded1 = !expanded1
                             }
                         }
                     ) {
                         OutlinedTextField(
                             enabled = !matchStarted,
                             readOnly = true,
-                            value = battingTeamCaptain?.name ?: "Select Captain",
+                            value = team1Captain?.name ?: "Select Captain",
                             onValueChange = { },
-                            label = { Text("Batting Team",fontSize = if (isTablet) 22.sp else 14.sp) },
+                            label = {
+                                Text(
+                                    "Team 1 Captain",
+                                    fontSize = if (isTablet) 22.sp else 14.sp
+                                )
+                            },
                             textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
                             modifier = Modifier
                                 .menuAnchor()
                                 .fillMaxWidth()
                         )
                         ExposedDropdownMenu(
-                            expanded = expanded3,
-                            onDismissRequest = { expanded3 = false }
+                            expanded = expanded1,
+                            onDismissRequest = { expanded1 = false }
                         ) {
-                            androidx.compose.material3.DropdownMenuItem(
+                            playersList.forEach { player ->
+                                androidx.compose.material3.DropdownMenuItem(
+                                    enabled = !matchStarted,
+                                    text = {
+                                        Text(
+                                            text = player.name,
+                                            fontSize = if (isTablet) 30.sp else 14.sp
+                                        )
+                                    },
+                                    onClick = {
+                                        team1Captain = player
+                                        team1Captain?.let {
+                                            dbHelper.addTeamPlayer(matchId, 1, player.name, 1)
+                                        }
+                                        expanded1 = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+
+                // Team 2 Captain Dropdown
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    ExposedDropdownMenuBox(
+                        expanded = expanded2,
+                        onExpandedChange = {
+                            if (!matchStarted) {
+                                expanded2 = !expanded2
+                            }
+                        }
+                    ) {
+                        OutlinedTextField(
+                            enabled = !matchStarted,
+                            readOnly = true,
+                            value = team2Captain?.name ?: "Select Captain",
+                            onValueChange = { },
+                            label = {
+                                Text(
+                                    "Team 2 Captain",
+                                    fontSize = if (isTablet) 22.sp else 14.sp
+                                )
+                            },
+                            textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded2,
+                            onDismissRequest = { expanded2 = false }
+                        ) {
+                            val remainingPlayers = playersList.filter { it != team1Captain }
+                            remainingPlayers.forEach { player ->
+                                androidx.compose.material3.DropdownMenuItem(
+                                    enabled = !matchStarted,
+                                    text = {
+                                        Text(
+                                            text = player.name,
+                                            fontSize = if (isTablet) 30.sp else 14.sp
+                                        )
+                                    },
+                                    onClick = {
+                                        team2Captain = player
+                                        team2Captain?.let {
+                                            dbHelper.addTeamPlayer(matchId, 2, player.name, 1)
+                                        }
+                                        expanded2 = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val textColor = if (!matchStarted) Color.White else Color.Gray
+
+            if ((team1Captain!!.name != "") && (team2Captain!!.name != "")) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    // Team 1 column: Button + Players List
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Buttons to navigate to team player selection pages
+                        if (dbHelper.getCaptainForTeam(matchId, 1) != "") {
+                            Button(
                                 enabled = !matchStarted,
-                                    text = { team1Captain?.name?.let { Text(text = it, fontSize = if (isTablet) 30.sp else 14.sp) } },
+                                onClick = {
+                                    navController.navigate("team1PlayerSelection")
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RectangleShape,
+                                content = {
+                                    Text(
+                                        text = "Select Team Players",
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        fontSize = if (isTablet) 22.sp else 16.sp
+                                    )
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = team1Captain!!.name,
+                                color = textColor,
+                                fontSize = if (isTablet) 30.sp else 16.sp
+                            )
+
+                            val team1Players = dbHelper.getTeamPlayers(matchId, 1, 0)
+
+                            for (player in team1Players) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = player.name,
+                                    color = textColor,
+                                    fontSize = if (isTablet) 30.sp else 16.sp
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Team 2 column: Button + Players List
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        if (dbHelper.getCaptainForTeam(matchId, 2) != "") {
+                            Button(
+                                enabled = !matchStarted,
+                                onClick = {
+                                    navController.navigate("team2PlayerSelection")
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RectangleShape,
+                                content = {
+                                    Text(
+                                        text = "Select Team Players",
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        fontSize = if (isTablet) 22.sp else 16.sp
+                                    )
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = team2Captain!!.name,
+                                color = textColor,
+                                fontSize = if (isTablet) 30.sp else 16.sp
+                            )
+
+                            val team2Players = dbHelper.getTeamPlayers(matchId, 2, 0)
+
+                            for (player in team2Players) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = player.name,
+                                    color = textColor,
+                                    fontSize = if (isTablet) 30.sp else 16.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if ((dbHelper.getTeamSize(matchId, 1) == 6) && (dbHelper.getTeamSize(
+                    matchId,
+                    2
+                ) == 6)
+            ) {
+                // Select Batting Team Captain
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        ExposedDropdownMenuBox(
+                            expanded = expanded3,
+                            onExpandedChange = {
+                                if (!matchStarted) {
+                                    expanded3 = !expanded3
+                                }
+                            }
+                        ) {
+                            OutlinedTextField(
+                                enabled = !matchStarted,
+                                readOnly = true,
+                                value = battingTeamCaptain?.name ?: "Select Captain",
+                                onValueChange = { },
+                                label = {
+                                    Text(
+                                        "Batting Team",
+                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                    )
+                                },
+                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded3,
+                                onDismissRequest = { expanded3 = false }
+                            ) {
+                                androidx.compose.material3.DropdownMenuItem(
+                                    enabled = !matchStarted,
+                                    text = {
+                                        team1Captain?.name?.let {
+                                            Text(
+                                                text = it,
+                                                fontSize = if (isTablet) 30.sp else 14.sp
+                                            )
+                                        }
+                                    },
                                     onClick = {
                                         team1Captain?.let { captain ->
                                             battingTeamCaptain = captain
                                             dbHelper.updateMatchCaptain(matchId, 1, captain.name)
-                                            dbHelper.updateMatchCaptain(matchId, 2, team2Captain!!.name)
+                                            dbHelper.updateMatchCaptain(
+                                                matchId,
+                                                2,
+                                                team2Captain!!.name
+                                            )
                                         }
                                         expanded3 = false
                                         facingBatsman = null
@@ -368,325 +434,412 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     }
                                 )
 
-                            androidx.compose.material3.DropdownMenuItem(
-                                enabled = !matchStarted,
-                                text = { team2Captain?.name?.let { Text(text = it, fontSize = if (isTablet) 30.sp else 14.sp) } },
-                                onClick = {
-                                    team2Captain?.let { captain ->
-                                        battingTeamCaptain = captain
-                                        dbHelper.updateMatchCaptain(matchId, 1, captain.name)
-                                        dbHelper.updateMatchCaptain(matchId, 2, team1Captain!!.name)
+                                androidx.compose.material3.DropdownMenuItem(
+                                    enabled = !matchStarted,
+                                    text = {
+                                        team2Captain?.name?.let {
+                                            Text(
+                                                text = it,
+                                                fontSize = if (isTablet) 30.sp else 14.sp
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        team2Captain?.let { captain ->
+                                            battingTeamCaptain = captain
+                                            dbHelper.updateMatchCaptain(matchId, 1, captain.name)
+                                            dbHelper.updateMatchCaptain(
+                                                matchId,
+                                                2,
+                                                team1Captain!!.name
+                                            )
+                                        }
+                                        expanded3 = false
+                                        facingBatsman = null
+                                        secondBatsman = null
                                     }
-                                    expanded3 = false
-                                    facingBatsman = null
-                                    secondBatsman = null
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            val battingTeamId =
-                battingTeamCaptain?.name?.let {
-                    dbHelper.getTeamForPlayer(matchId,
-                        it
-                    )
-                }
-
-            val bowlingTeamId = if (battingTeamId == 1) {
-                2
-            } else {
-                1
-            }
-
-            if (battingTeamId != null) {
-                battingTeamList.clear()
-                battingTeamList.addAll(dbHelper.getTeamPlayers(matchId,battingTeamId,1))
-
-                bowlingTeamList.clear()
-                bowlingTeamList.addAll(dbHelper.getTeamPlayers(matchId,bowlingTeamId,1))
-            }
-
-            // Row to hold both Facing Batsman and Second Batsman
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                // Facing Batsman (Striker)
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    ExposedDropdownMenuBox(
-                        expanded = expanded4,
-                        onExpandedChange = {
-                            if (!matchStarted) {
-                                expanded4 = !expanded4
-                            }
-                        }
-                    ) {
-                        OutlinedTextField(
-                            enabled = !matchStarted,
-                            readOnly = true,
-                            value = facingBatsman?.name ?: "Select Batsman",
-                            onValueChange = { },
-                            label = { Text("Facing Batsman",fontSize = if (isTablet) 22.sp else 14.sp) },
-                            textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
+                val battingTeamId =
+                    battingTeamCaptain?.name?.let {
+                        dbHelper.getTeamForPlayer(
+                            matchId,
+                            it
                         )
-                        ExposedDropdownMenu(
-                            expanded = expanded4,
-                            onDismissRequest = { expanded4 = false }
-                        ) {
-                            battingTeamList.forEach { player ->
-                                if (player.name != secondBatsman?.name) {
-                                    androidx.compose.material3.DropdownMenuItem(
-                                        enabled = !matchStarted,
-                                        text = { Text(text = player.name,fontSize = if (isTablet) 30.sp else 14.sp) },
-                                        onClick = {
-                                            facingBatsman = player
-                                            if (battingTeamId != null) {
-                                                facingBatsman?.name?.let {
-                                                    dbHelper.addBattingStats(matchId,battingTeamId,it,1,"striker")
-                                                }
-                                            }
-                                            expanded4 = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
                     }
+
+                val bowlingTeamId = if (battingTeamId == 1) {
+                    2
+                } else {
+                    1
                 }
 
-                // Second Batsman (Non Striker)
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    ExposedDropdownMenuBox(
-                        expanded = expanded5,
-                        onExpandedChange = {
-                            if (!matchStarted) {
-                                expanded5 = !expanded5
-                            }
-                        }
-                    ) {
-                        OutlinedTextField(
-                            enabled = !matchStarted,
-                            readOnly = true,
-                            value = secondBatsman?.name ?: "Select Batsman",
-                            onValueChange = { },
-                            label = { Text("Second Batsman",fontSize = if (isTablet) 22.sp else 14.sp) },
-                            textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expanded5,
-                            onDismissRequest = { expanded5 = false }
-                        ) {
-                            battingTeamList.forEach { player ->
-                                if (player.name != facingBatsman?.name) {
-                                    androidx.compose.material3.DropdownMenuItem(
-                                        enabled = !matchStarted,
-                                        text = { Text(text = player.name,fontSize = if (isTablet) 30.sp else 14.sp) },
-                                        onClick = {
-                                            secondBatsman = player
-                                            if (battingTeamId != null) {
-                                                secondBatsman?.name?.let {
-                                                    dbHelper.addBattingStats(matchId,battingTeamId,it,1,"non-striker")
-                                                }
-                                            }
-                                            expanded5 = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                if (battingTeamId != null) {
+                    battingTeamList.clear()
+                    battingTeamList.addAll(dbHelper.getTeamPlayers(matchId, battingTeamId, 1))
 
-            // Row to hold both Bowler and Wicket Keeper
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Select Bowler
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    ExposedDropdownMenuBox(
-                        expanded = expanded6,
-                        onExpandedChange = {
-                            if (!matchStarted) {
-                                expanded6 = !expanded6
-                            }
-                        }
-                    ) {
-                        OutlinedTextField(
-                            enabled = !matchStarted,
-                            readOnly = true,
-                            value = openingBowler?.name ?: "Select Bowler",
-                            onValueChange = { },
-                            label = { Text("Bowler",fontSize = if (isTablet) 22.sp else 14.sp) },
-                            textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expanded6,
-                            onDismissRequest = { expanded6 = false }
-                        ) {
-                            bowlingTeamList.forEach { player ->
-                                if (player.name != openingKeeper?.name) {
-                                    androidx.compose.material3.DropdownMenuItem(
-                                        enabled = !matchStarted,
-                                        text = { Text(text = player.name,fontSize = if (isTablet) 30.sp else 14.sp) },
-                                        onClick = {
-                                            openingBowler = player
-                                            dbHelper.addBowlingStats(matchId,bowlingTeamId,player.name,1,"bowling")
-                                            expanded6 = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    bowlingTeamList.clear()
+                    bowlingTeamList.addAll(dbHelper.getTeamPlayers(matchId, bowlingTeamId, 1))
                 }
 
-                // Select Wicket-keeper
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    ExposedDropdownMenuBox(
-                        expanded = expanded7,
-                        onExpandedChange = {
-                            if (!matchStarted) {
-                                expanded7 = !expanded7
-                            }
-                        }
-                    ) {
-                        OutlinedTextField(
-                            enabled = !matchStarted,
-                            readOnly = true,
-                            value = openingKeeper?.name ?: "Select Keeper",
-                            onValueChange = { },
-                            label = { Text("Wicket keeper",fontSize = if (isTablet) 22.sp else 14.sp) },
-                            textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = expanded7,
-                            onDismissRequest = { expanded7 = false }
-                        ) {
-                            bowlingTeamList.forEach { player ->
-                                if (player.name != openingBowler?.name) {
-                                    androidx.compose.material3.DropdownMenuItem(
-                                        enabled = !matchStarted,
-                                        text = { Text(text = player.name,fontSize = if (isTablet) 30.sp else 14.sp) },
-                                        onClick = {
-                                            openingKeeper = player
-                                            dbHelper.updateBowlingStatsKeeper(matchId,bowlingTeamId,1,player.name)
-                                            expanded7 = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            //Only show if both teams contain 6 players and batting team, keeper and bowler have been set
-            if ((dbHelper.getTeamSize(matchId,1) == 6)
-                && (dbHelper.getTeamSize(matchId,2) == 6)
-                && (facingBatsman != null)
-                && (secondBatsman != null)
-                && (openingBowler != null)
-                && (openingKeeper != null))
-            {
-                Button(onClick = {
-                    if (!matchStarted) dbHelper.updateMatchIsStarted(matchId)
-                    navController.navigate("startnewmatch")
-                                 },
+                // Row to hold both Facing Batsman and Second Batsman
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 8.dp)
-                        .padding(end = 8.dp)) {
-                    if (!matchStarted) {
-                        Text(text = "Start New Match", fontSize = if (isTablet) 22.sp else 16.sp)
-                    } else {
-                        Text(text = "Continue Match", fontSize = if (isTablet) 22.sp else 16.sp)
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+
+                    // Facing Batsman (Striker)
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        ExposedDropdownMenuBox(
+                            expanded = expanded4,
+                            onExpandedChange = {
+                                if (!matchStarted) {
+                                    expanded4 = !expanded4
+                                }
+                            }
+                        ) {
+                            OutlinedTextField(
+                                enabled = !matchStarted,
+                                readOnly = true,
+                                value = facingBatsman?.name ?: "Select Batsman",
+                                onValueChange = { },
+                                label = {
+                                    Text(
+                                        "Facing Batsman",
+                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                    )
+                                },
+                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded4,
+                                onDismissRequest = { expanded4 = false }
+                            ) {
+                                battingTeamList.forEach { player ->
+                                    if (player.name != secondBatsman?.name) {
+                                        androidx.compose.material3.DropdownMenuItem(
+                                            enabled = !matchStarted,
+                                            text = {
+                                                Text(
+                                                    text = player.name,
+                                                    fontSize = if (isTablet) 30.sp else 14.sp
+                                                )
+                                            },
+                                            onClick = {
+                                                facingBatsman = player
+                                                if (battingTeamId != null) {
+                                                    facingBatsman?.name?.let {
+                                                        dbHelper.addBattingStats(
+                                                            matchId,
+                                                            battingTeamId,
+                                                            it,
+                                                            1,
+                                                            "striker"
+                                                        )
+                                                    }
+                                                }
+                                                expanded4 = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Second Batsman (Non Striker)
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        ExposedDropdownMenuBox(
+                            expanded = expanded5,
+                            onExpandedChange = {
+                                if (!matchStarted) {
+                                    expanded5 = !expanded5
+                                }
+                            }
+                        ) {
+                            OutlinedTextField(
+                                enabled = !matchStarted,
+                                readOnly = true,
+                                value = secondBatsman?.name ?: "Select Batsman",
+                                onValueChange = { },
+                                label = {
+                                    Text(
+                                        "Second Batsman",
+                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                    )
+                                },
+                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded5,
+                                onDismissRequest = { expanded5 = false }
+                            ) {
+                                battingTeamList.forEach { player ->
+                                    if (player.name != facingBatsman?.name) {
+                                        androidx.compose.material3.DropdownMenuItem(
+                                            enabled = !matchStarted,
+                                            text = {
+                                                Text(
+                                                    text = player.name,
+                                                    fontSize = if (isTablet) 30.sp else 14.sp
+                                                )
+                                            },
+                                            onClick = {
+                                                secondBatsman = player
+                                                if (battingTeamId != null) {
+                                                    secondBatsman?.name?.let {
+                                                        dbHelper.addBattingStats(
+                                                            matchId,
+                                                            battingTeamId,
+                                                            it,
+                                                            1,
+                                                            "non-striker"
+                                                        )
+                                                    }
+                                                }
+                                                expanded5 = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Row to hold both Bowler and Wicket Keeper
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Select Bowler
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        ExposedDropdownMenuBox(
+                            expanded = expanded6,
+                            onExpandedChange = {
+                                if (!matchStarted) {
+                                    expanded6 = !expanded6
+                                }
+                            }
+                        ) {
+                            OutlinedTextField(
+                                enabled = !matchStarted,
+                                readOnly = true,
+                                value = openingBowler?.name ?: "Select Bowler",
+                                onValueChange = { },
+                                label = {
+                                    Text(
+                                        "Bowler",
+                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                    )
+                                },
+                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded6,
+                                onDismissRequest = { expanded6 = false }
+                            ) {
+                                bowlingTeamList.forEach { player ->
+                                    if (player.name != openingKeeper?.name) {
+                                        androidx.compose.material3.DropdownMenuItem(
+                                            enabled = !matchStarted,
+                                            text = {
+                                                Text(
+                                                    text = player.name,
+                                                    fontSize = if (isTablet) 30.sp else 14.sp
+                                                )
+                                            },
+                                            onClick = {
+                                                openingBowler = player
+                                                dbHelper.addBowlingStats(
+                                                    matchId,
+                                                    bowlingTeamId,
+                                                    player.name,
+                                                    1,
+                                                    "bowling"
+                                                )
+                                                expanded6 = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Select Wicket-keeper
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        ExposedDropdownMenuBox(
+                            expanded = expanded7,
+                            onExpandedChange = {
+                                if (!matchStarted) {
+                                    expanded7 = !expanded7
+                                }
+                            }
+                        ) {
+                            OutlinedTextField(
+                                enabled = !matchStarted,
+                                readOnly = true,
+                                value = openingKeeper?.name ?: "Select Keeper",
+                                onValueChange = { },
+                                label = {
+                                    Text(
+                                        "Wicket keeper",
+                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                    )
+                                },
+                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded7,
+                                onDismissRequest = { expanded7 = false }
+                            ) {
+                                bowlingTeamList.forEach { player ->
+                                    if (player.name != openingBowler?.name) {
+                                        androidx.compose.material3.DropdownMenuItem(
+                                            enabled = !matchStarted,
+                                            text = {
+                                                Text(
+                                                    text = player.name,
+                                                    fontSize = if (isTablet) 30.sp else 14.sp
+                                                )
+                                            },
+                                            onClick = {
+                                                openingKeeper = player
+                                                dbHelper.updateBowlingStatsKeeper(
+                                                    matchId,
+                                                    bowlingTeamId,
+                                                    1,
+                                                    player.name
+                                                )
+                                                expanded7 = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                //Only show if both teams contain 6 players and batting team, keeper and bowler have been set
+                if ((dbHelper.getTeamSize(matchId, 1) == 6)
+                    && (dbHelper.getTeamSize(matchId, 2) == 6)
+                    && (facingBatsman != null)
+                    && (secondBatsman != null)
+                    && (openingBowler != null)
+                    && (openingKeeper != null)
+                ) {
+                    Button(
+                        onClick = {
+                            if (!matchStarted) dbHelper.updateMatchIsStarted(matchId)
+                            navController.navigate("startnewmatch")
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp, end = 8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(255, 252, 228)
+                        )
+
+                    ) {
+                        if (!matchStarted) {
+                            Text(
+                                text = "Start New Match",
+                                fontSize = if (isTablet) 22.sp else 16.sp
+                            )
+                        } else {
+                            Text(text = "Continue Match",
+                                fontSize = if (isTablet) 22.sp else 16.sp)
+                        }
                     }
                 }
             }
         }
     }
-}
 
-@Composable
-fun ShowConfirmationDialog() {
-    var showDialog by remember { mutableStateOf(false) }
+    @Composable
+    fun ShowConfirmationDialog() {
+        var showDialog by remember { mutableStateOf(false) }
 
-    // Trigger to show the dialog
-    Button(onClick = { showDialog = true }) {
-        Text(text = "Show Confirmation")
-    }
+        // Trigger to show the dialog
+        Button(onClick = { showDialog = true }) {
+            Text(text = "Show Confirmation")
+        }
 
-    // Confirmation Dialog
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false }, // Close the dialog when touched outside or back press
-            title = { Text(text = "Confirm Action") },
-            text = { Text(text = "Are you sure you want to delete this item?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        // Handle confirm action
-                        showDialog = false
-                        // Perform the deletion or any other action here
+        // Confirmation Dialog
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDialog = false
+                }, // Close the dialog when touched outside or back press
+                title = { Text(text = "Confirm Action") },
+                text = { Text(text = "Are you sure you want to delete this item?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            // Handle confirm action
+                            showDialog = false
+                            // Perform the deletion or any other action here
+                        }
+                    ) {
+                        Text("Yes")
                     }
-                ) {
-                    Text("Yes")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        // Handle dismiss action
-                        showDialog = false
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            // Handle dismiss action
+                            showDialog = false
+                        }
+                    ) {
+                        Text("No")
                     }
-                ) {
-                    Text("No")
-                }
-            },
-            properties = DialogProperties(dismissOnClickOutside = false)
-        )
+                },
+                properties = DialogProperties(dismissOnClickOutside = false)
+            )
+        }
     }
 }

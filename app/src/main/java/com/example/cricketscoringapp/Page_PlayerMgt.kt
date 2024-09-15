@@ -39,7 +39,7 @@ fun PlayerMgtPage() {
     val isTablet = configuration.screenWidthDp >= 600
 
     Surface(
-        modifier = Modifier.fillMaxSize(), // This makes the Surface fill the entire screen
+        modifier = Modifier.fillMaxSize(),
         color = Color(10, 18, 32)
     ) {
 
