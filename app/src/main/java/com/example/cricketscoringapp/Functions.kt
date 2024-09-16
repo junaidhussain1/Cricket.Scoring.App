@@ -342,8 +342,8 @@ fun updateStats(context: Context,
                 val batsmanOutFromDB = dbHelper.getBatsmanStats(matchId,batsmanOut)
                 dbHelper.deleteBatsman(matchId,newBatsman)
                 dbHelper.updateBattingStats(matchId,batsmanOutFromDB.name.value,"out","striker")
-                dbHelper.updateBattingStats(matchId,"striker",batsmanOutFromDB.runs.value,batsmanOutFromDB.balls.value - 1,batsmanOutFromDB.fours.value,batsmanOutFromDB.sixes.value)
-
+                batsmanOutFromDB.balls.value -= 1
+                dbHelper.updateBattingStats(matchId,"striker",batsmanOutFromDB)
 
                 if (firstBatsmanStats.name.value == newBatsman) {
                     firstBatsmanStats.name.value = batsmanOut

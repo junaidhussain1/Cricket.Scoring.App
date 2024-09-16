@@ -4,10 +4,8 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -18,7 +16,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 9
+        const val DATABASE_VERSION = 10
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -71,6 +69,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             balls INTEGER,
             fours INTEGER,
             sixes INTEGER,
+            wicket_description TEXT,
             PRIMARY KEY (match_id, batting_order)
         )
     """
@@ -412,17 +411,16 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     fun updateBattingStats(matchId: String,
                            newBattingStatus: String,
-                           runs: Int,
-                           balls: Int,
-                           fours: Int,
-                           sixes: Int) : Int {
+                           batsmanStats: BatsmanStats,
+                           wicketDescription: String) : Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("batting_status", newBattingStatus)
-            put("runs", runs)
-            put("balls", balls)
-            put("fours", fours)
-            put("sixes", sixes)
+            put("runs", batsmanStats.runs.value)
+            put("balls", batsmanStats.balls.value)
+            put("fours", batsmanStats.fours.value)
+            put("sixes", batsmanStats.sixes.value)
+            put("wicket_description",wicketDescription)
         }
         val whereClause = "match_id = ? AND batting_status = ?"
         val whereArgs = arrayOf(matchId, "striker")

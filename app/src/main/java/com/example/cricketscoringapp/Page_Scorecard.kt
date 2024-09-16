@@ -61,6 +61,8 @@ fun ScoreCardPage() {
     val showNextBatsmanDialog = remember { mutableStateOf(false) }
 
     val showBowlerChangeDialog = remember { mutableStateOf(false) }
+    val showFielderDialog = remember { mutableStateOf(false) }
+    val selectedFielder = remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -684,6 +686,7 @@ fun ScoreCardPage() {
                 showWicketsDialog.value = true
             }
             if (showWicketsDialog.value) {
+                selectedFielder.value = ""
                 AlertDialog(
                     onDismissRequest = { showWicketsDialog.value = false },
                     title = { Text("Select WICKETS Option") },
@@ -709,7 +712,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKC"
                                 showWicketsDialog.value = false
-                                showNextBatsmanDialog.value = true
+                                showFielderDialog.value = true
                             }) {
                                 Text("Caught", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -717,7 +720,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKRO"
                                 showWicketsDialog.value = false
-                                showNextBatsmanDialog.value = true
+                                showFielderDialog.value = true
                             }) {
                                 Text("Run Out", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -725,7 +728,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKRONB"
                                 showWicketsDialog.value = false
-                                showNextBatsmanDialog.value = true
+                                showFielderDialog.value = true
                             }) {
                                 Text("Run Out NB", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -765,6 +768,43 @@ fun ScoreCardPage() {
                     },
                     confirmButton = {
                         Button(onClick = { showWicketsDialog.value = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+
+            if (showFielderDialog.value) {
+                AlertDialog(
+                    onDismissRequest = {
+                        showFielderDialog.value = false
+                        showWicketsDialog.value = true
+                    },
+                    title = { Text("Select Fielder") },
+                    text = {
+                        Column {
+                            when {
+                                bowlingTeam!= null -> {
+                                    bowlingTeam.forEach { player ->
+                                        // List of options to choose from
+                                        Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                                            selectedFielder.value = player.name
+                                            showFielderDialog.value = false
+                                            showNextBatsmanDialog.value = true
+                                        }) {
+                                            Text(player.name, fontSize = if (isTablet) 30.sp else 20.sp)
+                                        }
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            selectedFielder.value = ""
+                            showFielderDialog.value = false
+                        }) {
                             Text("Cancel")
                         }
                     }
@@ -821,9 +861,11 @@ fun ScoreCardPage() {
                                             selectedWicketsOption.value += "|$batsmanOut|$newBatsman"
                                             updateStats(context,balls,selectedWicketsOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
 
+                                            val wicketDescription = getWicketDescription(selectedWicketsOption.value,currentBowler.value,selectedFielder.value)
+
                                             if (firstBatsmanStats.active.value) {
                                                 //save out batsman to database
-                                                dbHelper.updateBattingStats(matchId,"out",firstBatsmanStats.runs.value,firstBatsmanStats.balls.value,firstBatsmanStats.fours.value,firstBatsmanStats.sixes.value)
+                                                dbHelper.updateBattingStats(matchId,"out",firstBatsmanStats,wicketDescription)
                                                 
                                                 firstBatsmanStats.name.value = newBatsman
                                                 firstBatsmanStats.active.value = true
@@ -833,7 +875,7 @@ fun ScoreCardPage() {
                                                 firstBatsmanStats.sixes.value = 0
                                             } else {
                                                 //save out batsman to database
-                                                dbHelper.updateBattingStats(matchId,"out",secondBatsmanStats.runs.value,secondBatsmanStats.balls.value,secondBatsmanStats.fours.value,secondBatsmanStats.sixes.value)
+                                                dbHelper.updateBattingStats(matchId,"out",secondBatsmanStats,wicketDescription)
 
                                                 secondBatsmanStats.name.value = newBatsman
                                                 secondBatsmanStats.active.value = true
@@ -874,6 +916,23 @@ fun ScoreCardPage() {
             }
         }
     }
+}
+
+fun getWicketDescription(wicketType: String, bowler: String, fielder: String) : String {
+    when (wicketType) {
+        "WKB" -> return "b $bowler"
+        "WKC", "WKCB" -> {
+            return if (bowler == fielder)
+                "c&b $bowler"
+            else
+                "c $fielder b $bowler"
+        }
+        "WKRO", "WKRONB" -> return "run out $fielder"
+        "WKST", "WKSTW" -> return "st $fielder b $bowler"
+        "WKHW" -> return "hit wicket"
+        "WKLB" -> return "lbw b $bowler"
+    }
+    return ""
 }
 
 fun playDuckSound(context: Context) {
