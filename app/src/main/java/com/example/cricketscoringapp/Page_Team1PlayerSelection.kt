@@ -11,14 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,9 +49,6 @@ fun Team1PlayerSelectionPage() {
     // State to keep track of selected players
     val selectedPlayers = remember { mutableStateListOf<Player>().apply { addAll(initialTeam1Players) } }
 
-    // State to keep track of midbowler selection for each player
-    val midBowlers = remember { mutableStateOf(mutableMapOf<Player, Boolean>()) }
-
     val team2PlayersDB = dbHelper.getTeamPlayers(matchId, 2, 0)
     val team1Captain = playersList.find { it.name == team1CaptainName.name }
     val team2Captain = playersList.find { it.name == team2CaptainName.name }
@@ -80,7 +75,6 @@ fun Team1PlayerSelectionPage() {
             items(filteredPlayers.size) { index ->
                 val player = filteredPlayers[index]
                 val isSelected = selectedPlayers.contains(player) || (player == team1Captain)
-                val isMidBowlerSelected = midBowlers.value[player] ?: false
 
                 Row(
                     modifier = Modifier
@@ -88,7 +82,6 @@ fun Team1PlayerSelectionPage() {
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Checkbox for player selection
                     Checkbox(
                         modifier = Modifier.padding(start = 2.dp),
                         colors = CheckboxDefaults.colors(
@@ -99,7 +92,7 @@ fun Team1PlayerSelectionPage() {
                             if (checked) {
                                 if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
                                     selectedPlayers.add(player)
-                                    dbHelper.addTeamPlayer(matchId, 1, player.name, 0,if (isMidBowlerSelected) 1 else 0)
+                                    dbHelper.addTeamPlayer(matchId,1,player.name,0,0)
                                 } else {
                                     Toast.makeText(
                                         context,
