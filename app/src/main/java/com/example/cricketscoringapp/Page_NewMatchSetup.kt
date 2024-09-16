@@ -10,16 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -80,9 +70,9 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
     team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
     team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
-    battingTeamCaptain = Player((dbHelper.getBattingTeamCaptain(matchId,1)))
-    facingBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"striker").name.value)
-    secondBatsman = Player(dbHelper.getBatsmanByStatus(matchId,"non-striker").name.value)
+    battingTeamCaptain = Player((dbHelper.getBattingTeamCaptain(matchId, 1)))
+    facingBatsman = Player(dbHelper.getBatsmanByStatus(matchId, "striker").name.value)
+    secondBatsman = Player(dbHelper.getBatsmanByStatus(matchId, "non-striker").name.value)
     openingBowler = Player(dbHelper.getCurrentBowler(matchId))
     openingKeeper = Player(dbHelper.getCurrentKeeper(matchId))
 
@@ -107,113 +97,39 @@ fun NewMatchSetupPage(navController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Row to hold Recycle Bin Button and "New Match" text in the same row
-           Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            val currentDate = LocalDate.now()
-            val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy") // Define the format
-            val formattedDate = currentDate.format(formatter)
-            
-            Text(text = "Match: $formattedDate",
-                 style = MaterialTheme.typography.headlineSmall,
-                 fontSize = if (isTablet) 40.sp else 22.sp)
-
-            IconButton(
-                onClick = {
-                    dbHelper.deleteMatch(matchId)
-                    navController.navigate("homepage")
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Recycle Bin"
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Row to hold both Team 1 Captain and Team 2 Captain dropdowns
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Team 1 Captain Dropdown
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                ExposedDropdownMenuBox(
-                    expanded = expanded1,
-                    onExpandedChange = {
-                        if (!matchStarted) {
-                            expanded1 = !expanded1
-                        }
+                val currentDate = LocalDate.now()
+                val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy") // Define the format
+                val formattedDate = currentDate.format(formatter)
+                Text(
+                    text = "Match: $formattedDate",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontSize = if (isTablet) 40.sp else 22.sp,
+                    color = Color(255, 252, 228)
+                )
+
+                IconButton(
+                    onClick = {
+                        dbHelper.deleteMatch(matchId)
+                        navController.navigate("homepage")
                     }
                 ) {
-                    OutlinedTextField(
-                        enabled = !matchStarted,
-                        readOnly = true,
-                        value = team1Captain?.name ?: "Select Captain",
-                        onValueChange = { },
-                        label = { Text("Team 1 Captain",fontSize = if (isTablet) 22.sp else 14.sp) },
-                        textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Recycle Bin",
+                        tint = Color(255, 252, 228)
                     )
-                    ExposedDropdownMenu(
-                        expanded = expanded1,
-                        onDismissRequest = { expanded1 = false }
-                    ) {
-                        playersList.forEach { player ->
-                            androidx.compose.material3.DropdownMenuItem(
-                                enabled = !matchStarted,
-                                text = { Text(text = player.name, fontSize = if (isTablet) 30.sp else 14.sp) },
-                                onClick = {
-                                    team1Captain = player
-                                    team1Captain?.let {
-                                        dbHelper.addTeamPlayer(matchId, 1, player.name, 1,0)
-                                    }
-                                    expanded1 = false
-                                }
-                            )
-                        }
-                    }
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
 
-                    ExposedDropdownMenu(
-                        expanded = expanded2,
-                        onDismissRequest = { expanded2 = false }
-                    ) {
-                        val remainingPlayers = playersList.filter { it != team1Captain }
-                        remainingPlayers.forEach { player ->
-                            androidx.compose.material3.DropdownMenuItem(
-                                enabled = !matchStarted,
-                                text = { Text(text = player.name, fontSize = if (isTablet) 30.sp else 14.sp) },
-                                onClick = {
-                                    team2Captain = player
-                                    team2Captain?.let {
-                                        dbHelper.addTeamPlayer(matchId, 2, player.name, 1,0)
-                                    }
-                                    expanded2 = false
-                                }
-                            )
-                        }
-                    }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        val textColor = if (!matchStarted) Color.White else Color(105, 105, 105)
-
-        if ((team1Captain!!.name != "") && (team2Captain!!.name != "")) {
+            // Row to hold both Team 1 Captain and Team 2 Captain dropdowns
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -237,19 +153,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     ) {
                         OutlinedTextField(
                             enabled = !matchStarted,
-                            onClick = {
-                                navController.navigate("team1PlayerSelection")
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(if (isTablet) 60.dp else 45.dp),
-                            shape = RectangleShape,
-                            content = {
+                            readOnly = true,
+                            value = team1Captain?.name ?: "Select Captain",
+                            onValueChange = { },
+                            label = {
                                 Text(
-                                    text = "Select Team Players",
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    fontSize = if (isTablet) 22.sp else 12.sp
+                                    "Team 1 Captain",
+                                    fontSize = if (isTablet) 22.sp else 14.sp
                                 )
                             },
                             textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
@@ -273,7 +183,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     onClick = {
                                         team1Captain = player
                                         team1Captain?.let {
-                                            dbHelper.addTeamPlayer(matchId, 1, player.name, 1)
+                                            dbHelper.addTeamPlayer(
+                                                matchId,
+                                                1,
+                                                player.name,
+                                                1,
+                                                0
+                                            )
                                         }
                                         expanded1 = false
                                     }
@@ -306,20 +222,98 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             onValueChange = { },
                             label = {
                                 Text(
-                                    "Team 2 Captain",
+                                    text = "Team 2 Captain",
                                     fontSize = if (isTablet) 22.sp else 14.sp
                                 )
                             },
+                            textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
                             modifier = Modifier
+                                .menuAnchor()
                                 .fillMaxWidth()
-                                .height(if (isTablet) 60.dp else 45.dp),
-                            shape = RectangleShape,
-                            content = {
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded2,
+                            onDismissRequest = { expanded2 = false }
+                        ) {
+                            val remainingPlayers = playersList.filter { it != team1Captain }
+                            remainingPlayers.forEach { player ->
+                                androidx.compose.material3.DropdownMenuItem(
+                                    enabled = !matchStarted,
+                                    text = {
+                                        Text(
+                                            text = player.name,
+                                            fontSize = if (isTablet) 30.sp else 14.sp
+                                        )
+                                    },
+                                    onClick = {
+                                        team2Captain = player
+                                        team2Captain?.let {
+                                            dbHelper.addTeamPlayer(matchId, 2, player.name, 1,0)
+                                        }
+                                        expanded2 = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val textColor = if (!matchStarted) Color.White else Color.Gray
+
+            if ((team1Captain!!.name != "") && (team2Captain!!.name != "")) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    // Team 1 column: Button + Players List
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Buttons to navigate to team player selection pages
+                        if (dbHelper.getCaptainForTeam(matchId, 1) != "") {
+                            Button(
+                                enabled = !matchStarted,
+                                onClick = {
+                                    navController.navigate("team1PlayerSelection")
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(255, 252, 228) // Set the background color
+                                ),
+                                content = {
+                                    Text(
+                                        text = "Select Team Players",
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        fontSize = if (isTablet) 22.sp else 16.sp
+                                    )
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = team1Captain!!.name,
+                                color = textColor,
+                                fontSize = if (isTablet) 30.sp else 16.sp
+                            )
+
+                            val team1Players = dbHelper.getTeamPlayers(matchId, 1, 0)
+
+                            for (player in team1Players) {
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Select Team Players",
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    fontSize = if (isTablet) 22.sp else 12.sp
+                                    text = player.name,
+                                    color = textColor,
+                                    fontSize = if (isTablet) 30.sp else 16.sp
                                 )
                             }
                         }
@@ -342,7 +336,9 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     navController.navigate("team2PlayerSelection")
                                 },
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RectangleShape,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(255, 252, 228) // Set the background color
+                                ),
                                 content = {
                                     Text(
                                         text = "Select Team Players",
@@ -436,7 +432,11 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     onClick = {
                                         team1Captain?.let { captain ->
                                             battingTeamCaptain = captain
-                                            dbHelper.updateMatchCaptain(matchId, 1, captain.name)
+                                            dbHelper.updateMatchCaptain(
+                                                matchId,
+                                                1,
+                                                captain.name
+                                            )
                                             dbHelper.updateMatchCaptain(
                                                 matchId,
                                                 2,
@@ -462,7 +462,11 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     onClick = {
                                         team2Captain?.let { captain ->
                                             battingTeamCaptain = captain
-                                            dbHelper.updateMatchCaptain(matchId, 1, captain.name)
+                                            dbHelper.updateMatchCaptain(
+                                                matchId,
+                                                1,
+                                                captain.name
+                                            )
                                             dbHelper.updateMatchCaptain(
                                                 matchId,
                                                 2,
@@ -495,10 +499,22 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                 if (battingTeamId != null) {
                     battingTeamList.clear()
-                    battingTeamList.addAll(dbHelper.getTeamPlayers(matchId, battingTeamId, 1))
+                    battingTeamList.addAll(
+                        dbHelper.getTeamPlayers(
+                            matchId,
+                            battingTeamId,
+                            1
+                        )
+                    )
 
                     bowlingTeamList.clear()
-                    bowlingTeamList.addAll(dbHelper.getTeamPlayers(matchId, bowlingTeamId, 1))
+                    bowlingTeamList.addAll(
+                        dbHelper.getTeamPlayers(
+                            matchId,
+                            bowlingTeamId,
+                            1
+                        )
+                    )
                 }
 
                 // Row to hold both Facing Batsman and Second Batsman
@@ -524,16 +540,47 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 }
                             }
                         ) {
-                            battingTeamList.forEach { player ->
-                                if (player.name != secondBatsman?.name) {
-                                    androidx.compose.material3.DropdownMenuItem(
-                                        enabled = !matchStarted,
-                                        text = { Text(text = player.name,fontSize = if (isTablet) 30.sp else 14.sp) },
-                                        onClick = {
-                                            facingBatsman = player
-                                            if (battingTeamId != null) {
-                                                facingBatsman?.name?.let {
-                                                    dbHelper.addBattingStats(matchId,battingTeamId,it,"striker")
+                            OutlinedTextField(
+                                enabled = !matchStarted,
+                                readOnly = true,
+                                value = facingBatsman?.name ?: "Select Batsman",
+                                onValueChange = { },
+                                label = {
+                                    Text(
+                                        "Facing Batsman",
+                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                    )
+                                },
+                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded4,
+                                onDismissRequest = { expanded4 = false }
+                            ) {
+                                battingTeamList.forEach { player ->
+                                    if (player.name != secondBatsman?.name) {
+                                        androidx.compose.material3.DropdownMenuItem(
+                                            enabled = !matchStarted,
+                                            text = {
+                                                Text(
+                                                    text = player.name,
+                                                    fontSize = if (isTablet) 30.sp else 14.sp
+                                                )
+                                            },
+                                            onClick = {
+                                                facingBatsman = player
+                                                if (battingTeamId != null) {
+                                                    facingBatsman?.name?.let {
+                                                        dbHelper.addBattingStats(
+                                                            matchId,
+                                                            battingTeamId,
+                                                            it,
+                                                            "striker"
+                                                        )
+                                                    }
                                                 }
                                                 expanded4 = false
                                             }
@@ -559,16 +606,47 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 }
                             }
                         ) {
-                            battingTeamList.forEach { player ->
-                                if (player.name != facingBatsman?.name) {
-                                    androidx.compose.material3.DropdownMenuItem(
-                                        enabled = !matchStarted,
-                                        text = { Text(text = player.name,fontSize = if (isTablet) 30.sp else 14.sp) },
-                                        onClick = {
-                                            secondBatsman = player
-                                            if (battingTeamId != null) {
-                                                secondBatsman?.name?.let {
-                                                    dbHelper.addBattingStats(matchId,battingTeamId,it,"non-striker")
+                            OutlinedTextField(
+                                enabled = !matchStarted,
+                                readOnly = true,
+                                value = secondBatsman?.name ?: "Select Batsman",
+                                onValueChange = { },
+                                label = {
+                                    Text(
+                                        "Second Batsman",
+                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                    )
+                                },
+                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded5,
+                                onDismissRequest = { expanded5 = false }
+                            ) {
+                                battingTeamList.forEach { player ->
+                                    if (player.name != facingBatsman?.name) {
+                                        androidx.compose.material3.DropdownMenuItem(
+                                            enabled = !matchStarted,
+                                            text = {
+                                                Text(
+                                                    text = player.name,
+                                                    fontSize = if (isTablet) 30.sp else 14.sp
+                                                )
+                                            },
+                                            onClick = {
+                                                secondBatsman = player
+                                                if (battingTeamId != null) {
+                                                    secondBatsman?.name?.let {
+                                                        dbHelper.addBattingStats(
+                                                            matchId,
+                                                            battingTeamId,
+                                                            it,
+                                                            "non-striker"
+                                                        )
+                                                    }
                                                 }
                                                 expanded5 = false
                                             }
@@ -715,28 +793,36 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-            //Only show if both teams contain 6 players and batting team, keeper and bowler have been set
-            if ((dbHelper.getTeamSize(matchId,1) == 6)
-                && (dbHelper.getTeamSize(matchId,2) == 6)
-                && (facingBatsman != null)
-                && (secondBatsman != null)
-                && (openingBowler != null)
-                && (openingKeeper != null))
-            {
-                Button(onClick = {
-                    if (!matchStarted) dbHelper.updateMatchIsStarted(matchId)
-                    navController.navigate("startnewmatch")
-                                 },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp)
-                        .padding(end = 8.dp)
-                        .height(60.dp),
-                    shape = RectangleShape) {
-                    if (!matchStarted) {
-                        Text(text = "Start New Match", fontSize = if (isTablet) 22.sp else 16.sp)
-                    } else {
-                        Text(text = "Continue Match", fontSize = if (isTablet) 22.sp else 16.sp)
+                //Only show if both teams contain 6 players and batting team, keeper and bowler have been set
+                if ((dbHelper.getTeamSize(matchId, 1) == 6)
+                    && (dbHelper.getTeamSize(matchId, 2) == 6)
+                    && (facingBatsman != null)
+                    && (secondBatsman != null)
+                    && (openingBowler != null)
+                    && (openingKeeper != null)
+                ) {
+                    Button(
+                        onClick = {
+                            if (!matchStarted) dbHelper.updateMatchIsStarted(matchId)
+                            navController.navigate("startnewmatch")
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp, end = 8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(255, 252, 228)
+                        )
+
+                    ) {
+                        if (!matchStarted) {
+                            Text(
+                                text = "Start New Match",
+                                fontSize = if (isTablet) 22.sp else 16.sp
+                            )
+                        } else {
+                            Text(text = "Continue Match",
+                                fontSize = if (isTablet) 22.sp else 16.sp)
+                        }
                     }
                 }
             }

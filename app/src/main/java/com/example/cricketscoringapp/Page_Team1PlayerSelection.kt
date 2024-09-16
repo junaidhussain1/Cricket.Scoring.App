@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -88,6 +91,9 @@ fun Team1PlayerSelectionPage() {
                     // Checkbox for player selection
                     Checkbox(
                         modifier = Modifier.padding(start = 2.dp),
+                        colors = CheckboxDefaults.colors(
+                            Color(255, 252, 228) // Set the background color
+                        ),
                         checked = isSelected,
                         onCheckedChange = { checked ->
                             if (checked) {
@@ -108,22 +114,12 @@ fun Team1PlayerSelectionPage() {
                         }
                     )
 
-                    Text(player.name, fontSize = if (isTablet) 32.sp else 20.sp, modifier = Modifier.padding(start = 8.dp))
+                    Text(player.name,
+                        fontSize = if (isTablet) 32.sp else 20.sp,
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = Color(255, 252, 228))
 
                     Spacer(modifier = Modifier.weight(1f))
-
-                    // Checkbox for midbowler selection
-//                    Checkbox(
-//                        checked = isMidBowlerSelected,
-//                        onCheckedChange = { checked ->
-//                            // Update the midbowler map
-//                            midBowlers.value[player] = checked
-//                            // Update the player's midbowler status in the database if they are already selected
-//                            if (selectedPlayers.contains(player)) {
-//                                dbHelper.addTeamPlayer(matchId, 1, player.name, 0,if (checked) 1 else 0)
-//                            }
-//                        }
-//                    )
                 }
             }
         }

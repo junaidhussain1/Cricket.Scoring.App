@@ -106,7 +106,8 @@ fun PlayerMgtPage() {
             if (playersList.isNotEmpty()) {
                 Text(
                     "Player List: " + playersList.size.toString(),
-                    style = MaterialTheme.typography.headlineSmall
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color(255, 252, 228)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 

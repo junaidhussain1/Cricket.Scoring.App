@@ -29,7 +29,8 @@ fun PlayerRow(player: String, onDelete: () -> Unit) {
     ) {
         Text(text = player,
             modifier = Modifier.weight(1f),
-            fontSize = if (isTablet) 32.sp else 22.sp)
+            fontSize = if (isTablet) 32.sp else 22.sp,
+            color = Color(255, 252, 228))
         Button(
             onClick = onDelete,
             colors = ButtonDefaults.buttonColors(
