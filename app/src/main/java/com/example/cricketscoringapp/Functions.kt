@@ -28,227 +28,175 @@ fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats, actionForBatsman
     }
 }
 
-fun doUpdateStats(newValue: String, multiplier: Int, bowlerStats: BowlerStats, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, firstTeamStats: TeamStats, secondTeamStats: TeamStats) {
-    if (newValue.contains("WK"))
-    {
-        val dotPosition = newValue.indexOf('|')
-        when (newValue.substring(0, dotPosition)) {
-            "WKB" -> {
-                bowlerStats.wickets.value += (1 * multiplier)
-                updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
-                updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
-            }
-
-            "WKCB" -> {
-                bowlerStats.wickets.value += (1 * multiplier)
-                updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
-                updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
-            }
-
-            "WKC" -> {
-                bowlerStats.wickets.value += (1 * multiplier)
-                updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
-                updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
-            }
-
-            "WKRO" -> {
-                bowlerStats.wickets.value += (1 * multiplier)
-                updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
-                updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
-            }
-
-            "WKRONB" -> {
-                bowlerStats.wickets.value += (1 * multiplier)
-                updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
-                updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
-            }
-
-            "WKST" -> {
-                bowlerStats.wickets.value += (1 * multiplier)
-                updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
-                updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
-            }
-
-            "WKSTW" -> {
-                bowlerStats.wickets.value += (1 * multiplier)
-                updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
-                updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
-            }
-
-            "WKHW" -> {
-                bowlerStats.wickets.value += (1 * multiplier)
-                updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
-                updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
-            }
-
-            "WKLB" -> {
-                bowlerStats.wickets.value += (1 * multiplier)
-                updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
-                updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
-            }
-        }
+fun doUpdateStats(context: Context,matchId: String,newValue: String, multiplier: Int, bowlerStats: BowlerStats, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, firstTeamStats: TeamStats, secondTeamStats: TeamStats) {
+    if (newValue.contains("WK")) {
+        updateBowler(matchId,"wickets",bowlerStats,1.00 * multiplier,"",context)
+        updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
+        updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
     } else {
         when (newValue) {
             "1" -> {
-                bowlerStats.runs.value += (1 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,1.00 * multiplier,"",context)
                 updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 1.0 * multiplier)
             }
 
             "2" -> {
-                bowlerStats.runs.value += (2 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,2.00 * multiplier,"",context)
                 updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 2 * multiplier)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "3" -> {
-                bowlerStats.runs.value += (3 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,3.00 * multiplier,"",context)
                 updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 3 * multiplier)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "4" -> {
-                bowlerStats.runs.value += (4 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,4.00 * multiplier,"",context)
+                updateBowler(matchId,"fours",bowlerStats,1.00 * multiplier,"",context)
                 updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 4 * multiplier)
                 updateBatsman("fours", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 4.0 * multiplier)
             }
 
             "6" -> {
-                bowlerStats.runs.value += (6 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,6.00 * multiplier,"",context)
+                updateBowler(matchId,"sixes",bowlerStats,1.00 * multiplier,"",context)
                 updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 6 * multiplier)
                 updateBatsman("sixes", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 6.0 * multiplier)
             }
 
             "W" -> {
-                bowlerStats.runs.value += (1 * multiplier)
-                bowlerStats.wides.value += (1 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"wides",bowlerStats,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 1.0 * multiplier)
             }
 
             "W+1" -> {
-                bowlerStats.runs.value += (1 * multiplier)
-                bowlerStats.wides.value += (1 * multiplier)
-                bowlerStats.byes.value += (1 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"wides",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"byes",bowlerStats,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "W+2" -> {
-                bowlerStats.runs.value += (1 * multiplier)
-                bowlerStats.wides.value += (1 * multiplier)
-                bowlerStats.byes.value += (2 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"wides",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"byes",bowlerStats,2.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "NB" -> {
-                bowlerStats.runs.value += (1 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 1.0 * multiplier)
             }
 
             "NB+1" -> {
-                bowlerStats.runs.value += (2 * multiplier)
-                bowlerStats.noballs.value += (1 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,2.00 * multiplier,"",context)
+                updateBowler(matchId,"noballs",bowlerStats,1.00 * multiplier,"",context)
                 updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "NB+2" -> {
-                bowlerStats.runs.value += (3 * multiplier)
-                bowlerStats.noballs.value += (1 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,3.00 * multiplier,"",context)
+                updateBowler(matchId,"noballs",bowlerStats,1.00 * multiplier,"",context)
                 updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 2 * multiplier)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "NB+3" -> {
-                bowlerStats.runs.value += (4 * multiplier)
-                bowlerStats.noballs.value += (1 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,4.00 * multiplier,"",context)
+                updateBowler(matchId,"noballs",bowlerStats,1.00 * multiplier,"",context)
                 updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 3 * multiplier)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 4.0 * multiplier)
             }
 
             "NB+4" -> {
-                bowlerStats.runs.value += (5 * multiplier)
-                bowlerStats.noballs.value += (1 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,5.00 * multiplier,"",context)
+                updateBowler(matchId,"noballs",bowlerStats,1.00 * multiplier,"",context)
                 updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 4 * multiplier)
                 updateBatsman("fours", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 5.0 * multiplier)
             }
 
             "NB+6" -> {
-                bowlerStats.runs.value += (7 * multiplier)
-                bowlerStats.noballs.value += (1 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,7.00 * multiplier,"",context)
+                updateBowler(matchId,"noballs",bowlerStats,1.00 * multiplier,"",context)
                 updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 6 * multiplier)
                 updateBatsman("sixes", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 7.0 * multiplier)
             }
 
             "NBL1" -> {
-                bowlerStats.runs.value += (1 * multiplier)
-                bowlerStats.noballs.value += (1 * multiplier)
-                bowlerStats.legbyes.value += (1 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"noballs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"legbyes",bowlerStats,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "NBL2" -> {
-                bowlerStats.runs.value += (1 * multiplier)
-                bowlerStats.noballs.value += (1 * multiplier)
-                bowlerStats.legbyes.value += (2 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"noballs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"legbyes",bowlerStats,2.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "NBL3" -> {
-                bowlerStats.runs.value += (1 * multiplier)
-                bowlerStats.noballs.value += (1 * multiplier)
-                bowlerStats.legbyes.value += (3 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"noballs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"legbyes",bowlerStats,3.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 4.0 * multiplier)
             }
 
             "NBB1" -> {
-                bowlerStats.runs.value += (1 * multiplier)
-                bowlerStats.byes.value += (1 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"byes",bowlerStats,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "NBB2" -> {
-                bowlerStats.runs.value += (1 * multiplier)
-                bowlerStats.byes.value += (2 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"byes",bowlerStats,2.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "NBB3" -> {
-                bowlerStats.runs.value += (1 * multiplier)
-                bowlerStats.byes.value += (3 * multiplier)
+                updateBowler(matchId,"runs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,"byes",bowlerStats,3.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 4.0 * multiplier)
             }
 
             "B1" -> {
-                bowlerStats.byes.value += (1 * multiplier)
+                updateBowler(matchId,"byes",bowlerStats,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 1.0 * multiplier)
             }
 
             "B2" -> {
-                bowlerStats.byes.value += (2 * multiplier)
+                updateBowler(matchId,"byes",bowlerStats,2.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "B3" -> {
-                bowlerStats.byes.value += (3 * multiplier)
+                updateBowler(matchId,"byes",bowlerStats,3.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "LB1" -> {
-                bowlerStats.legbyes.value += (1 * multiplier)
+                updateBowler(matchId,"legbyes",bowlerStats,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 1.0 * multiplier)
             }
 
             "LB2" -> {
-                bowlerStats.legbyes.value += (2 * multiplier)
+                updateBowler(matchId,"legbyes",bowlerStats,2.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "LB3" -> {
-                bowlerStats.legbyes.value += (3 * multiplier)
+                updateBowler(matchId,"legbyes",bowlerStats,3.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
         }
@@ -294,21 +242,23 @@ fun updateStats(context: Context,
             return
         }
 
+        updateBowler(matchId,"over",bowlerStats,0.0,newValue,context)
+
         // Increment the bowlerOver by 0.1 only if it's a valid ball value
         if (newValue !in excludedValuesFromBallsBalled) {
-            bowlerStats.over.value += 0.1f
+            updateBowler(matchId,"over",bowlerStats,0.1,"",context)
             updateTeam("overs", firstTeamStats, secondTeamStats, 0.1)
         }
         if (newValue !in excludedValuesFromBallsFaced) {
             updateBatsman("balls", firstBatsmanStats, secondBatsmanStats, 1)
         }
 
-        doUpdateStats(newValue,1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
+        doUpdateStats(context,matchId,newValue,1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
 
-        if ((newValue == "1") || (newValue == "2")) swapBatsmen(firstBatsmanStats, secondBatsmanStats)
+        if ((newValue == "1") || (newValue == "2")) swapBatsmenDB(context,matchId,firstBatsmanStats, secondBatsmanStats)
 
         if (balls.size == 6 && balls.take(6).all { it.action == "0" }) {
-            bowlerStats.maiden.value += 1
+            updateBowler(matchId,"maiden",bowlerStats,1.00,"",context)
         }
 
         //end of over handling
@@ -328,7 +278,7 @@ fun updateStats(context: Context,
             if ((lastBall == "1") || (lastBall == "2")) {
                 swapBatsmen(firstBatsmanStats,secondBatsmanStats,balls[lastNonEmptyIndex].batsman)
             }
-            bowlerStats.over.value -= 0.1f
+            updateBowler(matchId,"over",bowlerStats,-0.1,"",context)
             updateTeam("overs", firstTeamStats, secondTeamStats, -0.1)
         }
 
@@ -365,10 +315,10 @@ fun updateStats(context: Context,
 
         // Check if the first 5 balls were "0" and last index is 5
         if (lastNonEmptyIndex == 5 && balls.take(5).all { it.action == "0" }) {
-            bowlerStats.maiden.value -= 1
+            updateBowler(matchId,"maiden",bowlerStats,-1.00,"",context)
         }
 
-        doUpdateStats(lastBall,-1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
+        doUpdateStats(context,matchId,lastBall,-1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
 
         balls[lastNonEmptyIndex] = Ball("",activeBatsman)
     }
@@ -406,6 +356,55 @@ fun updateStats(context: Context,
             runsToWinTxt.value = "$runsToWin runs to win from $ballsRemaining balls!"
         }
     }
+}
+
+fun updateBowler(
+    matchId: String,
+    statType: String,
+    bowlerStats: BowlerStats,
+    updateValue: Double,
+    ballAction: String,
+    context: Context)
+{
+    val dbHelper = CricketDatabaseHelper(context)
+
+    when(statType){
+        "over" -> {
+            bowlerStats.over.value += updateValue
+        }
+        "maiden" -> {
+            bowlerStats.maiden.value += updateValue.toInt()
+        }
+        "runs" -> {
+            bowlerStats.runs.value += updateValue.toInt()
+        }
+        "wickets" -> {
+            bowlerStats.wickets.value += updateValue.toInt()
+        }
+        "noballs" -> {
+            bowlerStats.noballs.value += updateValue.toInt()
+        }
+        "wides" -> {
+            bowlerStats.wides.value += updateValue.toInt()
+        }
+        "legbyes" -> {
+            bowlerStats.legbyes.value += updateValue.toInt()
+        }
+        "fours" -> {
+            bowlerStats.fours.value += updateValue.toInt()
+        }
+        "sixes" -> {
+            bowlerStats.sixes.value += updateValue.toInt()
+        }
+    }
+    if (ballAction != "") {
+        if (bowlerStats.overrecord.value == "") {
+            bowlerStats.overrecord.value = ballAction
+        } else {
+            bowlerStats.overrecord.value += ",$ballAction"
+        }
+    }
+    dbHelper.updateBowlingStats(matchId,bowlerStats)
 }
 
 fun updateBatsman(

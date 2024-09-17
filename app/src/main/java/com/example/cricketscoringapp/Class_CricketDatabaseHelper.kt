@@ -16,7 +16,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 10
+        const val DATABASE_VERSION = 11
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -93,6 +93,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             legbyes INTEGER,
             fours INTEGER,
             sixes INTEGER,
+            over_record TEXT,
             PRIMARY KEY (match_id, bowling_order)
         )
     """
@@ -537,33 +538,23 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     }
 
     fun updateBowlingStats(matchId: String,
-                           teamId: Int,
-                           bowlingOrder: Int,
-                           over: Double,
-                           maiden: Int,
-                           runs: Int,
-                           wickets: Int,
-                           noballs: Int,
-                           wides: Int,
-                           byes: Int,
-                           legbyes: Int,
-                           fours: Int,
-                           sixes: Int) : Int {
+                           bowlerStats: BowlerStats) : Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
-            put("over", over)
-            put("maiden", maiden)
-            put("runs", runs)
-            put("wickets", wickets)
-            put("noballs", noballs)
-            put("wides",wides)
-            put("byes",byes)
-            put("legbyes",legbyes)
-            put("fours",fours)
-            put("sixes",sixes)
+            put("over", bowlerStats.over.value)
+            put("maiden", bowlerStats.maiden.value)
+            put("runs", bowlerStats.runs.value)
+            put("wickets", bowlerStats.wickets.value)
+            put("noballs", bowlerStats.noballs.value)
+            put("wides",bowlerStats.wides.value)
+            put("byes",bowlerStats.byes.value)
+            put("legbyes",bowlerStats.legbyes.value)
+            put("fours",bowlerStats.fours.value)
+            put("sixes",bowlerStats.sixes.value)
+            put("over_record",bowlerStats.overrecord.value)
         }
-        val whereClause = "match_id = ? AND team_id = ? AND bowling_order = ?"
-        val whereArgs = arrayOf(matchId, teamId.toString(), bowlingOrder.toString())
+        val whereClause = "match_id = ? AND bowling_status = ?"
+        val whereArgs = arrayOf(matchId, "bowling")
 
         return db.update(TABLE_BOWLINGSTATS, contentValues, whereClause, whereArgs)
     }
