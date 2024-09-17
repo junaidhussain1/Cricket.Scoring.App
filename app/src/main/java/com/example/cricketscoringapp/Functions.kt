@@ -343,18 +343,18 @@ fun updateStats(context: Context,
                 dbHelper.deleteBatsman(matchId,newBatsman)
                 dbHelper.updateBattingStats(matchId,batsmanOutFromDB.name.value,"out","striker")
                 batsmanOutFromDB.balls.value -= 1
-                dbHelper.updateBattingStats(matchId,"striker",batsmanOutFromDB)
+                dbHelper.updateBattingStats(matchId,"striker",batsmanOutFromDB,"")
 
                 if (firstBatsmanStats.name.value == newBatsman) {
                     firstBatsmanStats.name.value = batsmanOut
                     firstBatsmanStats.runs.value = batsmanOutFromDB.runs.value
-                    firstBatsmanStats.balls.value = batsmanOutFromDB.balls.value - 1
+                    firstBatsmanStats.balls.value = batsmanOutFromDB.balls.value
                     firstBatsmanStats.fours.value = batsmanOutFromDB.fours.value
                     firstBatsmanStats.sixes.value = batsmanOutFromDB.sixes.value
                 } else if (secondBatsmanStats.name.value == newBatsman) {
                     secondBatsmanStats.name.value = batsmanOut
                     secondBatsmanStats.runs.value = batsmanOutFromDB.runs.value
-                    secondBatsmanStats.balls.value = batsmanOutFromDB.balls.value - 1
+                    secondBatsmanStats.balls.value = batsmanOutFromDB.balls.value
                     secondBatsmanStats.fours.value = batsmanOutFromDB.fours.value
                     secondBatsmanStats.sixes.value = batsmanOutFromDB.sixes.value
                 }

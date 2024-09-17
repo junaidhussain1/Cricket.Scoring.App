@@ -704,6 +704,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKCB"
                                 showWicketsDialog.value = false
+                                selectedFielder.value = dbHelper.getCurrentKeeper(matchId)
                                 showNextBatsmanDialog.value = true
                             }) {
                                 Text("Caught Behind", fontSize = if (isTablet) 30.sp else 20.sp)
@@ -736,6 +737,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKST"
                                 showWicketsDialog.value = false
+                                selectedFielder.value = dbHelper.getCurrentKeeper(matchId)
                                 showNextBatsmanDialog.value = true
                             }) {
                                 Text("Stumped", fontSize = if (isTablet) 30.sp else 20.sp)
@@ -744,6 +746,7 @@ fun ScoreCardPage() {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKSTW"
                                 showWicketsDialog.value = false
+                                selectedFielder.value = dbHelper.getCurrentKeeper(matchId)
                                 showNextBatsmanDialog.value = true
                             }) {
                                 Text("Stumped Wide", fontSize = if (isTablet) 30.sp else 20.sp)
@@ -919,16 +922,17 @@ fun ScoreCardPage() {
 }
 
 fun getWicketDescription(wicketType: String, bowler: String, fielder: String) : String {
-    when (wicketType) {
+    val processedWicketType = wicketType.substringBefore("|")
+    when (processedWicketType) {
         "WKB" -> return "b $bowler"
-        "WKC", "WKCB" -> {
+        in listOf("WKC", "WKCB") -> {
             return if (bowler == fielder)
                 "c&b $bowler"
             else
                 "c $fielder b $bowler"
         }
-        "WKRO", "WKRONB" -> return "run out $fielder"
-        "WKST", "WKSTW" -> return "st $fielder b $bowler"
+        in listOf("WKRO", "WKRONB") -> return "run out $fielder"
+        in listOf("WKST", "WKSTW") -> return "st $fielder b $bowler"
         "WKHW" -> return "hit wicket"
         "WKLB" -> return "lbw b $bowler"
     }
