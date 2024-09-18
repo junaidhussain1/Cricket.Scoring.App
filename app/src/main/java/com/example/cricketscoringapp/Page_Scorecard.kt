@@ -424,7 +424,7 @@ fun ScoreCardPage() {
                 )
             }
 
-            if (balls.size == 6) {
+            if (endOfOverReached(balls)) {
                 balls.clear()
                 showBowlerChangeDialog.value = true
             }
