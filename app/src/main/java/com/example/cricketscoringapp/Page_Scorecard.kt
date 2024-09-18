@@ -318,7 +318,7 @@ fun ScoreCardPage() {
 
                                         Button(onClick = {
                                             dbHelper.updateBowlingStats(matchId,"bowled")
-                                            dbHelper.addBowlingStats(matchId,bowlingTeamId,player.name,1,"bowling")
+                                            dbHelper.addBowlingStats(matchId,bowlingTeamId,player.name,"bowling")
                                             showBowlerChangeDialog.value = false
                                             setCurrentBowler(bowlerStats, player.name)
                                         }, modifier = Modifier.fillMaxWidth()) {

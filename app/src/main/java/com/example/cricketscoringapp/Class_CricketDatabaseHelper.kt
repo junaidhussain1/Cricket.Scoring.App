@@ -496,7 +496,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     fun addBowlingStats(matchId: String,
                         teamId: Int,
                         playerName: String,
-                        bowlingTurn: Int,
                         bowlingStatus: String) {
         val db = writableDatabase
         val values = ContentValues()
@@ -504,7 +503,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         values.put("team_id", teamId)
         values.put("bowling_order",getNextBowlingOrderNo(matchId))
         values.put("player_name", playerName)
-        values.put("bowling_turn", bowlingTurn)
+        values.put("bowling_turn", getNextBowlingTurnNo(matchId,playerName))
         values.put("bowling_status", bowlingStatus)
         values.put("keeper_name","")
         db.insert(TABLE_BOWLINGSTATS,null,values)
@@ -567,6 +566,20 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         cursor.use { // Auto-close the cursor after use
             if (it.moveToFirst()) {
                 return it.getInt(it.getColumnIndexOrThrow("max_bowling_order")) + 1
+            }
+        }
+        // If no records found, return 1
+        return 1
+    }
+
+    private fun getNextBowlingTurnNo(matchId: String, playerName: String): Int {
+        val db = readableDatabase
+        val query = "SELECT bowling_turn FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND player_name = ?"
+        val cursor = db.rawQuery(query, arrayOf(matchId,playerName))
+
+        cursor.use { // Auto-close the cursor after use
+            if (it.moveToFirst()) {
+                return it.getInt(it.getColumnIndexOrThrow("bowling_turn")) + 1
             }
         }
         // If no records found, return 1
