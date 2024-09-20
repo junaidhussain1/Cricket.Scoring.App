@@ -511,6 +511,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db.close()
     }
 
+
     fun updateBowlingStats(matchId: String,
                            bowlingStatus: String) : Int {
         val db = writableDatabase
@@ -522,7 +523,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
         return db.update(TABLE_BOWLINGSTATS, contentValues, whereClause, whereArgs)
     }
-
     fun updateBowlingStatsKeeper(matchId: String,
                            teamId: Int,
                            bowlingOrder: Int,
@@ -745,18 +745,12 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     fun getTeamStats(matchId: String, currentTeamId: Int, captainName: String): TeamStats {
         val otherTeamId = if (currentTeamId == 1) 2 else 1
         // Initialize with default values
-        var teamStats = TeamStats(
-                name = mutableStateOf(""),
-                overs = mutableDoubleStateOf(0.0),
-                inningScore = mutableIntStateOf(0),
-                inningWickets = mutableIntStateOf(0),
-                active = mutableStateOf(true)
-        )
+        val teamStats: TeamStats
 
-        var overs: Double = 0.0
-        var extras: Int = 0
-        var runs: Int = 0
-        var wickets: Int = 0
+        var overs = 0.0
+        var extras = 0
+        var runs = 0
+        var wickets = 0
 
         val db = readableDatabase
         var query = "SELECT SUM(over) AS overs FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
@@ -800,5 +794,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         )
         return teamStats
 
+    }
+
+    fun deleteCurrentBowler(matchId: String) : Int {
+        val currentBowler = getCurrentBowler(matchId)
+        val db = writableDatabase
+        return db.delete(TABLE_BOWLINGSTATS, "player_name = ? AND bowling_status = ?", arrayOf(currentBowler,"bowling"))
     }
 }

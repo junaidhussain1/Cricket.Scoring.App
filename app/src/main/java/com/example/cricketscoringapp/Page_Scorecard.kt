@@ -1,6 +1,5 @@
 package com.example.cricketscoringapp
 
-import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +32,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
-import android.media.MediaPlayer
 
 
 @Composable
@@ -336,7 +334,7 @@ fun ScoreCardPage() {
                                         val oversBowled = matchingBowler?.overs ?: 0.0
 
                                         Button(onClick = {
-                                            dbHelper.updateBowlingStats(matchId,"bowled")
+                                            dbHelper.deleteCurrentBowler(matchId)
                                             dbHelper.addBowlingStats(matchId,bowlingTeamId,player.name,"bowling")
                                             showBowlerChangeDialog.value = false
                                             setCurrentBowler(bowlerStats, player.name)
@@ -377,8 +375,7 @@ fun ScoreCardPage() {
                     balls = balls,
                     headingFontBold1 = FontWeight.Normal,
                     ballsFontBold1 = FontWeight.Bold,
-                    backcolor1 = Color.White,
-                    fontColor1 = Color.Black
+                    backcolor1 = Color.White
                 )
             }
         }
@@ -836,11 +833,8 @@ fun ScoreCardPage() {
             if (showNextBatsmanDialog.value) {
 
                 //Get List of Team Players
-                val nonStrikerBatsman = if (firstBatsmanStats.active.value) {
-                    secondBatsmanStats.name.value
-                } else {
-                    firstBatsmanStats.name.value
-                }
+                val nonStrikerBatsman = getInActiveBatsman(firstBatsmanStats,secondBatsmanStats)
+
                 val teamId = dbHelper.getTeamForPlayer(matchId, firstBatsmanStats.name.value)
                 val players = teamId?.let { dbHelper.getTeamPlayers(matchId, it,1) }
 
@@ -940,43 +934,3 @@ fun ScoreCardPage() {
     }
 }
 
-fun getWicketDescription(wicketType: String, bowler: String, fielder: String) : String {
-    val processedWicketType = wicketType.substringBefore("|")
-    when (processedWicketType) {
-        "WKB" -> return "b $bowler"
-        in listOf("WKC", "WKCB") -> {
-            return if (bowler == fielder)
-                "c&b $bowler"
-            else
-                "c $fielder b $bowler"
-        }
-        in listOf("WKRO", "WKRONB") -> return "run out $fielder"
-        in listOf("WKST", "WKSTW") -> return "st $fielder b $bowler"
-        "WKHW" -> return "hit wicket"
-        "WKLB" -> return "lbw b $bowler"
-    }
-    return ""
-}
-
-fun playDuckSound(context: Context) {
-    var mediaPlayer = MediaPlayer.create(context, R.raw.duckonrepeat)
-
-    if (mediaPlayer.isPlaying) {
-        mediaPlayer.stop()
-        mediaPlayer.reset()
-        mediaPlayer = MediaPlayer.create(context, R.raw.duckonrepeat)
-    }
-    mediaPlayer.start()
-}
-
-fun setCurrentBowler(bowlerStats: BowlerStats, name: String) {
-    bowlerStats.name.value = name
-    bowlerStats.over.value = 0.0
-    bowlerStats.maiden.value = 0
-    bowlerStats.runs.value = 0
-    bowlerStats.wickets.value = 0
-    bowlerStats.noballs.value = 0
-    bowlerStats.wides.value = 0
-    bowlerStats.byes.value = 0
-    bowlerStats.legbyes.value = 0
-}

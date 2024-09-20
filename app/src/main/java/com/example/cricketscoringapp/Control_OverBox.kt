@@ -20,7 +20,6 @@ fun OverBox(
     balls: List<Ball>,
     headingFontBold1: FontWeight,
     ballsFontBold1: FontWeight,
-    fontColor1: Color,
     backcolor1: Color
 ) {
     val configuration = LocalConfiguration.current

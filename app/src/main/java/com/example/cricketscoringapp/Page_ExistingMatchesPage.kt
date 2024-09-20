@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Icon
@@ -54,10 +53,8 @@ fun ExistingMatchesPage() {
                         horizontalAlignment = Alignment.Start
                 )
                 {
-
                     Text(
                         text = "$team1Captain vs $team2Captain",
-                        //modifier = Modifier.fillMaxWidth(), // Ensures the text fills the width of the parent container
                         style = androidx.compose.ui.text.TextStyle(
                             textAlign = TextAlign.Start,
                             fontSize = 18.sp
@@ -71,14 +68,13 @@ fun ExistingMatchesPage() {
                     horizontalAlignment = Alignment.End
                 )
                 {
-
-                // Synchronization Icon
-                Icon(
-                    imageVector = Icons.Default.Sync,
-                    contentDescription = "Sync Status",
-                    tint = if (match.isSynced) Color.Green else Color.Gray
-                )
-                    }
+                    // Synchronization Icon
+                    Icon(
+                        imageVector = Icons.Default.Sync,
+                        contentDescription = "Sync Status",
+                        tint = if (match.isSynced) Color.Green else Color.Gray
+                    )
+                }
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.example.cricketscoringapp
 
 import android.content.Context
+import android.media.MediaPlayer
 import androidx.compose.runtime.MutableState
 
 fun swapBatsmenDB(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats) {
@@ -212,6 +213,14 @@ fun getActiveBatsman(firstBatsmanStats: BatsmanStats, secondBatsmanStats: Batsma
     }
 }
 
+fun getInActiveBatsman(firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats): String {
+    return if (firstBatsmanStats.active.value) {
+        secondBatsmanStats.name.value
+    } else {
+        firstBatsmanStats.name.value
+    }
+}
+
 // Function to update the stats
 fun updateStats(context: Context,
                 balls: MutableList<Ball>,
@@ -283,23 +292,21 @@ fun updateStats(context: Context,
         if (lastBall !in excludedValuesFromBallsFaced) {
             if (lastBall.contains("WK")) {
                 //Restore out batsman
-                val parts = lastBall.split(",")
-                val batsmanOut = parts[1]
-                val newBatsman = parts[2]
+                val batsmanOut = balls[lastNonEmptyIndex].batsman
 
                 val batsmanOutFromDB = dbHelper.getBatsmanStats(matchId,batsmanOut)
-                dbHelper.deleteBatsman(matchId,newBatsman)
+                dbHelper.deleteBatsman(matchId,activeBatsman)
                 dbHelper.updateBattingStats(matchId,batsmanOutFromDB.name.value,"out","striker")
                 batsmanOutFromDB.balls.value -= 1
                 dbHelper.updateBattingStats(matchId,"striker",batsmanOutFromDB,"")
 
-                if (firstBatsmanStats.name.value == newBatsman) {
+                if (firstBatsmanStats.name.value == activeBatsman) {
                     firstBatsmanStats.name.value = batsmanOut
                     firstBatsmanStats.runs.value = batsmanOutFromDB.runs.value
                     firstBatsmanStats.balls.value = batsmanOutFromDB.balls.value
                     firstBatsmanStats.fours.value = batsmanOutFromDB.fours.value
                     firstBatsmanStats.sixes.value = batsmanOutFromDB.sixes.value
-                } else if (secondBatsmanStats.name.value == newBatsman) {
+                } else if (secondBatsmanStats.name.value == activeBatsman) {
                     secondBatsmanStats.name.value = batsmanOut
                     secondBatsmanStats.runs.value = batsmanOutFromDB.runs.value
                     secondBatsmanStats.balls.value = batsmanOutFromDB.balls.value
@@ -402,11 +409,16 @@ fun updateBowler(
         }
     }
     if (!undo) {
-        if (ballAction != "") {
-            if (bowlerStats.overrecord.value == "") {
-                bowlerStats.overrecord.value = "$ballAction,$activeBatsman"
+        if (ballAction != "")  {
+            val ballActionString = if (!ballAction.contains("WK")) {
+                "$ballAction,$activeBatsman"
             } else {
-                bowlerStats.overrecord.value += "|$ballAction,$activeBatsman"
+                ballAction
+            }
+            if (bowlerStats.overrecord.value == "") {
+                bowlerStats.overrecord.value = ballActionString
+            } else {
+                bowlerStats.overrecord.value += "|$ballActionString"
             }
         }
     } else {
@@ -525,4 +537,44 @@ fun removeLastPipeDelimitedValue(pipeDelimitedValue: String): String {
 fun endOfOverReached(balls: MutableList<Ball>): Boolean {
     val excludedValuesFromBallsFaced = setOf("W","W+1","W+2")
     return balls.filter { it.action !in excludedValuesFromBallsFaced }.size >= 6
+}
+fun playDuckSound(context: Context) {
+    var mediaPlayer = MediaPlayer.create(context, R.raw.duckonrepeat)
+
+    if (mediaPlayer.isPlaying) {
+        mediaPlayer.stop()
+        mediaPlayer.reset()
+        mediaPlayer = MediaPlayer.create(context, R.raw.duckonrepeat)
+    }
+    mediaPlayer.start()
+}
+
+fun setCurrentBowler(bowlerStats: BowlerStats, name: String) {
+    bowlerStats.name.value = name
+    bowlerStats.over.value = 0.0
+    bowlerStats.maiden.value = 0
+    bowlerStats.runs.value = 0
+    bowlerStats.wickets.value = 0
+    bowlerStats.noballs.value = 0
+    bowlerStats.wides.value = 0
+    bowlerStats.byes.value = 0
+    bowlerStats.legbyes.value = 0
+}
+
+fun getWicketDescription(wicketType: String, bowler: String, fielder: String) : String {
+    val processedWicketType = wicketType.substringBefore(",")
+    when (processedWicketType) {
+        "WKB" -> return "b $bowler"
+        in listOf("WKC", "WKCB") -> {
+            return if (bowler == fielder)
+                "c&b $bowler"
+            else
+                "c $fielder b $bowler"
+        }
+        in listOf("WKRO", "WKRONB") -> return "run out $fielder"
+        in listOf("WKST", "WKSTW") -> return "st $fielder b $bowler"
+        "WKHW" -> return "hit wicket"
+        "WKLB" -> return "lbw b $bowler"
+    }
+    return ""
 }
