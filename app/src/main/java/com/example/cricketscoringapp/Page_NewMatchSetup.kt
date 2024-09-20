@@ -716,7 +716,6 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                     matchId,
                                                     bowlingTeamId,
                                                     player.name,
-                                                    1,
                                                     "bowling"
                                                 )
                                                 expanded6 = false

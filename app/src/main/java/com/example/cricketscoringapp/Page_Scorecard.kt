@@ -79,27 +79,26 @@ fun ScoreCardPage() {
             team1Captain = firstBattingTeamCaptain
         }
 
-        val balls = remember {
-            mutableStateListOf<Ball>()
-        }
         val runsToWin = remember { mutableStateOf("") }
 
+        val team1Stats = dbHelper.getTeamStats(matchId,1,team1Captain.name)
         val firstBattingTeamStats = remember {
             TeamStats(
-                name = mutableStateOf(team1Captain.name),
-                overs = mutableDoubleStateOf(0.0),
-                inningScore = mutableIntStateOf(0),
-                inningWickets = mutableIntStateOf(0),
+                name = mutableStateOf(team1Stats.name.value),
+                overs = mutableDoubleStateOf(team1Stats.overs.value),
+                inningScore = mutableIntStateOf(team1Stats.inningScore.value),
+                inningWickets = mutableIntStateOf(team1Stats.inningWickets.value),
                 active = mutableStateOf(value = true)
             )
         }
 
+        val team2Stats = dbHelper.getTeamStats(matchId,2,team2Captain.name)
         val secondBattingTeamStats = remember {
             TeamStats(
-                name = mutableStateOf(team2Captain.name),
-                overs = mutableDoubleStateOf(0.0),
-                inningScore = mutableIntStateOf(value = 0),
-                inningWickets = mutableIntStateOf(value = 0),
+                name = mutableStateOf(team2Stats.name.value),
+                overs = mutableDoubleStateOf(team2Stats.overs.value),
+                inningScore = mutableIntStateOf(team2Stats.inningScore.value),
+                inningWickets = mutableIntStateOf(team2Stats.inningWickets.value),
                 active = mutableStateOf(value = false)
             )
         }
@@ -128,19 +127,39 @@ fun ScoreCardPage() {
             )
         }
 
+        val bowler = dbHelper.getCurrentBowlerStats(matchId)
         val bowlerStats = remember {
             BowlerStats(
-                name = mutableStateOf(currentBowler.value),
-                over = mutableDoubleStateOf(.0),
-                maiden = mutableIntStateOf(0),
-                runs = mutableIntStateOf(0),
-                wickets = mutableIntStateOf(0),
-                noballs = mutableIntStateOf(0),
-                wides = mutableIntStateOf(0),
-                byes = mutableIntStateOf(0),
-                legbyes = mutableIntStateOf(0)
+                name = mutableStateOf(bowler.name.value),
+                over = mutableDoubleStateOf(bowler.over.value),
+                maiden = mutableIntStateOf(bowler.maiden.value),
+                runs = mutableIntStateOf(bowler.runs.value),
+                wickets = mutableIntStateOf(bowler.wickets.value),
+                noballs = mutableIntStateOf(bowler.noballs.value),
+                wides = mutableIntStateOf(bowler.wides.value),
+                byes = mutableIntStateOf(bowler.byes.value),
+                legbyes = mutableIntStateOf(bowler.legbyes.value),
+                fours = mutableIntStateOf(bowler.fours.value),
+                sixes = mutableIntStateOf(bowler.sixes.value),
+                overrecord = mutableStateOf(bowler.overrecord.value)
             )
         }
+
+        val balls = remember { mutableStateListOf<Ball>() }
+        if (bowlerStats.overrecord.value.contains(",")) {
+            val ballValues = bowlerStats.overrecord.value.split("|")
+            balls.clear()
+            ballValues.forEach { value ->
+                val pipeValues = value.split(",")
+                val ball = Ball(pipeValues[0], pipeValues[1]) // Assuming Ball takes an Int
+                balls.add(ball)
+            }
+        } else if (bowlerStats.overrecord.value != "") {
+            val pipeValues = bowlerStats.overrecord.value.split(",")
+            val ball = Ball(pipeValues[0], pipeValues[1]) // Assuming Ball takes an Int
+            balls.add(ball)
+        }
+
 
         // Innings Score Box
         Box(
@@ -861,7 +880,7 @@ fun ScoreCardPage() {
                                             if (duckOut) playDuckSound(context)
 
                                             val newBatsman = player.name
-                                            selectedWicketsOption.value += "|$batsmanOut|$newBatsman"
+                                            selectedWicketsOption.value += ",$batsmanOut,$newBatsman"
                                             updateStats(context,balls,selectedWicketsOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
 
                                             val wicketDescription = getWicketDescription(selectedWicketsOption.value,currentBowler.value,selectedFielder.value)

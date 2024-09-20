@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import java.time.LocalDate
@@ -600,6 +601,45 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return playerName
     }
 
+    fun getCurrentBowlerStats(matchId: String) : BowlerStats {
+        val db = readableDatabase
+        val query = "SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId,"bowling"))
+
+        var bowlerStats = BowlerStats(
+            name = mutableStateOf(""),
+            over = mutableDoubleStateOf(0.0),
+            maiden = mutableIntStateOf(0),
+            runs = mutableIntStateOf(0),
+            wickets = mutableIntStateOf(0),
+            noballs = mutableIntStateOf(0),
+            wides = mutableIntStateOf(0),
+            byes = mutableIntStateOf(0),
+            legbyes = mutableIntStateOf(0),
+            fours = mutableIntStateOf(0),
+            sixes = mutableIntStateOf(0),
+            overrecord = mutableStateOf("")
+        )
+        if (cursor.moveToFirst()) {
+            bowlerStats = BowlerStats(
+                name = mutableStateOf(cursor.getString(cursor.getColumnIndexOrThrow("player_name"))),
+                over = mutableDoubleStateOf(cursor.getDouble(cursor.getColumnIndexOrThrow("over"))),
+                maiden = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("maiden"))),
+                runs = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("runs"))),
+                wickets = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("wickets"))),
+                noballs = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("noballs"))),
+                wides = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("wides"))),
+                byes = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("byes"))),
+                legbyes = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("legbyes"))),
+                fours = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("fours"))),
+                sixes = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("sixes"))),
+                overrecord = mutableStateOf(cursor.getString(cursor.getColumnIndexOrThrow("over_record")) ?: "")
+            )
+        }
+        cursor.close()
+        return bowlerStats
+    }
+
     fun getCurrentKeeper(matchId: String) : String {
         val db = readableDatabase
         val query = "SELECT keeper_name FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
@@ -647,19 +687,14 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         )
 
         while (cursor.moveToNext()) {
-            val runs: Int = cursor.getInt(cursor.getColumnIndexOrThrow("runs"))
-            val balls: Int = cursor.getInt(cursor.getColumnIndexOrThrow("balls"))
-            val fours: Int = cursor.getInt(cursor.getColumnIndexOrThrow("fours"))
-            val sixes: Int = cursor.getInt(cursor.getColumnIndexOrThrow("sixes"))
-
             // Assign the retrieved values to batsmanStats
             batsmanStats = BatsmanStats(
                 name = mutableStateOf(value = playerName),
-                runs = mutableIntStateOf(value = runs),
-                balls = mutableIntStateOf(value = balls),
-                fours = mutableIntStateOf(value = fours),
-                sixes = mutableIntStateOf(value = sixes),
-                active = mutableStateOf(value = true)
+                runs = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("runs"))),
+                balls = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("balls"))),
+                fours = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("fours"))),
+                sixes = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("sixes"))),
+                active = mutableStateOf(cursor.getString(cursor.getColumnIndexOrThrow("batting_status")) == "striker")
             )
         }
         cursor.close()
@@ -705,5 +740,65 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val exists = cursor.moveToFirst() // returns true if the query returned a row, false otherwise
         cursor.close()
         return exists
+    }
+
+    fun getTeamStats(matchId: String, currentTeamId: Int, captainName: String): TeamStats {
+        val otherTeamId = if (currentTeamId == 1) 2 else 1
+        // Initialize with default values
+        var teamStats = TeamStats(
+                name = mutableStateOf(""),
+                overs = mutableDoubleStateOf(0.0),
+                inningScore = mutableIntStateOf(0),
+                inningWickets = mutableIntStateOf(0),
+                active = mutableStateOf(true)
+        )
+
+        var overs: Double = 0.0
+        var extras: Int = 0
+        var runs: Int = 0
+        var wickets: Int = 0
+
+        val db = readableDatabase
+        var query = "SELECT SUM(over) AS overs FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
+        var cursor = db.rawQuery(query, arrayOf(matchId,otherTeamId.toString()))
+
+        if (cursor.moveToNext()) {
+            overs = cursor.getDouble(cursor.getColumnIndexOrThrow("overs"))
+        }
+        cursor.close()
+
+        query = "SELECT SUM(byes + legbyes) AS extras FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
+        cursor = db.rawQuery(query, arrayOf(matchId,otherTeamId.toString()))
+
+        if (cursor.moveToNext()) {
+            extras = cursor.getInt(cursor.getColumnIndexOrThrow("extras"))
+        }
+        cursor.close()
+
+        query = "SELECT SUM(runs) AS runs FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
+        cursor = db.rawQuery(query, arrayOf(matchId,currentTeamId.toString()))
+
+        if (cursor.moveToNext()) {
+            runs = cursor.getInt(cursor.getColumnIndexOrThrow("runs"))
+        }
+        cursor.close()
+
+        query = "SELECT COUNT(*) AS wickets FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? AND batting_status = ? LIMIT 1"
+        cursor = db.rawQuery(query, arrayOf(matchId,currentTeamId.toString(),"out"))
+
+        if (cursor.moveToNext()) {
+            wickets = cursor.getInt(cursor.getColumnIndexOrThrow("wickets"))
+        }
+        cursor.close()
+
+        teamStats =  TeamStats(
+                name = mutableStateOf(captainName),
+                overs = mutableDoubleStateOf(overs),
+                inningScore = mutableIntStateOf(runs + extras),
+                inningWickets = mutableIntStateOf(wickets),
+                active = mutableStateOf(value = true)
+        )
+        return teamStats
+
     }
 }

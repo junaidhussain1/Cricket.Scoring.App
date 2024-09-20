@@ -29,177 +29,186 @@ fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats, actionForBatsman
 }
 
 fun doUpdateStats(context: Context,matchId: String,newValue: String, multiplier: Int, bowlerStats: BowlerStats, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, firstTeamStats: TeamStats, secondTeamStats: TeamStats) {
+    val activeBatsman = getActiveBatsman(firstBatsmanStats,secondBatsmanStats)
     if (newValue.contains("WK")) {
-        updateBowler(matchId,false,"wickets",bowlerStats,1.00 * multiplier,"",context)
+        updateBowler(matchId,false,"wickets",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
         updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
         updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
     } else {
         when (newValue) {
             "1" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,1.00 * multiplier,"",context)
-                updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 1.0 * multiplier)
             }
 
             "2" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,2.00 * multiplier,"",context)
-                updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 2 * multiplier)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,2.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 2 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "3" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,3.00 * multiplier,"",context)
-                updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 3 * multiplier)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,3.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 3 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "4" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,4.00 * multiplier,"",context)
-                updateBowler(matchId,false,"fours",bowlerStats,1.00 * multiplier,"",context)
-                updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 4 * multiplier)
-                updateBatsman("fours", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,4.00 * multiplier,"",context)
+                updateBowler(matchId,false,"fours",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 4 * multiplier,context)
+                updateBatsman(matchId,"fours", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 4.0 * multiplier)
             }
 
             "6" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,6.00 * multiplier,"",context)
-                updateBowler(matchId,false,"sixes",bowlerStats,1.00 * multiplier,"",context)
-                updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 6 * multiplier)
-                updateBatsman("sixes", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,6.00 * multiplier,"",context)
+                updateBowler(matchId,false,"sixes",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 6 * multiplier,context)
+                updateBatsman(matchId,"sixes", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 6.0 * multiplier)
             }
 
             "W" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"wides",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"wides",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 1.0 * multiplier)
             }
 
             "W+1" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"wides",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"byes",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"wides",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"byes",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "W+2" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"wides",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"byes",bowlerStats,2.00 * multiplier,"",context)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"wides",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"byes",bowlerStats,activeBatsman,2.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "NB" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 1.0 * multiplier)
             }
 
             "NB+1" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,2.00 * multiplier,"",context)
-                updateBowler(matchId,false,"noballs",bowlerStats,1.00 * multiplier,"",context)
-                updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,2.00 * multiplier,"",context)
+                updateBowler(matchId,false,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "NB+2" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,3.00 * multiplier,"",context)
-                updateBowler(matchId,false,"noballs",bowlerStats,1.00 * multiplier,"",context)
-                updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 2 * multiplier)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,3.00 * multiplier,"",context)
+                updateBowler(matchId,false,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 2 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "NB+3" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,4.00 * multiplier,"",context)
-                updateBowler(matchId,false,"noballs",bowlerStats,1.00 * multiplier,"",context)
-                updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 3 * multiplier)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,4.00 * multiplier,"",context)
+                updateBowler(matchId,false,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 3 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 4.0 * multiplier)
             }
 
             "NB+4" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,5.00 * multiplier,"",context)
-                updateBowler(matchId,false,"noballs",bowlerStats,1.00 * multiplier,"",context)
-                updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 4 * multiplier)
-                updateBatsman("fours", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,5.00 * multiplier,"",context)
+                updateBowler(matchId,false,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 4 * multiplier,context)
+                updateBatsman(matchId,"fours", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 5.0 * multiplier)
             }
 
             "NB+6" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,7.00 * multiplier,"",context)
-                updateBowler(matchId,false,"noballs",bowlerStats,1.00 * multiplier,"",context)
-                updateBatsman("runs", firstBatsmanStats, secondBatsmanStats, 6 * multiplier)
-                updateBatsman("sixes", firstBatsmanStats, secondBatsmanStats, 1 * multiplier)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,7.00 * multiplier,"",context)
+                updateBowler(matchId,false,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 6 * multiplier,context)
+                updateBatsman(matchId,"sixes", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 7.0 * multiplier)
             }
 
             "NBL1" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"noballs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"legbyes",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"legbyes",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "NBL2" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"noballs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"legbyes",bowlerStats,2.00 * multiplier,"",context)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,.00 * multiplier,"",context)
+                updateBowler(matchId,false,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"legbyes",bowlerStats,activeBatsman,2.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "NBL3" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"noballs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"legbyes",bowlerStats,3.00 * multiplier,"",context)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"legbyes",bowlerStats,activeBatsman,3.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 4.0 * multiplier)
             }
 
             "NBB1" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"byes",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"byes",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "NBB2" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"byes",bowlerStats,2.00 * multiplier,"",context)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"byes",bowlerStats,activeBatsman,2.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "NBB3" -> {
-                updateBowler(matchId,false,"runs",bowlerStats,1.00 * multiplier,"",context)
-                updateBowler(matchId,false,"byes",bowlerStats,3.00 * multiplier,"",context)
+                updateBowler(matchId,false,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"byes",bowlerStats,activeBatsman,3.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 4.0 * multiplier)
             }
 
             "B1" -> {
-                updateBowler(matchId,false,"byes",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"byes",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 1.0 * multiplier)
             }
 
             "B2" -> {
-                updateBowler(matchId,false,"byes",bowlerStats,2.00 * multiplier,"",context)
+                updateBowler(matchId,false,"byes",bowlerStats,activeBatsman,2.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "B3" -> {
-                updateBowler(matchId,false,"byes",bowlerStats,3.00 * multiplier,"",context)
+                updateBowler(matchId,false,"byes",bowlerStats,activeBatsman,3.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
             "LB1" -> {
-                updateBowler(matchId,false,"legbyes",bowlerStats,1.00 * multiplier,"",context)
+                updateBowler(matchId,false,"legbyes",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 1.0 * multiplier)
             }
 
             "LB2" -> {
-                updateBowler(matchId,false,"legbyes",bowlerStats,2.00 * multiplier,"",context)
+                updateBowler(matchId,false,"legbyes",bowlerStats,activeBatsman,2.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "LB3" -> {
-                updateBowler(matchId,false,"legbyes",bowlerStats,3.00 * multiplier,"",context)
+                updateBowler(matchId,false,"legbyes",bowlerStats,activeBatsman,3.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
         }
+    }
+}
+
+fun getActiveBatsman(firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats): String {
+    return if (firstBatsmanStats.active.value) {
+        firstBatsmanStats.name.value
+    } else {
+        secondBatsmanStats.name.value
     }
 }
 
@@ -217,12 +226,7 @@ fun updateStats(context: Context,
     val matchId = dbHelper.getMatchId()
     val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3")
     val excludedValuesFromBallsFaced = setOf("W","W+1","W+2")
-
-    val activeBatsman = if (firstBatsmanStats.active.value) {
-        firstBatsmanStats.name.value
-    } else {
-        secondBatsmanStats.name.value
-    }
+    val activeBatsman = getActiveBatsman(firstBatsmanStats,secondBatsmanStats)
 
     if (newValue != "UNDO") {
         val emptyIndex = balls.indexOfFirst { it.action.isEmpty() }
@@ -242,15 +246,15 @@ fun updateStats(context: Context,
             return
         }
 
-        updateBowler(matchId,false,"over",bowlerStats,0.0,newValue,context)
+        updateBowler(matchId,false,"over",bowlerStats,activeBatsman,0.0,newValue,context)
 
         // Increment the bowlerOver by 0.1 only if it's a valid ball value
         if (newValue !in excludedValuesFromBallsBalled) {
-            updateBowler(matchId,false,"over",bowlerStats,0.1,"",context)
+            updateBowler(matchId,false,"over",bowlerStats,activeBatsman,0.1,"",context)
             updateTeam("overs", firstTeamStats, secondTeamStats, 0.1)
         }
         if (newValue !in excludedValuesFromBallsFaced) {
-            updateBatsman("balls", firstBatsmanStats, secondBatsmanStats, 1)
+            updateBatsman(matchId,"balls", firstBatsmanStats, secondBatsmanStats, 1,context)
         }
 
         doUpdateStats(context,matchId,newValue,1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
@@ -258,14 +262,8 @@ fun updateStats(context: Context,
         if ((newValue == "1") || (newValue == "2")) swapBatsmenDB(context,matchId,firstBatsmanStats, secondBatsmanStats)
 
         if (balls.size == 6 && balls.take(6).all { it.action == "0" }) {
-            updateBowler(matchId,false,"maiden",bowlerStats,1.00,"",context)
+            updateBowler(matchId,false,"maiden",bowlerStats,activeBatsman,1.00,"",context)
         }
-
-        //end of over handling
-        if (balls.filter { it.action !in excludedValuesFromBallsFaced }.size >= 6) {
-            //Toast.makeText(context, "Condition met", Toast.LENGTH_SHORT).show()
-        }
-
     } else {
         //Handle the UNDO option
         val lastNonEmptyIndex = balls.indexOfLast { it.action.isNotEmpty() }
@@ -278,14 +276,14 @@ fun updateStats(context: Context,
             if ((lastBall == "1") || (lastBall == "2")) {
                 swapBatsmen(firstBatsmanStats,secondBatsmanStats,balls[lastNonEmptyIndex].batsman)
             }
-            updateBowler(matchId,true,"over",bowlerStats,-0.1,"",context)
+            updateBowler(matchId,true,"over",bowlerStats,activeBatsman,-0.1,"",context)
             updateTeam("overs", firstTeamStats, secondTeamStats, -0.1)
         }
 
         if (lastBall !in excludedValuesFromBallsFaced) {
             if (lastBall.contains("WK")) {
                 //Restore out batsman
-                val parts = lastBall.split("|")
+                val parts = lastBall.split(",")
                 val batsmanOut = parts[1]
                 val newBatsman = parts[2]
 
@@ -309,13 +307,13 @@ fun updateStats(context: Context,
                     secondBatsmanStats.sixes.value = batsmanOutFromDB.sixes.value
                 }
             } else {
-                updateBatsman("balls", firstBatsmanStats, secondBatsmanStats, -1)
+                updateBatsman(matchId,"balls", firstBatsmanStats, secondBatsmanStats, -1,context)
             }
         }
 
         // Check if the first 5 balls were "0" and last index is 5
         if (lastNonEmptyIndex == 5 && balls.take(5).all { it.action == "0" }) {
-            updateBowler(matchId,false,"maiden",bowlerStats,-1.00,"",context)
+            updateBowler(matchId,false,"maiden",bowlerStats,activeBatsman,-1.00,"",context)
         }
 
         doUpdateStats(context,matchId,lastBall,-1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
@@ -363,6 +361,7 @@ fun updateBowler(
     undo: Boolean,
     statType: String,
     bowlerStats: BowlerStats,
+    activeBatsman: String,
     updateValue: Double,
     ballAction: String,
     context: Context)
@@ -405,23 +404,27 @@ fun updateBowler(
     if (!undo) {
         if (ballAction != "") {
             if (bowlerStats.overrecord.value == "") {
-                bowlerStats.overrecord.value = ballAction
+                bowlerStats.overrecord.value = "$ballAction,$activeBatsman"
             } else {
-                bowlerStats.overrecord.value += ",$ballAction"
+                bowlerStats.overrecord.value += "|$ballAction,$activeBatsman"
             }
         }
     } else {
-        bowlerStats.overrecord.value = removeLastValueFromCSV(bowlerStats.overrecord.value)
+        bowlerStats.overrecord.value = removeLastPipeDelimitedValue(bowlerStats.overrecord.value)
     }
     dbHelper.updateBowlingStats(matchId,bowlerStats)
 }
 
 fun updateBatsman(
+    matchId: String,
     statType: String,
     firstBatsmanStats: BatsmanStats,
     secondBatsmanStats: BatsmanStats,
-    updateValue: Int)
+    updateValue: Int,
+    context: Context)
 {
+    val dbHelper = CricketDatabaseHelper(context)
+
     when(statType){
         "runs" -> {
             if (firstBatsmanStats.active.value) {
@@ -451,6 +454,11 @@ fun updateBatsman(
                 secondBatsmanStats.sixes.value += updateValue
             }
         }
+    }
+    if (firstBatsmanStats.active.value) {
+        dbHelper.updateBattingStats(matchId, "striker", firstBatsmanStats, "")
+    } else {
+        dbHelper.updateBattingStats(matchId, "striker", secondBatsmanStats, "")
     }
 }
 
@@ -501,17 +509,17 @@ fun calculateOversRemaining(ballsRemaining: Int): Double {
     return overs + balls / 10.0
 }
 
-fun removeLastValueFromCSV(csv: String): String {
+fun removeLastPipeDelimitedValue(pipeDelimitedValue: String): String {
     // Split the string into a list of values
-    val values = csv.split(",").toMutableList()
+    val values = pipeDelimitedValue.split("|").toMutableList()
 
     // Remove the last value if the list is not empty
     if (values.isNotEmpty()) {
         values.removeAt(values.size - 1)
     }
 
-    // Join the remaining values back into a CSV string
-    return values.joinToString(",")
+    // Join the remaining values back into a pipeDelimitedValue string
+    return values.joinToString("|")
 }
 
 fun endOfOverReached(balls: MutableList<Ball>): Boolean {
