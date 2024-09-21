@@ -398,6 +398,9 @@ fun updateBowler(
         "wides" -> {
             bowlerStats.wides.value += updateValue.toInt()
         }
+        "byes" -> {
+            bowlerStats.byes.value += updateValue.toInt()
+        }
         "legbyes" -> {
             bowlerStats.legbyes.value += updateValue.toInt()
         }

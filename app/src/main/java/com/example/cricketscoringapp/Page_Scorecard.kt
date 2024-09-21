@@ -633,7 +633,7 @@ fun ScoreCardPage() {
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                selectedNoBallOption.value = "B2"
+                                selectedByesOption.value = "B2"
                                 showByesDialog.value = false
                                 updateStats(context,balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
@@ -641,7 +641,7 @@ fun ScoreCardPage() {
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                selectedNoBallOption.value = "B3"
+                                selectedByesOption.value = "B3"
                                 showByesDialog.value = false
                                 updateStats(context,balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
