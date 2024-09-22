@@ -331,7 +331,7 @@ fun updateStats(context: Context,
     calcRunsToWin(firstTeamStats,secondTeamStats,runsToWinTxt)
 }
 
-fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, runsToWinTxt: MutableState<String>) {
+fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, runsToWinTxt: MutableState<String>) : Int {
     val ballsRemaining: Int
     val oversRemaining: Double
     var runsToWin = 0
@@ -365,6 +365,8 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, runsToW
             runsToWinTxt.value = "$runsToWin runs to win from $ballsRemaining balls!"
         }
     }
+
+    return ballsRemaining
 }
 
 fun updateBowler(

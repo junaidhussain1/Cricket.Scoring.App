@@ -62,13 +62,14 @@ fun ScoreCardPage() {
     val showKeeperChangeDialog = remember { mutableStateOf(false) }
     val showFielderDialog = remember { mutableStateOf(false) }
     val selectedFielder = remember { mutableStateOf("") }
+    val manualBowlerChange = remember { mutableStateOf(false) }
+    val runsToWin = remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         // Retrieve the captain names from the view model
         var team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
         var team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
@@ -77,8 +78,6 @@ fun ScoreCardPage() {
             team2Captain = team1Captain
             team1Captain = firstBattingTeamCaptain
         }
-
-        val runsToWin = remember { mutableStateOf("") }
 
         val team1Stats = dbHelper.getTeamStats(matchId,1,team1Captain.name)
         val firstBattingTeamStats = remember(team1Stats) {
@@ -159,6 +158,18 @@ fun ScoreCardPage() {
             val pipeValues = bowlerStats.overrecord.value.split(",")
             val ball = Ball(pipeValues[0], pipeValues[1]) // Assuming Ball takes an Int
             balls.add(ball)
+        }
+
+        //Handle end of over and end of innings
+        if (endOfOverReached(balls)) {
+            dbHelper.updateBowlingStats(matchId,"bowled")
+            val ballsRemaining = calcRunsToWin(firstBattingTeamStats,secondBattingTeamStats, runsToWin)
+            if (ballsRemaining > 0) {
+                balls.clear()
+                showBowlerChangeDialog.value = true
+            } else {
+                //end of innings
+            }
         }
 
         // Innings Score Box
@@ -292,7 +303,6 @@ fun ScoreCardPage() {
                 .fillMaxWidth()
         ) {
             Column {
-                var manualBowlerChange = false
                 BatsmanBowlerKeeperBox(
                     col1 = "Bowler",
                     col2 = "O",
@@ -315,7 +325,7 @@ fun ScoreCardPage() {
                 ) {
                     if (balls.isEmpty() || balls.all { it.action.isBlank() }) {
                         showBowlerChangeDialog.value = true
-                        manualBowlerChange = true
+                        manualBowlerChange.value = true
                     }
                 }
 
@@ -333,17 +343,44 @@ fun ScoreCardPage() {
                             Column {
                                 bowlingTeam?.forEach { player ->
                                     if (bowlerStats.name.value != player.name) {
-                                        val oversBowled = dbHelper.getBowlersOversBowled(matchId,bowlingTeamId,player.name)
-                                            Button(onClick = {
-                                                val existingBowler = dbHelper.getLastBowler(matchId,bowlingTeamId)
-                                                if (manualBowlerChange) {
+                                        val oversBowled = dbHelper.getBowlersOversBowled(
+                                            matchId,
+                                            bowlingTeamId,
+                                            player.name
+                                        )
+                                        Button(
+                                            onClick = {
+                                                val existingBowler =
+                                                    dbHelper.getLastBowler(matchId, bowlingTeamId)
+                                                val existingKeeper =
+                                                    dbHelper.getLastKeeper(matchId, bowlingTeamId)
+                                                val newKeeper: String =
+                                                    if (player.name == existingKeeper) {
+                                                        existingBowler
+                                                    } else {
+                                                        existingKeeper
+                                                    }
+                                                if (manualBowlerChange.value) {
                                                     dbHelper.deleteCurrentBowler(matchId)
+                                                    manualBowlerChange.value = false
                                                 }
-                                                dbHelper.addBowlingStats(matchId,bowlingTeamId,player.name,existingBowler,"bowling")
+                                                dbHelper.addBowlingStats(
+                                                    matchId,
+                                                    bowlingTeamId,
+                                                    player.name,
+                                                    newKeeper,
+                                                    "bowling"
+                                                )
                                                 showBowlerChangeDialog.value = false
-                                                setCurrentBowlerAndKeeper(bowlerStats, player.name,existingBowler)
+                                                setCurrentBowlerAndKeeper(
+                                                    bowlerStats,
+                                                    player.name,
+                                                    newKeeper
+                                                )
                                                 balls.clear()
-                                            }, modifier = Modifier.fillMaxWidth()) {
+                                            },
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
                                             Text(
                                                 player.name,
                                                 fontSize = if (isTablet) 26.sp else 20.sp,
@@ -354,8 +391,8 @@ fun ScoreCardPage() {
                                                 fontSize = if (isTablet) 26.sp else 20.sp,
                                                 textAlign = TextAlign.Right
                                             )
+                                            Spacer(modifier = Modifier.height(16.dp))
                                         }
-                                        Spacer(modifier = Modifier.height(16.dp))
                                     }
                                 }
                             }
@@ -515,13 +552,6 @@ fun ScoreCardPage() {
                     secondBattingTeamStats,
                     runsToWin
                 )
-            }
-
-            if (endOfOverReached(balls)) {
-                balls.clear()
-                dbHelper.updateBowlingStats(matchId,"bowled")
-                showBowlerChangeDialog.value = true
-                calcRunsToWin(firstBattingTeamStats,secondBattingTeamStats, runsToWin)
             }
         }
 
