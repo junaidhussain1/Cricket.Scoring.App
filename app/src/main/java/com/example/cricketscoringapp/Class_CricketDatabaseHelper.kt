@@ -815,4 +815,16 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val db = writableDatabase
         return db.delete(TABLE_BOWLINGSTATS, "player_name = ? AND bowling_status = ?", arrayOf(currentBowler,"bowling"))
     }
+
+    fun getBowlersOversBowled(matchId: String, bowlingTeamId: Int, bowlerName: String): String {
+        val db = readableDatabase
+        val query = "SELECT SUM(over) AS overs FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? AND player_name = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId,bowlingTeamId.toString(),bowlerName))
+        var oversBowled:String = ""
+        if (cursor.moveToFirst()) {
+            oversBowled = cursor.getDouble(cursor.getColumnIndexOrThrow("overs")).toString()
+        }
+        cursor.close()
+        return oversBowled
+    }
 }

@@ -328,6 +328,10 @@ fun updateStats(context: Context,
         balls[lastNonEmptyIndex] = Ball("",activeBatsman)
     }
 
+    calcRunsToWin(firstTeamStats,secondTeamStats,runsToWinTxt)
+}
+
+fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, runsToWinTxt: MutableState<String>) {
     val ballsRemaining: Int
     val oversRemaining: Double
     var runsToWin = 0
