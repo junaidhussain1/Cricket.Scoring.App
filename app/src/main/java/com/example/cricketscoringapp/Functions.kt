@@ -213,7 +213,7 @@ fun getActiveBatsman(firstBatsmanStats: BatsmanStats, secondBatsmanStats: Batsma
     }
 }
 
-fun getInActiveBatsman(firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats): String {
+fun getInactiveBatsman(firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats): String {
     return if (firstBatsmanStats.active.value) {
         secondBatsmanStats.name.value
     } else {
@@ -539,8 +539,18 @@ fun removeLastPipeDelimitedValue(pipeDelimitedValue: String): String {
 
 fun endOfOverReached(balls: MutableList<Ball>): Boolean {
     val excludedValuesFromBallsFaced = setOf("W","W+1","W+2")
-    return balls.filter { it.action !in excludedValuesFromBallsFaced }.size >= 6
+    val noOfValidBallsBowled = balls.filter { it.action !in excludedValuesFromBallsFaced }.size
+    return noOfValidBallsBowled >= 6
 }
+
+fun checkAndPlayDuckSound(firstBatsmanStats: BatsmanStats,secondBatsmanStats: BatsmanStats,context: Context) {
+    if (((firstBatsmanStats.active.value) && (firstBatsmanStats.runs.value == 0)) ||
+        ((secondBatsmanStats.active.value) && (secondBatsmanStats.runs.value == 0))
+    ) {
+        playDuckSound(context)
+    }
+}
+
 fun playDuckSound(context: Context) {
     var mediaPlayer = MediaPlayer.create(context, R.raw.duckonrepeat)
 
@@ -552,8 +562,9 @@ fun playDuckSound(context: Context) {
     mediaPlayer.start()
 }
 
-fun setCurrentBowler(bowlerStats: BowlerStats, name: String) {
-    bowlerStats.name.value = name
+fun setCurrentBowlerAndKeeper(bowlerStats: BowlerStats, bowlerName: String, keeperName: String) {
+    bowlerStats.name.value = bowlerName
+    bowlerStats.keepername.value = keeperName
     bowlerStats.over.value = 0.0
     bowlerStats.maiden.value = 0
     bowlerStats.runs.value = 0
@@ -562,6 +573,9 @@ fun setCurrentBowler(bowlerStats: BowlerStats, name: String) {
     bowlerStats.wides.value = 0
     bowlerStats.byes.value = 0
     bowlerStats.legbyes.value = 0
+}
+fun setCurrentKeeper(bowlerStats: BowlerStats, keeperName: String) {
+    bowlerStats.keepername.value = keeperName
 }
 
 fun getWicketDescription(wicketType: String, bowler: String, fielder: String) : String {

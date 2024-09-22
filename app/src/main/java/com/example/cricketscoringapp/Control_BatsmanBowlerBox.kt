@@ -22,15 +22,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun BatsmanBowlerBox(col1: String,
-                     col2: String,
-                     col3: String,
-                     col4: String,
-                     col5: String,
-                     fontBold1: FontWeight,
-                     fontColor1: Color,
-                     makePlayerTouchable: Boolean,
-                     onClick: () -> Unit) {
+fun BatsmanBowlerKeeperBox(col1: String,
+                           col2: String,
+                           col3: String,
+                           col4: String,
+                           col5: String,
+                           fontBold1: FontWeight,
+                           fontColor1: Color,
+                           makePlayerTouchable: Boolean,
+                           onClick: () -> Unit) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
 
@@ -38,7 +38,7 @@ fun BatsmanBowlerBox(col1: String,
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(6.dp)  // Optional padding
+                .padding(2.dp)  // Optional padding
         ) {
             if (makePlayerTouchable) {
                 Button(

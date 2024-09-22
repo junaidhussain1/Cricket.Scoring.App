@@ -496,17 +496,18 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     fun addBowlingStats(matchId: String,
                         teamId: Int,
-                        playerName: String,
+                        bowlerName: String,
+                        keeperName: String,
                         bowlingStatus: String) {
         val db = writableDatabase
         val values = ContentValues()
         values.put("match_id", matchId)
         values.put("team_id", teamId)
         values.put("bowling_order",getNextBowlingOrderNo(matchId))
-        values.put("player_name", playerName)
-        values.put("bowling_turn", getNextBowlingTurnNo(matchId,playerName))
+        values.put("player_name", bowlerName)
+        values.put("bowling_turn", getNextBowlingTurnNo(matchId,bowlerName))
         values.put("bowling_status", bowlingStatus)
-        values.put("keeper_name","")
+        values.put("keeper_name",keeperName)
         db.insert(TABLE_BOWLINGSTATS,null,values)
         db.close()
     }
@@ -525,14 +526,13 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     }
     fun updateBowlingStatsKeeper(matchId: String,
                            teamId: Int,
-                           bowlingOrder: Int,
                            keeperName: String) : Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("keeper_name", keeperName)
         }
-        val whereClause = "match_id = ? AND team_id = ? AND bowling_order = ?"
-        val whereArgs = arrayOf(matchId, teamId.toString(), bowlingOrder.toString())
+        val whereClause = "match_id = ? AND team_id = ? AND bowling_status = ?"
+        val whereArgs = arrayOf(matchId, teamId.toString(), "bowling")
 
         return db.update(TABLE_BOWLINGSTATS, contentValues, whereClause, whereArgs)
     }
@@ -618,6 +618,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             legbyes = mutableIntStateOf(0),
             fours = mutableIntStateOf(0),
             sixes = mutableIntStateOf(0),
+            keepername = mutableStateOf(""),
             overrecord = mutableStateOf("")
         )
         if (cursor.moveToFirst()) {
@@ -633,6 +634,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 legbyes = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("legbyes"))),
                 fours = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("fours"))),
                 sixes = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("sixes"))),
+                keepername = mutableStateOf(cursor.getString(cursor.getColumnIndexOrThrow("keeper_name"))),
                 overrecord = mutableStateOf(cursor.getString(cursor.getColumnIndexOrThrow("over_record")) ?: "")
             )
         }

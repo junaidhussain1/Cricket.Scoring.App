@@ -715,6 +715,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                     matchId,
                                                     bowlingTeamId,
                                                     player.name,
+                                                    "",
                                                     "bowling"
                                                 )
                                                 expanded6 = false
@@ -776,7 +777,6 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                 dbHelper.updateBowlingStatsKeeper(
                                                     matchId,
                                                     bowlingTeamId,
-                                                    1,
                                                     player.name
                                                 )
                                                 expanded7 = false

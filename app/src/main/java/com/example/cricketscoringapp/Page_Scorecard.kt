@@ -59,6 +59,7 @@ fun ScoreCardPage() {
     val showNextBatsmanDialog = remember { mutableStateOf(false) }
 
     val showBowlerChangeDialog = remember { mutableStateOf(false) }
+    val showKeeperChangeDialog = remember { mutableStateOf(false) }
     val showFielderDialog = remember { mutableStateOf(false) }
     val selectedFielder = remember { mutableStateOf("") }
 
@@ -139,6 +140,7 @@ fun ScoreCardPage() {
                 legbyes = mutableIntStateOf(bowler.legbyes.value),
                 fours = mutableIntStateOf(bowler.fours.value),
                 sixes = mutableIntStateOf(bowler.sixes.value),
+                keepername = mutableStateOf(bowler.keepername.value),
                 overrecord = mutableStateOf(bowler.overrecord.value)
             )
         }
@@ -225,7 +227,7 @@ fun ScoreCardPage() {
                 .fillMaxWidth()
         ) {
             Column {
-                BatsmanBowlerBox(
+                BatsmanBowlerKeeperBox(
                     col1 = "Batsman",
                     col2 = "R",
                     col3 = "B",
@@ -252,7 +254,7 @@ fun ScoreCardPage() {
                     fontColor3 = Color(19, 207, 69)
                     fontBold3 = FontWeight.Bold
                 }
-                BatsmanBowlerBox(
+                BatsmanBowlerKeeperBox(
                     col1 = firstBatsmanStats.name.value,
                     col2 = String.format(Locale.UK, "%d", firstBatsmanStats.runs.value),
                     col3 = String.format(Locale.UK, "%d", firstBatsmanStats.balls.value),
@@ -265,7 +267,7 @@ fun ScoreCardPage() {
                     swapBatsmenDB(context,matchId,firstBatsmanStats, secondBatsmanStats)
                 }
 
-                BatsmanBowlerBox(
+                BatsmanBowlerKeeperBox(
                     col1 = secondBatsmanStats.name.value,
                     col2 = String.format(Locale.UK, "%d", secondBatsmanStats.runs.value),
                     col3 = String.format(Locale.UK, "%d", secondBatsmanStats.balls.value),
@@ -290,7 +292,7 @@ fun ScoreCardPage() {
                 .fillMaxWidth()
         ) {
             Column {
-                BatsmanBowlerBox(
+                BatsmanBowlerKeeperBox(
                     col1 = "Bowler",
                     col2 = "O",
                     col3 = "M",
@@ -300,7 +302,7 @@ fun ScoreCardPage() {
                     fontColor1 = Color.Gray,
                     makePlayerTouchable = false
                 ) {}
-                BatsmanBowlerBox(
+                BatsmanBowlerKeeperBox(
                     col1 = bowlerStats.name.value,
                     col2 = String.format(Locale.UK, "%.1f", bowlerStats.over.value),
                     col3 = String.format(Locale.UK, "%d", bowlerStats.maiden.value),
@@ -334,10 +336,12 @@ fun ScoreCardPage() {
                                         val oversBowled = matchingBowler?.overs ?: 0.0
 
                                         Button(onClick = {
+                                            val existingBowler = bowlerStats.name.value
                                             dbHelper.deleteCurrentBowler(matchId)
-                                            dbHelper.addBowlingStats(matchId,bowlingTeamId,player.name,"bowling")
+                                            dbHelper.addBowlingStats(matchId,bowlingTeamId,player.name,existingBowler,"bowling")
                                             showBowlerChangeDialog.value = false
-                                            setCurrentBowler(bowlerStats, player.name)
+                                            setCurrentBowlerAndKeeper(bowlerStats, player.name,existingBowler)
+                                            balls.clear()
                                         }, modifier = Modifier.fillMaxWidth()) {
                                             Text(
                                                 player.name,
@@ -348,6 +352,78 @@ fun ScoreCardPage() {
                                                 oversBowled.toInt().toString(),
                                                 fontSize = if (isTablet) 26.sp else 20.sp,
                                                 textAlign = TextAlign.Right
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
+        // Keeper Box
+        Box(
+            modifier = Modifier
+                .padding(8.dp)
+                .border(
+                    BorderStroke(2.dp, Color.White),
+                )
+                .fillMaxWidth()
+        ) {
+            Column {
+                BatsmanBowlerKeeperBox(
+                    col1 = "Keeper",
+                    col2 = "",
+                    col3 = "",
+                    col4 = "",
+                    col5 = "",
+                    fontBold1 = FontWeight.Bold,
+                    fontColor1 = Color.Gray,
+                    makePlayerTouchable = false
+                ) {}
+                BatsmanBowlerKeeperBox(
+                    col1 = bowlerStats.keepername.value,
+                    col2 = "",
+                    col3 = "",
+                    col4 = "",
+                    col5 = "",
+                    fontBold1 = FontWeight.Bold,
+                    fontColor1 = Color(19, 207, 69),
+                    makePlayerTouchable = true
+                ) {
+                    showKeeperChangeDialog.value = true
+                }
+                if (showKeeperChangeDialog.value) {
+                    AlertDialog(
+                        onDismissRequest = { showKeeperChangeDialog.value = false },
+                        confirmButton = {
+                            Button(onClick = {
+                                showKeeperChangeDialog.value = false
+                            }) {
+                                Text("Cancel")
+                            }
+                        },
+                        title = { Text("Change Keeper") },
+                        text = {
+                            Column {
+                                bowlingTeam?.forEach { player ->
+                                    if ((bowlerStats.name.value != player.name) && (bowlerStats.keepername.value != player.name)) {
+                                        Button(onClick = {
+                                            dbHelper.updateBowlingStatsKeeper(
+                                                matchId,
+                                                bowlingTeamId,
+                                                player.name
+                                            )
+                                            showKeeperChangeDialog.value = false
+                                            setCurrentKeeper(bowlerStats, player.name)
+                                        }, modifier = Modifier.fillMaxWidth()) {
+                                            Text(
+                                                player.name,
+                                                fontSize = if (isTablet) 26.sp else 20.sp,
+                                                modifier = Modifier.weight(1f)
                                             )
                                         }
                                         Spacer(modifier = Modifier.height(16.dp))
@@ -440,9 +516,11 @@ fun ScoreCardPage() {
                 )
             }
 
-            if (endOfOverReached(balls)) {
-                balls.clear()
-                showBowlerChangeDialog.value = true
+            if (!balls.isEmpty()) {
+                if (endOfOverReached(balls)) {
+                    balls.clear()
+                    showBowlerChangeDialog.value = true
+                }
             }
         }
 
@@ -700,6 +778,7 @@ fun ScoreCardPage() {
             }
             CircleButton("WICKET", if (isTablet) 26 else 16) {
                 showWicketsDialog.value = true
+                checkAndPlayDuckSound(firstBatsmanStats,secondBatsmanStats,context)
             }
             if (showWicketsDialog.value) {
                 selectedFielder.value = ""
@@ -833,7 +912,7 @@ fun ScoreCardPage() {
             if (showNextBatsmanDialog.value) {
 
                 //Get List of Team Players
-                val nonStrikerBatsman = getInActiveBatsman(firstBatsmanStats,secondBatsmanStats)
+                val nonStrikerBatsman = getInactiveBatsman(firstBatsmanStats,secondBatsmanStats)
 
                 val teamId = dbHelper.getTeamForPlayer(matchId, firstBatsmanStats.name.value)
                 val players = teamId?.let { dbHelper.getTeamPlayers(matchId, it,1) }
@@ -861,17 +940,11 @@ fun ScoreCardPage() {
                                         // List of options to choose from
                                         Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                             showNextBatsmanDialog.value = false
-                                            val batsmanOut:String
-                                            val duckOut: Boolean
-                                            if (firstBatsmanStats.active.value) {
-                                                batsmanOut = firstBatsmanStats.name.value
-                                                duckOut = firstBatsmanStats.runs.value == 0
+                                            val batsmanOut:String = if (firstBatsmanStats.active.value) {
+                                                firstBatsmanStats.name.value
                                             } else {
-                                                batsmanOut = secondBatsmanStats.name.value
-                                                duckOut = secondBatsmanStats.runs.value == 0
+                                                secondBatsmanStats.name.value
                                             }
-
-                                            if (duckOut) playDuckSound(context)
 
                                             val newBatsman = player.name
                                             selectedWicketsOption.value += ",$batsmanOut,$newBatsman"

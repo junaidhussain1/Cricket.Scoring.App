@@ -26,11 +26,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun PlayerMgtPage() {
@@ -64,6 +67,28 @@ fun PlayerMgtPage() {
                 onValueChange = { playerName = it },
                 label = { Text("Enter Player Name", fontSize = if (isTablet) 22.sp else 14.sp) },
                 textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done // Set the IME action to "Done"
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        // Trigger the add player logic when the "Done" button is pressed
+                        if (playerName.isNotEmpty()) {
+                            if (!dbHelper.playerAlreadyExists(playerName)) {
+                                dbHelper.addPlayer(playerName)
+                                Toast.makeText(context, "Player Added", Toast.LENGTH_SHORT).show()
+                                playerName = ""
+                                // Show all players
+                                playersList.clear()
+                                playersList.addAll(dbHelper.getAllPlayers())
+                            } else {
+                                Toast.makeText(context, "Player already exists!", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(context, "Player name cannot be empty", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
 
