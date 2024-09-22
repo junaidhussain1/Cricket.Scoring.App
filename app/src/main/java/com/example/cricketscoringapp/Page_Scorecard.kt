@@ -81,7 +81,7 @@ fun ScoreCardPage() {
         val runsToWin = remember { mutableStateOf("") }
 
         val team1Stats = dbHelper.getTeamStats(matchId,1,team1Captain.name)
-        val firstBattingTeamStats = remember {
+        val firstBattingTeamStats = remember(team1Stats) {
             TeamStats(
                 name = mutableStateOf(team1Stats.name.value),
                 overs = mutableDoubleStateOf(team1Stats.overs.value),
@@ -92,7 +92,7 @@ fun ScoreCardPage() {
         }
 
         val team2Stats = dbHelper.getTeamStats(matchId,2,team2Captain.name)
-        val secondBattingTeamStats = remember {
+        val secondBattingTeamStats = remember(team2Stats) {
             TeamStats(
                 name = mutableStateOf(team2Stats.name.value),
                 overs = mutableDoubleStateOf(team2Stats.overs.value),
@@ -127,7 +127,7 @@ fun ScoreCardPage() {
         }
 
         val bowler = dbHelper.getCurrentBowlerStats(matchId)
-        val bowlerStats = remember {
+        val bowlerStats = remember(bowler) {
             BowlerStats(
                 name = mutableStateOf(bowler.name.value),
                 over = mutableDoubleStateOf(bowler.over.value),
@@ -146,6 +146,7 @@ fun ScoreCardPage() {
         }
 
         val balls = remember { mutableStateListOf<Ball>() }
+
         if (bowlerStats.overrecord.value.contains(",")) {
             val ballValues = bowlerStats.overrecord.value.split("|")
             balls.clear()
@@ -159,7 +160,6 @@ fun ScoreCardPage() {
             val ball = Ball(pipeValues[0], pipeValues[1]) // Assuming Ball takes an Int
             balls.add(ball)
         }
-
 
         // Innings Score Box
         Box(
@@ -292,6 +292,7 @@ fun ScoreCardPage() {
                 .fillMaxWidth()
         ) {
             Column {
+                var manualBowlerChange = false
                 BatsmanBowlerKeeperBox(
                     col1 = "Bowler",
                     col2 = "O",
@@ -314,6 +315,7 @@ fun ScoreCardPage() {
                 ) {
                     if (balls.isEmpty() || balls.all { it.action.isBlank() }) {
                         showBowlerChangeDialog.value = true
+                        manualBowlerChange = true
                     }
                 }
                 val bowlers = bowlingTeamId?.let { dbHelper.getBowlingStats(matchId, it) }
@@ -336,8 +338,10 @@ fun ScoreCardPage() {
                                         val oversBowled = matchingBowler?.overs ?: 0.0
 
                                         Button(onClick = {
-                                            val existingBowler = bowlerStats.name.value
-                                            dbHelper.deleteCurrentBowler(matchId)
+                                            val existingBowler = dbHelper.getLastBowler(matchId,bowlingTeamId)
+                                            if (manualBowlerChange) {
+                                                dbHelper.deleteCurrentBowler(matchId)
+                                            }
                                             dbHelper.addBowlingStats(matchId,bowlingTeamId,player.name,existingBowler,"bowling")
                                             showBowlerChangeDialog.value = false
                                             setCurrentBowlerAndKeeper(bowlerStats, player.name,existingBowler)
@@ -516,11 +520,10 @@ fun ScoreCardPage() {
                 )
             }
 
-            if (!balls.isEmpty()) {
-                if (endOfOverReached(balls)) {
-                    balls.clear()
-                    showBowlerChangeDialog.value = true
-                }
+            if (endOfOverReached(balls)) {
+                balls.clear()
+                dbHelper.updateBowlingStats(matchId,"bowled")
+                showBowlerChangeDialog.value = true
             }
         }
 
