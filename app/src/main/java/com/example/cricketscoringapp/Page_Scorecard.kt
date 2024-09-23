@@ -80,7 +80,7 @@ fun ScoreCardPage() {
         }
 
         val team1Stats = dbHelper.getTeamStats(matchId,1,team1Captain.name)
-        val firstBattingTeamStats = remember(team1Stats) {
+        val firstBattingTeamStats = remember() {
             TeamStats(
                 name = mutableStateOf(team1Stats.name.value),
                 overs = mutableDoubleStateOf(team1Stats.overs.value),
@@ -91,7 +91,7 @@ fun ScoreCardPage() {
         }
 
         val team2Stats = dbHelper.getTeamStats(matchId,2,team2Captain.name)
-        val secondBattingTeamStats = remember(team2Stats) {
+        val secondBattingTeamStats = remember() {
             TeamStats(
                 name = mutableStateOf(team2Stats.name.value),
                 overs = mutableDoubleStateOf(team2Stats.overs.value),
@@ -391,8 +391,8 @@ fun ScoreCardPage() {
                                                 fontSize = if (isTablet) 26.sp else 20.sp,
                                                 textAlign = TextAlign.Right
                                             )
-                                            Spacer(modifier = Modifier.height(16.dp))
                                         }
+                                        Spacer(modifier = Modifier.height(16.dp))
                                     }
                                 }
                             }
