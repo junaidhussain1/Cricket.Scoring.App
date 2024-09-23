@@ -234,10 +234,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     fun getBattingTeamCaptain(matchId: String, whichTeam: Int) : String {
         val db = readableDatabase
 
-        val batsman = if (whichTeam == 2) {
-            "second_batting_team_captain"
-        } else {
+        val batsman = if (whichTeam == 1) {
             "first_batting_team_captain"
+        } else {
+            "second_batting_team_captain"
         }
 
         val query = "SELECT $batsman FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
@@ -646,7 +646,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val db = readableDatabase
         val query = "SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? AND bowling_status = ? ORDER BY bowling_order DESC LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString(),"bowled"))
-        var lastBowler:String = ""
+        var lastBowler = ""
         if (cursor.moveToFirst()) {
             lastBowler = cursor.getString(cursor.getColumnIndexOrThrow("player_name"))
         }
@@ -658,7 +658,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val db = readableDatabase
         val query = "SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? AND bowling_status = ? ORDER BY bowling_order DESC LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString(),"bowled"))
-        var lastKeeper:String = ""
+        var lastKeeper = ""
         if (cursor.moveToFirst()) {
             lastKeeper = cursor.getString(cursor.getColumnIndexOrThrow("keeper_name"))
         }
@@ -811,12 +811,15 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         }
         cursor.close()
 
+        //calculate active = default team 1 is active but if team fully batted OR faced all bowls then team 2 active
+        val active = !((wickets == 12) || (overs == 12.0))
+
         teamStats =  TeamStats(
                 name = mutableStateOf(captainName),
                 overs = mutableDoubleStateOf(overs),
                 inningScore = mutableIntStateOf(runs + extras),
                 inningWickets = mutableIntStateOf(wickets),
-                active = mutableStateOf(value = true)
+                active = mutableStateOf(active)
         )
         return teamStats
 
@@ -832,7 +835,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val db = readableDatabase
         val query = "SELECT SUM(over) AS overs FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? AND player_name = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId,bowlingTeamId.toString(),bowlerName))
-        var oversBowled:String = ""
+        var oversBowled = ""
         if (cursor.moveToFirst()) {
             oversBowled = cursor.getDouble(cursor.getColumnIndexOrThrow("overs")).toString()
         }

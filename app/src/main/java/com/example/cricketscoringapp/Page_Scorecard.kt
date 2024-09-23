@@ -31,11 +31,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import java.util.Locale
 
 
 @Composable
-fun ScoreCardPage() {
+fun ScoreCardPage(navController: NavHostController) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
@@ -86,7 +87,7 @@ fun ScoreCardPage() {
                 overs = mutableDoubleStateOf(team1Stats.overs.value),
                 inningScore = mutableIntStateOf(team1Stats.inningScore.value),
                 inningWickets = mutableIntStateOf(team1Stats.inningWickets.value),
-                active = mutableStateOf(value = true)
+                active = mutableStateOf(team1Stats.active.value)
             )
         }
 
@@ -97,9 +98,11 @@ fun ScoreCardPage() {
                 overs = mutableDoubleStateOf(team2Stats.overs.value),
                 inningScore = mutableIntStateOf(team2Stats.inningScore.value),
                 inningWickets = mutableIntStateOf(team2Stats.inningWickets.value),
-                active = mutableStateOf(value = false)
+                active = mutableStateOf(team2Stats.active.value)
             )
         }
+        
+        calcRunsToWin(team1Stats, team2Stats, runsToWin)
 
         val firstBatsman = dbHelper.getBatsmanByStatus(matchId,"striker")
         val firstBatsmanStats = remember {
@@ -146,6 +149,7 @@ fun ScoreCardPage() {
 
         val balls = remember { mutableStateListOf<Ball>() }
 
+        //Rebuild current over from current bowler stats in database
         if (bowlerStats.overrecord.value.contains(",")) {
             val ballValues = bowlerStats.overrecord.value.split("|")
             balls.clear()
@@ -169,6 +173,21 @@ fun ScoreCardPage() {
                 showBowlerChangeDialog.value = true
             } else {
                 //end of innings
+                if (firstBatsman.name.value != "") {
+                    if (firstBatsman.active.value) {
+                        dbHelper.updateBattingStats(matchId, firstBatsman.name.value, "striker", "not out")
+                    } else {
+                        dbHelper.updateBattingStats(matchId, firstBatsman.name.value, "non-striker", "not out")
+                    }
+                }
+                if (secondBatsman.name.value != "") {
+                    if (secondBatsman.active.value) {
+                        dbHelper.updateBattingStats(matchId, secondBatsman.name.value, "striker", "not out")
+                    } else {
+                        dbHelper.updateBattingStats(matchId, secondBatsman.name.value, "non-striker", "not out")
+                    }
+                }
+                navController.navigate("secondinningssetup")
             }
         }
 
@@ -199,7 +218,7 @@ fun ScoreCardPage() {
                                 "%d",
                                 firstBattingTeamStats.inningWickets.value
                             ),
-                    color1 = Color(19, 207, 69)
+                    color1 = if (firstBattingTeamStats.active.value) Color(19, 207, 69) else Color.Black
                 )
                 TeamScoreBox(
                     name1 = secondBattingTeamStats.name.value,
@@ -218,7 +237,7 @@ fun ScoreCardPage() {
                                 "%d",
                                 secondBattingTeamStats.inningWickets.value
                             ),
-                    color1 = Color.Black
+                    color1 = if (firstBattingTeamStats.active.value) Color.Black else Color(19, 207, 69)
                 )
             }
         }

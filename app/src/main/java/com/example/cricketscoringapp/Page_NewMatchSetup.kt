@@ -802,7 +802,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     Button(
                         onClick = {
                             if (!matchStarted) dbHelper.updateMatchIsStarted(matchId)
-                            navController.navigate("startnewmatch")
+                            navController.navigate("scorecard")
                         },
                         modifier = Modifier
                             .fillMaxWidth()
