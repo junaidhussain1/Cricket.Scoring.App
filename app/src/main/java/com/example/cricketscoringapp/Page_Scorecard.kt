@@ -80,7 +80,7 @@ fun ScoreCardPage() {
         }
 
         val team1Stats = dbHelper.getTeamStats(matchId,1,team1Captain.name)
-        val firstBattingTeamStats = remember() {
+        val firstBattingTeamStats = remember(team1Stats) {
             TeamStats(
                 name = mutableStateOf(team1Stats.name.value),
                 overs = mutableDoubleStateOf(team1Stats.overs.value),
@@ -91,7 +91,7 @@ fun ScoreCardPage() {
         }
 
         val team2Stats = dbHelper.getTeamStats(matchId,2,team2Captain.name)
-        val secondBattingTeamStats = remember() {
+        val secondBattingTeamStats = remember(team2Stats) {
             TeamStats(
                 name = mutableStateOf(team2Stats.name.value),
                 overs = mutableDoubleStateOf(team2Stats.overs.value),

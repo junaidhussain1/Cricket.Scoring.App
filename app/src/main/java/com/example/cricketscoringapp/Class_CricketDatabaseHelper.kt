@@ -787,7 +787,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         }
         cursor.close()
 
-        query = "SELECT SUM(byes + legbyes) AS extras FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
+        query = "SELECT SUM(byes + legbyes + wides + noballs) AS extras FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
         cursor = db.rawQuery(query, arrayOf(matchId,otherTeamId.toString()))
 
         if (cursor.moveToNext()) {
