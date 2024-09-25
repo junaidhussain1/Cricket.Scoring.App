@@ -2,6 +2,7 @@ package com.example.cricketscoringapp
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -604,42 +605,76 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     fun getCurrentBowlerStats(matchId: String) : BowlerStats {
         val db = readableDatabase
         val query = "SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,"bowling"))
+        val cursor = db.rawQuery(query, arrayOf(matchId, "bowling"))
 
-        var bowlerStats = BowlerStats(
-            name = mutableStateOf(""),
-            over = mutableDoubleStateOf(0.0),
-            maiden = mutableIntStateOf(0),
-            runs = mutableIntStateOf(0),
-            wickets = mutableIntStateOf(0),
-            noballs = mutableIntStateOf(0),
-            wides = mutableIntStateOf(0),
-            byes = mutableIntStateOf(0),
-            legbyes = mutableIntStateOf(0),
-            fours = mutableIntStateOf(0),
-            sixes = mutableIntStateOf(0),
-            keepername = mutableStateOf(""),
-            overrecord = mutableStateOf("")
-        )
-        if (cursor.moveToFirst()) {
-            bowlerStats = BowlerStats(
-                name = mutableStateOf(cursor.getString(cursor.getColumnIndexOrThrow("player_name"))),
-                over = mutableDoubleStateOf(cursor.getDouble(cursor.getColumnIndexOrThrow("over"))),
-                maiden = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("maiden"))),
-                runs = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("runs"))),
-                wickets = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("wickets"))),
-                noballs = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("noballs"))),
-                wides = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("wides"))),
-                byes = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("byes"))),
-                legbyes = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("legbyes"))),
-                fours = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("fours"))),
-                sixes = mutableIntStateOf(cursor.getInt(cursor.getColumnIndexOrThrow("sixes"))),
-                keepername = mutableStateOf(cursor.getString(cursor.getColumnIndexOrThrow("keeper_name"))),
-                overrecord = mutableStateOf(cursor.getString(cursor.getColumnIndexOrThrow("over_record")) ?: "")
+        return if (cursor.moveToFirst()) {
+            BowlerStats(
+                name = mutableStateOf(cursor.getStringOrEmpty("player_name")),
+                over = mutableDoubleStateOf(cursor.getDoubleOrZero("over")),
+                maiden = mutableIntStateOf(cursor.getIntOrZero("maiden")),
+                runs = mutableIntStateOf(cursor.getIntOrZero("runs")),
+                wickets = mutableIntStateOf(cursor.getIntOrZero("wickets")),
+                noballs = mutableIntStateOf(cursor.getIntOrZero("noballs")),
+                wides = mutableIntStateOf(cursor.getIntOrZero("wides")),
+                byes = mutableIntStateOf(cursor.getIntOrZero("byes")),
+                legbyes = mutableIntStateOf(cursor.getIntOrZero("legbyes")),
+                fours = mutableIntStateOf(cursor.getIntOrZero("fours")),
+                sixes = mutableIntStateOf(cursor.getIntOrZero("sixes")),
+                keepername = mutableStateOf(cursor.getStringOrEmpty("keeper_name")),
+                overrecord = mutableStateOf(cursor.getStringOrEmpty("over_record"))
             )
+        } else {
+            BowlerStats()  // Return an empty/default BowlerStats if no data found
+        }.also {
+            cursor.close()
         }
-        cursor.close()
-        return bowlerStats
+    }
+
+    fun getConsolidatedBowlerStats(matchId: String,bowlerName: String): BowlerStats {
+        val db = readableDatabase
+        val query = """
+            SELECT 
+                player_name, 
+                SUM(over) AS total_overs, 
+                SUM(maiden) AS total_maidens, 
+                SUM(runs) AS total_runs, 
+                SUM(wickets) AS total_wickets, 
+                SUM(noballs) AS total_noballs, 
+                SUM(wides) AS total_wides, 
+                SUM(byes) AS total_byes, 
+                SUM(legbyes) AS total_legbyes, 
+                SUM(fours) AS total_fours, 
+                SUM(sixes) AS total_sixes
+            FROM 
+                $TABLE_BOWLINGSTATS
+            WHERE 
+                match_id = ? AND player_name = ?
+            GROUP BY 
+                player_name
+            """
+        val cursor = db.rawQuery(query, arrayOf(matchId,bowlerName))
+
+        return if (cursor.moveToFirst()) {
+            BowlerStats(
+                name = mutableStateOf(cursor.getStringOrEmpty("player_name")),
+                over = mutableDoubleStateOf(cursor.getDoubleOrZero("total_overs")),
+                maiden = mutableIntStateOf(cursor.getIntOrZero("total_maidens")),
+                runs = mutableIntStateOf(cursor.getIntOrZero("total_runs")),
+                wickets = mutableIntStateOf(cursor.getIntOrZero("total_wickets")),
+                noballs = mutableIntStateOf(cursor.getIntOrZero("total_noballs")),
+                wides = mutableIntStateOf(cursor.getIntOrZero("total_wides")),
+                byes = mutableIntStateOf(cursor.getIntOrZero("total_byes")),
+                legbyes = mutableIntStateOf(cursor.getIntOrZero("total_legbyes")),
+                fours = mutableIntStateOf(cursor.getIntOrZero("total_fours")),
+                sixes = mutableIntStateOf(cursor.getIntOrZero("total_sixes")),
+                keepername = mutableStateOf(""),
+                overrecord = mutableStateOf("")
+            )
+        } else {
+            BowlerStats()  // Return an empty/default BowlerStats if no data found
+        }.also {
+            cursor.close()
+        }
     }
 
     fun getLastBowler(matchId: String, teamId: Int) : String {
@@ -848,5 +883,18 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         }
         cursor.close()
         return oversBowled
+    }
+
+    // Helper extension functions to simplify cursor operations
+    private fun Cursor.getStringOrEmpty(columnName: String): String {
+        return getString(getColumnIndexOrThrow(columnName)) ?: ""
+    }
+
+    private fun Cursor.getIntOrZero(columnName: String): Int {
+        return getInt(getColumnIndexOrThrow(columnName))
+    }
+
+    private fun Cursor.getDoubleOrZero(columnName: String): Double {
+        return getDouble(getColumnIndexOrThrow(columnName))
     }
 }

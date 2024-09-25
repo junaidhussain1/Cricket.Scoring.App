@@ -128,38 +128,57 @@ fun ScoreCardPage(navController: NavHostController) {
             )
         }
 
-        val bowler = dbHelper.getCurrentBowlerStats(matchId)
-        val bowlerStats = remember(bowler) {
+        val currentOverBowler = dbHelper.getCurrentBowlerStats(matchId)
+        val currentOverBowlerStats = remember(currentOverBowler) {
             BowlerStats(
-                name = mutableStateOf(bowler.name.value),
-                over = mutableDoubleStateOf(bowler.over.value),
-                maiden = mutableIntStateOf(bowler.maiden.value),
-                runs = mutableIntStateOf(bowler.runs.value),
-                wickets = mutableIntStateOf(bowler.wickets.value),
-                noballs = mutableIntStateOf(bowler.noballs.value),
-                wides = mutableIntStateOf(bowler.wides.value),
-                byes = mutableIntStateOf(bowler.byes.value),
-                legbyes = mutableIntStateOf(bowler.legbyes.value),
-                fours = mutableIntStateOf(bowler.fours.value),
-                sixes = mutableIntStateOf(bowler.sixes.value),
-                keepername = mutableStateOf(bowler.keepername.value),
-                overrecord = mutableStateOf(bowler.overrecord.value)
+                name = mutableStateOf(currentOverBowler.name.value),
+                over = mutableDoubleStateOf(currentOverBowler.over.value),
+                maiden = mutableIntStateOf(currentOverBowler.maiden.value),
+                runs = mutableIntStateOf(currentOverBowler.runs.value),
+                wickets = mutableIntStateOf(currentOverBowler.wickets.value),
+                noballs = mutableIntStateOf(currentOverBowler.noballs.value),
+                wides = mutableIntStateOf(currentOverBowler.wides.value),
+                byes = mutableIntStateOf(currentOverBowler.byes.value),
+                legbyes = mutableIntStateOf(currentOverBowler.legbyes.value),
+                fours = mutableIntStateOf(currentOverBowler.fours.value),
+                sixes = mutableIntStateOf(currentOverBowler.sixes.value),
+                keepername = mutableStateOf(currentOverBowler.keepername.value),
+                overrecord = mutableStateOf(currentOverBowler.overrecord.value)
+            )
+        }
+
+        val consolidatedBowler = dbHelper.getConsolidatedBowlerStats(matchId,currentOverBowler.name.value)
+        val consolidatedBowlerStats = remember(consolidatedBowler) {
+            BowlerStats(
+                name = mutableStateOf(consolidatedBowler.name.value),
+                over = mutableDoubleStateOf(consolidatedBowler.over.value),
+                maiden = mutableIntStateOf(consolidatedBowler.maiden.value),
+                runs = mutableIntStateOf(consolidatedBowler.runs.value),
+                wickets = mutableIntStateOf(consolidatedBowler.wickets.value),
+                noballs = mutableIntStateOf(consolidatedBowler.noballs.value),
+                wides = mutableIntStateOf(consolidatedBowler.wides.value),
+                byes = mutableIntStateOf(consolidatedBowler.byes.value),
+                legbyes = mutableIntStateOf(consolidatedBowler.legbyes.value),
+                fours = mutableIntStateOf(consolidatedBowler.fours.value),
+                sixes = mutableIntStateOf(consolidatedBowler.sixes.value),
+                keepername = mutableStateOf(consolidatedBowler.keepername.value),
+                overrecord = mutableStateOf(consolidatedBowler.overrecord.value)
             )
         }
 
         val balls = remember { mutableStateListOf<Ball>() }
 
         //Rebuild current over from current bowler stats in database
-        if (bowlerStats.overrecord.value.contains(",")) {
-            val ballValues = bowlerStats.overrecord.value.split("|")
+        if (currentOverBowlerStats.overrecord.value.contains(",")) {
+            val ballValues = currentOverBowlerStats.overrecord.value.split("|")
             balls.clear()
             ballValues.forEach { value ->
                 val pipeValues = value.split(",")
                 val ball = Ball(pipeValues[0], pipeValues[1]) // Assuming Ball takes an Int
                 balls.add(ball)
             }
-        } else if (bowlerStats.overrecord.value != "") {
-            val pipeValues = bowlerStats.overrecord.value.split(",")
+        } else if (currentOverBowlerStats.overrecord.value != "") {
+            val pipeValues = currentOverBowlerStats.overrecord.value.split(",")
             val ball = Ball(pipeValues[0], pipeValues[1]) // Assuming Ball takes an Int
             balls.add(ball)
         }
@@ -333,11 +352,11 @@ fun ScoreCardPage(navController: NavHostController) {
                     makePlayerTouchable = false
                 ) {}
                 BatsmanBowlerKeeperBox(
-                    col1 = bowlerStats.name.value,
-                    col2 = String.format(Locale.UK, "%.1f", bowlerStats.over.value),
-                    col3 = String.format(Locale.UK, "%d", bowlerStats.maiden.value),
-                    col4 = String.format(Locale.UK, "%d", bowlerStats.runs.value),
-                    col5 = String.format(Locale.UK, "%d", bowlerStats.wickets.value),
+                    col1 = consolidatedBowlerStats.name.value,
+                    col2 = String.format(Locale.UK, "%.1f", consolidatedBowlerStats.over.value),
+                    col3 = String.format(Locale.UK, "%d", consolidatedBowlerStats.maiden.value),
+                    col4 = String.format(Locale.UK, "%d", consolidatedBowlerStats.runs.value),
+                    col5 = String.format(Locale.UK, "%d", consolidatedBowlerStats.wickets.value),
                     fontBold1 = FontWeight.Bold,
                     fontColor1 = Color(19, 207, 69),
                     makePlayerTouchable = true
@@ -361,12 +380,8 @@ fun ScoreCardPage(navController: NavHostController) {
                         text = {
                             Column {
                                 bowlingTeam?.forEach { player ->
-                                    if (bowlerStats.name.value != player.name) {
-                                        val oversBowled = dbHelper.getBowlersOversBowled(
-                                            matchId,
-                                            bowlingTeamId,
-                                            player.name
-                                        )
+                                    if (currentOverBowlerStats.name.value != player.name) {
+                                        val consStats = dbHelper.getConsolidatedBowlerStats(matchId,player.name)
                                         Button(
                                             onClick = {
                                                 val existingBowler =
@@ -392,7 +407,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                 )
                                                 showBowlerChangeDialog.value = false
                                                 setCurrentBowlerAndKeeper(
-                                                    bowlerStats,
+                                                    currentOverBowlerStats,
                                                     player.name,
                                                     newKeeper
                                                 )
@@ -406,7 +421,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                 modifier = Modifier.weight(1f)
                                             )
                                             Text(
-                                                oversBowled,
+                                                consStats.over.value.toString(),
                                                 fontSize = if (isTablet) 26.sp else 20.sp,
                                                 textAlign = TextAlign.Right
                                             )
@@ -442,7 +457,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     makePlayerTouchable = false
                 ) {}
                 BatsmanBowlerKeeperBox(
-                    col1 = bowlerStats.keepername.value,
+                    col1 = currentOverBowlerStats.keepername.value,
                     col2 = "",
                     col3 = "",
                     col4 = "",
@@ -467,7 +482,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         text = {
                             Column {
                                 bowlingTeam?.forEach { player ->
-                                    if ((bowlerStats.name.value != player.name) && (bowlerStats.keepername.value != player.name)) {
+                                    if ((currentOverBowlerStats.name.value != player.name) && (currentOverBowlerStats.keepername.value != player.name)) {
                                         Button(onClick = {
                                             dbHelper.updateBowlingStatsKeeper(
                                                 matchId,
@@ -475,7 +490,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                 player.name
                                             )
                                             showKeeperChangeDialog.value = false
-                                            setCurrentKeeper(bowlerStats, player.name)
+                                            setCurrentKeeper(currentOverBowlerStats, player.name)
                                         }, modifier = Modifier.fillMaxWidth()) {
                                             Text(
                                                 player.name,
@@ -525,7 +540,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     context,
                     balls,
                     "0",
-                    bowlerStats,
+                    currentOverBowlerStats,
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
@@ -538,7 +553,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     context,
                     balls,
                     "1",
-                    bowlerStats,
+                    currentOverBowlerStats,
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
@@ -551,7 +566,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     context,
                     balls,
                     "2",
-                    bowlerStats,
+                    currentOverBowlerStats,
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
@@ -564,7 +579,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     context,
                     balls,
                     "3",
-                    bowlerStats,
+                    currentOverBowlerStats,
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
@@ -586,7 +601,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     context,
                     balls,
                     "4",
-                    bowlerStats,
+                    currentOverBowlerStats,
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
@@ -599,7 +614,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     context,
                     balls,
                     "6",
-                    bowlerStats,
+                    currentOverBowlerStats,
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
@@ -620,7 +635,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W"
                                 showWidesDialog.value = false
-                                updateStats(context,balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("WIDE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -628,7 +643,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W+1"
                                 showWidesDialog.value = false
-                                updateStats(context,balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("WIDE + 1", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -636,7 +651,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W+2"
                                 showWidesDialog.value = false
-                                updateStats(context,balls,selectedWidesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("WIDE + 2", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -703,7 +718,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                         context,
                                                         balls,
                                                         selectedNoBallOption.value,
-                                                        bowlerStats,
+                                                        currentOverBowlerStats,
                                                         firstBatsmanStats,
                                                         secondBatsmanStats,
                                                         firstBattingTeamStats,
@@ -755,7 +770,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedByesOption.value = "B1"
                                 showByesDialog.value = false
-                                updateStats(context,balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("1 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -763,7 +778,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedByesOption.value = "B2"
                                 showByesDialog.value = false
-                                updateStats(context,balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("2 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -771,7 +786,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedByesOption.value = "B3"
                                 showByesDialog.value = false
-                                updateStats(context,balls,selectedByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("3 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -797,7 +812,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB1"
                                 showLegByesDialog.value = false
-                                updateStats(context,balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("1 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -805,7 +820,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB2"
                                 showLegByesDialog.value = false
-                                updateStats(context,balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("2 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -813,7 +828,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB3"
                                 showLegByesDialog.value = false
-                                updateStats(context,balls,selectedLegByesOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
                             }) {
                                 Text("3 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -998,7 +1013,7 @@ fun ScoreCardPage(navController: NavHostController) {
 
                                             val newBatsman = player.name
                                             selectedWicketsOption.value += ",$batsmanOut,$newBatsman"
-                                            updateStats(context,balls,selectedWicketsOption.value,bowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                            updateStats(context,balls,selectedWicketsOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
 
                                             val wicketDescription = getWicketDescription(selectedWicketsOption.value,currentBowler.value,selectedFielder.value)
 
@@ -1045,7 +1060,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     context,
                     balls,
                     "UNDO",
-                    bowlerStats,
+                    currentOverBowlerStats,
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
