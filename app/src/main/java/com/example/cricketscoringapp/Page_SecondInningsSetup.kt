@@ -82,7 +82,7 @@ fun SecondInningsSetupPage(navController: NavHostController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Row to hold both Facing Batsman and Second Batsman
@@ -372,3 +372,4 @@ fun SecondInningsSetupPage(navController: NavHostController) {
         }
     }
 }
+
