@@ -811,8 +811,15 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         }
         cursor.close()
 
-        //calculate active = default team 1 is active but if team fully batted OR faced all bowls then team 2 active
-        val active = !((wickets == 12) || (overs == 12.0))
+        query = "SELECT COUNT(*) AS wickets FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? AND batting_status = ? LIMIT 1"
+        cursor = db.rawQuery(query, arrayOf(matchId,currentTeamId.toString(),"striker"))
+
+        val active = if (cursor.moveToFirst()) {
+            cursor.getInt(0) > 0  // Check if the count is greater than 0
+        } else {
+            false
+        }
+        cursor.close()
 
         teamStats =  TeamStats(
                 name = mutableStateOf(captainName),

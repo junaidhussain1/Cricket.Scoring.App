@@ -151,8 +151,6 @@ fun updateStats(context: Context,
 
         balls[lastNonEmptyIndex] = Ball("","")
     }
-
-    calcRunsToWin(firstTeamStats,secondTeamStats,runsToWinTxt)
 }
 
 fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, runsToWinTxt: MutableState<String>) : Int {
