@@ -74,7 +74,7 @@ fun PlayerMgtPage() {
                     onDone = {
                         // Trigger the add player logic when the "Done" button is pressed
                         if (playerName.isNotEmpty()) {
-                            if (!dbHelper.playerAlreadyExists(playerName)) {
+                            if (!dbHelper.isPlayerAlreadyExists(playerName)) {
                                 dbHelper.addPlayer(playerName)
                                 Toast.makeText(context, "Player Added", Toast.LENGTH_SHORT).show()
                                 playerName = ""
@@ -98,7 +98,7 @@ fun PlayerMgtPage() {
             Button(
                 onClick = {
                     if (playerName.isNotEmpty()) {
-                        if (!dbHelper.playerAlreadyExists(playerName)) {
+                        if (!dbHelper.isPlayerAlreadyExists(playerName)) {
                             dbHelper.addPlayer(playerName)
                             Toast.makeText(context, "Player Added", Toast.LENGTH_SHORT).show()
                             playerName = ""

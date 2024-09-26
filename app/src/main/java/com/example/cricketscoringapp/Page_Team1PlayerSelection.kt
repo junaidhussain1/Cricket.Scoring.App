@@ -102,7 +102,7 @@ fun Team1PlayerSelectionPage() {
                                 }
                             } else if (player.name != team1CaptainName.name) {
                                 selectedPlayers.remove(player)
-                                dbHelper.removeTeamPlayer(matchId, 1, player.name)
+                                dbHelper.deleteTeamPlayer(matchId, 1, player.name)
                             }
                         }
                     )

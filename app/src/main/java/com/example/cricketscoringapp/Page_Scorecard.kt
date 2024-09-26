@@ -238,7 +238,10 @@ fun ScoreCardPage(navController: NavHostController) {
                                 firstBattingTeamStats.inningWickets.value
                             ),
                     color1 = if (firstBattingTeamStats.active.value) Color(19, 207, 69) else Color.Black
-                )
+                ) {
+                    val teamID = 1
+                    navController.navigate("inningstats/${teamID}")
+                }
                 TeamScoreBox(
                     name1 = secondBattingTeamStats.name.value,
                     overs1 = String.format(
@@ -257,7 +260,10 @@ fun ScoreCardPage(navController: NavHostController) {
                                 secondBattingTeamStats.inningWickets.value
                             ),
                     color1 = if (firstBattingTeamStats.active.value) Color.Black else Color(19, 207, 69)
-                )
+                ) {
+                    val teamID = 2
+                    navController.navigate("inningstats/${teamID}")
+                }
             }
         }
 

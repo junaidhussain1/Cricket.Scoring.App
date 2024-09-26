@@ -1,5 +1,6 @@
 package com.example.cricketscoringapp
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,12 +20,19 @@ import androidx.compose.ui.unit.sp
 fun TeamScoreBox(name1: String,
                  overs1: String,
                  score1: String,
-                 color1: Color
+                 color1: Color,
+                 onClick: () -> Unit  // Add an onClick lambda to trigger actions
 ) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
 
-    Surface(color = color1, modifier = Modifier.fillMaxWidth()) {
+    // Make the entire Surface clickable by passing onClick
+    Surface(
+        color = color1,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }  // Make the Surface clickable
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -39,7 +47,6 @@ fun TeamScoreBox(name1: String,
                     .weight(2f)// This pushes the next Text to the right
                     .align(Alignment.CenterVertically)
                     .wrapContentWidth(Alignment.Start)
-
             )
             Text(
                 text = overs1,

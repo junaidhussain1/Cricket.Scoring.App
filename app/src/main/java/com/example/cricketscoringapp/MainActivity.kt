@@ -59,6 +59,10 @@ fun AppNavHost(navController: NavHostController) {
         composable("scorecard") { ScoreCardPage(navController = navController) }
         composable("existingmatches") { ExistingMatchesPage() }
         composable("secondinningssetup") { SecondInningsSetupPage(navController = navController) }
+        composable("inningstats/{teamID}") { backStackEntry ->
+            val teamID = backStackEntry.arguments?.getString("teamID")?.toIntOrNull() ?: 1
+            InningStatsPage(teamID = teamID)
+        }
     }
 }
 
