@@ -147,6 +147,9 @@ fun updateStats(context: Context,
             updateBowler(matchId,false,"maiden",bowlerStats,activeBatsman,-1.00,"",context)
         }
 
+        bowlerStats.overrecord.value = removePipeDelimitedValue(lastNonEmptyIndex,bowlerStats.overrecord.value)
+        dbHelper.updateBowlingStats(matchId,bowlerStats)
+
         doUpdateStats(context,matchId,true,lastBall,-1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
 
         balls[lastNonEmptyIndex] = Ball("","")
@@ -252,8 +255,6 @@ fun updateBowler(
                 bowlerStats.overrecord.value += "|$ballActionString"
             }
         }
-    } else {
-        bowlerStats.overrecord.value = removeLastPipeDelimitedValue(bowlerStats.overrecord.value)
     }
     dbHelper.updateBowlingStats(matchId,bowlerStats)
 }
@@ -352,18 +353,19 @@ fun calculateOversRemaining(ballsRemaining: Int): Double {
     return overs + balls / 10.0
 }
 
-fun removeLastPipeDelimitedValue(pipeDelimitedValue: String): String {
+fun removePipeDelimitedValue(noOfBalls: Int, pipeDelimitedValue: String): String {
     // Split the string into a list of values
     val values = pipeDelimitedValue.split("|").toMutableList()
 
-    // Remove the last value if the list is not empty
-    if (values.isNotEmpty()) {
-        values.removeAt(values.size - 1)
+    // If the list has more values than noOfBalls, remove the excess
+    if (values.size > noOfBalls) {
+        values.subList(noOfBalls, values.size).clear() // Remove all values after the noOfBalls index
     }
 
     // Join the remaining values back into a pipeDelimitedValue string
     return values.joinToString("|")
 }
+
 
 fun endOfOverReached(balls: MutableList<Ball>): Boolean {
     val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3")

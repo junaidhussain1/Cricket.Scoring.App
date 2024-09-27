@@ -112,6 +112,7 @@ fun ScoreCardPage(navController: NavHostController) {
                 balls = mutableIntStateOf(value = firstBatsman.balls.value),
                 fours = mutableIntStateOf(value = firstBatsman.fours.value),
                 sixes = mutableIntStateOf(value = firstBatsman.sixes.value),
+                wicketDescription = mutableStateOf(value = firstBatsman.wicketDescription.value),
                 active = mutableStateOf(value = firstBatsman.active.value)
             )
         }
@@ -124,6 +125,7 @@ fun ScoreCardPage(navController: NavHostController) {
                 balls = mutableIntStateOf(value = secondBatsman.balls.value),
                 fours = mutableIntStateOf(value = secondBatsman.fours.value),
                 sixes = mutableIntStateOf(value = secondBatsman.sixes.value),
+                wicketDescription = mutableStateOf(value = secondBatsman.name.value),
                 active = mutableStateOf(value = secondBatsman.active.value)
             )
         }

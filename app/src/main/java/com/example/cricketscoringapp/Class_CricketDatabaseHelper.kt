@@ -327,6 +327,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             balls = mutableIntStateOf(value = 0),
             fours = mutableIntStateOf(value = 0),
             sixes = mutableIntStateOf(value = 0),
+            wicketDescription = mutableStateOf(value = ""),
             active = mutableStateOf(value = false)
         )
 
@@ -335,10 +336,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
         while (cursor.moveToNext()) {
             val playerName: String = cursor.getString(cursor.getColumnIndexOrThrow("player_name"))
-            val runs: Int = cursor.getInt(cursor.getColumnIndexOrThrow("runs"))
-            val balls: Int = cursor.getInt(cursor.getColumnIndexOrThrow("balls"))
-            val fours: Int = cursor.getInt(cursor.getColumnIndexOrThrow("fours"))
-            val sixes: Int = cursor.getInt(cursor.getColumnIndexOrThrow("sixes"))
+            val runs: Int = cursor.getIntOrZero("runs")
+            val balls: Int = cursor.getIntOrZero("balls")
+            val fours: Int = cursor.getIntOrZero("fours")
+            val sixes: Int = cursor.getIntOrZero("sixes")
+            val wicketDescription: String = cursor.getStringOrEmpty("wicket_description")
 
             // Assign the retrieved values to batsmanStats
             batsmanStats = BatsmanStats(
@@ -347,6 +349,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 balls = mutableIntStateOf(value = balls),
                 fours = mutableIntStateOf(value = fours),
                 sixes = mutableIntStateOf(value = sixes),
+                wicketDescription = mutableStateOf(value = wicketDescription),
                 active = mutableStateOf(value = battingStatus == "striker")
             )
         }
@@ -511,6 +514,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                     balls = mutableIntStateOf(it.getInt(it.getColumnIndexOrThrow("balls"))),
                     fours = mutableIntStateOf(it.getInt(it.getColumnIndexOrThrow("fours"))),
                     sixes = mutableIntStateOf(it.getInt(it.getColumnIndexOrThrow("sixes"))),
+                    wicketDescription =  mutableStateOf(it.getString(it.getColumnIndexOrThrow("wicket_description"))),
                     active = mutableStateOf(it.getString(it.getColumnIndexOrThrow("batting_status")) == "striker")
                 )
             } else {
@@ -521,6 +525,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                     balls = mutableIntStateOf(0),
                     fours = mutableIntStateOf(0),
                     sixes = mutableIntStateOf(0),
+                    wicketDescription = mutableStateOf(""),
                     active = mutableStateOf(false)
                 )
             }
@@ -540,12 +545,13 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         cursor.use {  // Ensure the cursor is properly closed after use
             while (it.moveToNext()) {  // Iterate through all records in the cursor
                 val batsmanStats = BatsmanStats(
-                    name = mutableStateOf(it.getString(it.getColumnIndexOrThrow("player_name"))),
-                    runs = mutableIntStateOf(it.getInt(it.getColumnIndexOrThrow("runs"))),
-                    balls = mutableIntStateOf(it.getInt(it.getColumnIndexOrThrow("balls"))),
-                    fours = mutableIntStateOf(it.getInt(it.getColumnIndexOrThrow("fours"))),
-                    sixes = mutableIntStateOf(it.getInt(it.getColumnIndexOrThrow("sixes"))),
-                    active = mutableStateOf(it.getString(it.getColumnIndexOrThrow("batting_status")) == "striker")
+                    name = mutableStateOf(it.getStringOrEmpty("player_name")),
+                    runs = mutableIntStateOf(it.getIntOrZero("runs")),
+                    balls = mutableIntStateOf(it.getIntOrZero("balls")),
+                    fours = mutableIntStateOf(it.getIntOrZero("fours")),
+                    sixes = mutableIntStateOf(it.getIntOrZero("sixes")),
+                    wicketDescription = mutableStateOf(it.getStringOrEmpty("wicket_description")),
+                    active = mutableStateOf(it.getStringOrEmpty("batting_status") == "striker")
                 )
                 batsmen.add(batsmanStats) // Add each batsman stats object to the list
             }
@@ -554,13 +560,60 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return batsmen  // Return the list of BatsmanStats
     }
 
+    fun getTeamBowlingStats(matchId: String, teamId: Int): List<BowlerStats> {
+        val bowlers = mutableListOf<BowlerStats>() // Initialize the list to store batsman stats
+        val db = readableDatabase
+        val query = """
+            SELECT 
+                player_name, 
+                SUM(over) AS total_overs, 
+                SUM(maiden) AS total_maidens, 
+                SUM(runs) AS total_runs, 
+                SUM(wickets) AS total_wickets, 
+                SUM(noballs) AS total_noballs, 
+                SUM(wides) AS total_wides, 
+                SUM(byes) AS total_byes, 
+                SUM(legbyes) AS total_legbyes, 
+                SUM(fours) AS total_fours, 
+                SUM(sixes) AS total_sixes
+            FROM 
+                $TABLE_BOWLINGSTATS
+            WHERE 
+                match_id = ? AND team_id = ?
+            GROUP BY 
+                player_name
+            """
+        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString()))
+
+        cursor.use {  // Ensure the cursor is properly closed after use
+            while (it.moveToNext()) {  // Iterate through all records in the cursor
+                val bowlerStats = BowlerStats(
+                    name = mutableStateOf(it.getStringOrEmpty("player_name")),
+                    over = mutableDoubleStateOf(it.getDoubleOrZero("total_overs")),
+                    maiden = mutableIntStateOf(it.getIntOrZero("total_maidens")),
+                    runs = mutableIntStateOf(it.getIntOrZero("total_runs")),
+                    wickets = mutableIntStateOf(it.getIntOrZero("total_wickets")),
+                    noballs = mutableIntStateOf(it.getIntOrZero("total_noballs")),
+                    wides = mutableIntStateOf(it.getIntOrZero("total_wides")),
+                    fours = mutableIntStateOf(it.getIntOrZero("total_fours")),
+                    sixes = mutableIntStateOf(it.getIntOrZero("total_sixes")),
+                    byes = mutableIntStateOf(it.getIntOrZero("total_byes")),
+                    legbyes = mutableIntStateOf(it.getIntOrZero("total_legbyes"))
+                )
+                bowlers.add(bowlerStats) // Add each bowler stats object to the list
+            }
+        }
+
+        return bowlers  // Return the list of BowlerStats
+    }
+
     fun getFullyBattedAlreadyPlayers(matchId: String, teamId: Int) : List<Player> {
         val players = mutableListOf<Player>()
         val db = readableDatabase
         val query = "SELECT player_name FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? AND batting_turn = 2 AND batting_status = 'out'"
         val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString()))
         while (cursor.moveToNext()) {
-            val name = cursor.getString(cursor.getColumnIndexOrThrow("player_name"))
+            val name = cursor.getStringOrEmpty("player_name")
             players.add(Player(name))
         }
         cursor.close()
