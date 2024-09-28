@@ -23,9 +23,10 @@ fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats) {
     batsman2.active.value = tempActive
 }
 
-fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats, actionForBatsman: String) {
+fun swapBatsmen(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats, actionForBatsman: String) {
     if (((batsman1.name.value == actionForBatsman) && (!batsman1.active.value)) || ((batsman2.name.value == actionForBatsman) && (!batsman2.active.value))) {
-        swapBatsmen(batsman1,batsman2)
+        //swapBatsmen(batsman1,batsman2)
+        swapBatsmenDB(context,matchId,batsman1,batsman2)
     }
 }
 
@@ -107,11 +108,13 @@ fun updateStats(context: Context,
         // Decrement the bowlerOver by 0.1 only if the last ball was a valid ball value
         if (lastBall !in excludedValuesFromBallsBalled) {
             if ((lastBall == "1") || (lastBall == "2")) {
-                swapBatsmen(firstBatsmanStats,secondBatsmanStats,balls[lastNonEmptyIndex].batsman)
+                swapBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats,balls[lastNonEmptyIndex].batsman)
             }
             updateBowler(matchId,true,"over",bowlerStats,activeBatsman,-0.1,"",context)
             updateTeam("overs", firstTeamStats, secondTeamStats, -0.1)
         }
+
+        doUpdateStats(context,matchId,true,lastBall,-1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
 
         if (lastBall !in excludedValuesFromBallsFaced) {
             if (lastBall.contains("WK")) {
@@ -149,8 +152,6 @@ fun updateStats(context: Context,
 
         bowlerStats.overrecord.value = removePipeDelimitedValue(lastNonEmptyIndex,bowlerStats.overrecord.value)
         dbHelper.updateBowlingStats(matchId,bowlerStats)
-
-        doUpdateStats(context,matchId,true,lastBall,-1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
 
         balls[lastNonEmptyIndex] = Ball("","")
     }
@@ -365,7 +366,6 @@ fun removePipeDelimitedValue(noOfBalls: Int, pipeDelimitedValue: String): String
     // Join the remaining values back into a pipeDelimitedValue string
     return values.joinToString("|")
 }
-
 
 fun endOfOverReached(balls: MutableList<Ball>): Boolean {
     val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3")
