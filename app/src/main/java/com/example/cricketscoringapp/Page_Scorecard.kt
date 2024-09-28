@@ -392,16 +392,13 @@ fun ScoreCardPage(navController: NavHostController) {
                                         val consStats = dbHelper.getConsolidatedBowlerStats(matchId,player.name)
                                         Button(
                                             onClick = {
-                                                val existingBowler =
-                                                    dbHelper.getLastBowler(matchId, bowlingTeamId)
                                                 val existingKeeper =
                                                     dbHelper.getLastKeeper(matchId, bowlingTeamId)
-                                                val newKeeper: String =
-                                                    if (player.name == existingKeeper) {
-                                                        existingBowler
-                                                    } else {
-                                                        existingKeeper
-                                                    }
+
+                                                if (player.name == existingKeeper) {
+                                                    showKeeperChangeDialog.value = true
+                                                }
+
                                                 if (manualBowlerChange.value) {
                                                     dbHelper.deleteCurrentBowler(matchId)
                                                     manualBowlerChange.value = false
@@ -410,14 +407,14 @@ fun ScoreCardPage(navController: NavHostController) {
                                                     matchId,
                                                     bowlingTeamId,
                                                     player.name,
-                                                    newKeeper,
+                                                    existingKeeper,
                                                     "bowling"
                                                 )
                                                 showBowlerChangeDialog.value = false
                                                 setCurrentBowlerAndKeeper(
                                                     currentOverBowlerStats,
                                                     player.name,
-                                                    newKeeper
+                                                    existingKeeper
                                                 )
                                                 balls.clear()
                                             },

@@ -461,7 +461,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     fun getLastKeeper(matchId: String, teamId: Int) : String {
         val db = readableDatabase
         val query = "SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? AND bowling_status = ? ORDER BY bowling_order DESC LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString(),"bowled"))
+        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString(),"bowling"))
         var lastKeeper = ""
         if (cursor.moveToFirst()) {
             lastKeeper = cursor.getString(cursor.getColumnIndexOrThrow("keeper_name"))
