@@ -2,11 +2,14 @@ package com.example.cricketscoringapp
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +25,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.util.Locale
 
 @Composable
@@ -44,8 +48,12 @@ fun InningStatsPage(teamID: Int) {
         ) {
             val dbHelper = CricketDatabaseHelper(context)
             val matchId = dbHelper.getMatchId()
+
+            val teamCaptain = dbHelper.getBattingTeamCaptain(matchId,teamID)
             val battersList = remember { mutableStateListOf<BatsmanStats>() }
             val bowlersList = remember { mutableStateListOf<BowlerStats>() }
+            var totalByes: Int = 0
+            var totalLegByes: Int = 0
 
             battersList.clear()
             battersList.addAll(dbHelper.getTeamBattingStats(matchId, teamID))
@@ -53,11 +61,20 @@ fun InningStatsPage(teamID: Int) {
             bowlersList.clear()
             bowlersList.addAll(dbHelper.getTeamBowlingStats(matchId, teamID))
 
+            Text(
+                "Team $teamCaptain",
+                style = MaterialTheme.typography.headlineLarge,
+                color = Color(255, 252, 228)
+            )
+
             if (battersList.isNotEmpty()) {
                 Text(
                     "Batting Stats",
                     style = MaterialTheme.typography.headlineSmall,
-                    color = Color(255, 252, 228)
+                    color = Color(255, 252, 228),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth(Alignment.Start)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -117,15 +134,18 @@ fun InningStatsPage(teamID: Int) {
                         )
                     }
                 }
-            } else {
-                Text("No players found")
             }
 
             if (bowlersList.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     "Bowling Stats",
                     style = MaterialTheme.typography.headlineSmall,
-                    color = Color(255, 252, 228)
+                    color = Color(255, 252, 228),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth(Alignment.Start)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -153,6 +173,8 @@ fun InningStatsPage(teamID: Int) {
 
                     // List of bowlers
                     items(bowlersList) { player ->
+                        totalByes += player.byes.value
+                        totalLegByes += player.legbyes.value
                         BowlerFullStats(
                             bowler = player.name.value,
                             totalOvers = String.format(
@@ -199,9 +221,64 @@ fun InningStatsPage(teamID: Int) {
                             fontColor1 = Color.White
                         )
                     }
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            "Extras Given",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color(255, 252, 228)
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(2.dp)  // Optional padding
+                        ) {
+                            Text(
+                                text = "Byes",
+                                fontWeight = FontWeight.Normal,
+                                fontSize = if (isTablet) 16.sp else 10.sp,
+                                color = Color.White,
+                                modifier = Modifier.weight(1f) // This pushes the next Text to the right
+                            )
+                            Text(
+                                text = totalByes.toString(),
+                                fontWeight = FontWeight.Normal,
+                                fontSize = if (isTablet) 16.sp else 10.sp,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .align(Alignment.CenterVertically) // Aligns text vertically center
+                                    .wrapContentWidth(Alignment.Start) // Centers text horizontally
+                            )
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(2.dp)  // Optional padding
+                        ) {
+                            Text(
+                                text = "Legbyes",
+                                fontWeight = FontWeight.Normal,
+                                fontSize = if (isTablet) 16.sp else 10.sp,
+                                color = Color.White,
+                                modifier = Modifier.weight(1f) // This pushes the next Text to the right
+                            )
+                            Text(
+                                text = totalLegByes.toString(),
+                                fontWeight = FontWeight.Normal,
+                                fontSize = if (isTablet) 16.sp else 10.sp,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .align(Alignment.CenterVertically) // Aligns text vertically center
+                                    .wrapContentWidth(Alignment.Start) // Centers text horizontally
+                            )
+                        }
+                    }
                 }
-            } else {
-                Text("No players found")
             }
         }
     }
