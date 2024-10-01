@@ -40,8 +40,9 @@ fun SecondInningsSetupPage(navController: NavHostController) {
 
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
-    val bowlingTeamId = 1
-    val battingTeamId = 2
+    val firstBattingTeamId = dbHelper.getTeamForPlayer(matchId,dbHelper.getFirstBattingTeamStriker(matchId))
+    val battingTeamId = if (firstBattingTeamId == 1) { 2 } else { 1 }
+    val bowlingTeamId = if (firstBattingTeamId == 1) { 1 } else { 2 }
 
     var facingBatsman by remember { mutableStateOf<Player?>(null) }
     var secondBatsman by remember { mutableStateOf<Player?>(null) }
@@ -71,8 +72,6 @@ fun SecondInningsSetupPage(navController: NavHostController) {
     var expanded5 by remember { mutableStateOf(false) }
     var expanded6 by remember { mutableStateOf(false) }
     var expanded7 by remember { mutableStateOf(false) }
-
-
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -270,6 +269,10 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                         },
                                         onClick = {
                                             openingBowler = player
+                                            dbHelper.updateBowlingStats(
+                                                matchId,
+                                                "bowled"
+                                            )
                                             dbHelper.addBowlingStats(
                                                 matchId,
                                                 bowlingTeamId,

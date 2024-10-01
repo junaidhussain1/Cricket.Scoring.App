@@ -195,6 +195,15 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, runsToW
     return ballsRemaining
 }
 
+fun calcNoOfWickets(context: Context,matchId: String,firstTeamStats: TeamStats,secondTeamStats: TeamStats) : Int {
+    val dbHelper = CricketDatabaseHelper(context)
+    return if (firstTeamStats.active.value) {
+        dbHelper.getTeamWickets(matchId,1)
+    } else {
+        dbHelper.getTeamWickets(matchId,2)
+    }
+}
+
 fun updateBowler(
     matchId: String,
     undo: Boolean,
@@ -404,6 +413,7 @@ fun setCurrentBowlerAndKeeper(bowlerStats: BowlerStats, bowlerName: String, keep
     bowlerStats.byes.value = 0
     bowlerStats.legbyes.value = 0
 }
+
 fun setCurrentKeeper(bowlerStats: BowlerStats, keeperName: String) {
     bowlerStats.keepername.value = keeperName
 }
@@ -600,5 +610,70 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
         }
+    }
+}
+
+fun handleLastBatsmen(context: Context, matchId: String, firstBatsman: BatsmanStats, secondBatsman: BatsmanStats) {
+    val dbHelper = CricketDatabaseHelper(context)
+
+    if (firstBatsman.name.value != "") {
+        if (firstBatsman.active.value) {
+            dbHelper.updateBattingStats(
+                matchId,
+                firstBatsman.name.value,
+                "striker",
+                "not out"
+            )
+        } else {
+            dbHelper.updateBattingStats(
+                matchId,
+                firstBatsman.name.value,
+                "non-striker",
+                "not out"
+            )
+        }
+    }
+    if (secondBatsman.name.value != "") {
+        if (secondBatsman.active.value) {
+            dbHelper.updateBattingStats(
+                matchId,
+                secondBatsman.name.value,
+                "striker",
+                "not out"
+            )
+        } else {
+            dbHelper.updateBattingStats(
+                matchId,
+                secondBatsman.name.value,
+                "non-striker",
+                "not out"
+            )
+        }
+    }
+}
+
+fun markBatsmanAsOutInDB(context: Context,matchId: String,firstBatsmanStats: BatsmanStats,secondBatsmanStats: BatsmanStats, wicketDescription: String, newBatsman: String, newActive: Boolean) {
+    val dbHelper = CricketDatabaseHelper(context)
+
+    if (firstBatsmanStats.active.value) {
+        //save out batsman to database
+        dbHelper.updateBattingStats(matchId,"out",firstBatsmanStats,wicketDescription)
+
+        firstBatsmanStats.name.value = newBatsman
+        firstBatsmanStats.active.value = newActive
+        firstBatsmanStats.runs.value = 0
+        firstBatsmanStats.balls.value = 0
+        firstBatsmanStats.fours.value = 0
+        firstBatsmanStats.sixes.value = 0
+    } else {
+        //save out batsman to database
+        dbHelper.updateBattingStats(matchId,"out",secondBatsmanStats,wicketDescription)
+
+        secondBatsmanStats.name.value = newBatsman
+        secondBatsmanStats.active.value = newActive
+        secondBatsmanStats.runs.value = 0
+        secondBatsmanStats.balls.value = 0
+        secondBatsmanStats.fours.value = 0
+        secondBatsmanStats.sixes.value = 0
     }
 }

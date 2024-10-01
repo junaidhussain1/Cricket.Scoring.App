@@ -70,10 +70,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
     team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
     team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
     battingTeamCaptain = Player((dbHelper.getBattingTeamCaptain(matchId, 1)))
-    facingBatsman = Player(dbHelper.getBatsmanByStatus(matchId, "striker").name.value)
-    secondBatsman = Player(dbHelper.getBatsmanByStatus(matchId, "non-striker").name.value)
-    openingBowler = Player(dbHelper.getCurrentBowler(matchId))
-    openingKeeper = Player(dbHelper.getCurrentKeeper(matchId))
+    facingBatsman = Player(dbHelper.getFirstBattingTeamStriker(matchId))
+    secondBatsman = Player(dbHelper.getFirstBattingTeamNonStriker(matchId))
+    openingBowler = Player(dbHelper.getSecondBattingTeamBowler(matchId))
+    openingKeeper = Player(dbHelper.getSecondBattingTeamKeeper(matchId))
 
     var expanded1 by remember { mutableStateOf(false) }
     var expanded2 by remember { mutableStateOf(false) }
@@ -588,6 +588,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                                 "striker"
                                                             )
                                                         }
+                                                        dbHelper.updateMatchOpeningStriker(matchId,it)
                                                     }
                                                 }
                                                 expanded4 = false
@@ -663,6 +664,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                                 "non-striker"
                                                             )
                                                         }
+                                                        dbHelper.updateMatchOpeningNonStriker(matchId,it)
                                                     }
                                                 }
                                                 expanded5 = false
@@ -745,6 +747,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                         "bowling"
                                                     )
                                                 }
+                                                dbHelper.updateMatchOpeningBowler(matchId,player.name)
                                                 expanded6 = false
                                             }
                                         )
@@ -815,6 +818,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                         player.name
                                                     )
                                                 }
+                                                dbHelper.updateMatchOpeningKeeper(matchId,player.name)
                                                 expanded7 = false
                                             }
                                         )
@@ -830,10 +834,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 //Only show if both teams contain 6 players and batting team, keeper and bowler have been set
                 if ((dbHelper.getTeamSize(matchId, 1) == 6)
                     && (dbHelper.getTeamSize(matchId, 2) == 6)
-                    && (facingBatsman != null)
-                    && (secondBatsman != null)
-                    && (openingBowler != null)
-                    && (openingKeeper != null)
+                    && (facingBatsman?.name != "")
+                    && (secondBatsman?.name != "")
+                    && (openingBowler?.name != "")
+                    && (openingKeeper?.name != "")
                 ) {
                     Button(
                         onClick = {

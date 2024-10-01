@@ -1,5 +1,6 @@
 package com.example.cricketscoringapp
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +46,7 @@ fun ScoreCardPage(navController: NavHostController) {
     val matchId = dbHelper.getMatchId()
     val currentBowler = remember { mutableStateOf(dbHelper.getCurrentBowler(matchId)) }
     val bowlingTeamId = dbHelper.getTeamForPlayer(matchId,currentBowler.value)
-    val bowlingTeam = bowlingTeamId?.let { dbHelper.getTeamPlayers(matchId, it,1) }
+    val bowlingTeam = bowlingTeamId.let { dbHelper.getTeamPlayers(matchId, it,1) }
 
     val showWidesDialog = remember { mutableStateOf(false) }
     val selectedWidesOption = remember { mutableStateOf("") }
@@ -185,32 +186,28 @@ fun ScoreCardPage(navController: NavHostController) {
             balls.add(ball)
         }
 
-        //Handle end of over and end of innings
-        if (endOfOverReached(balls)) {
-            dbHelper.updateBowlingStats(matchId,"bowled")
-            val ballsRemaining = calcRunsToWin(firstBattingTeamStats,secondBattingTeamStats, runsToWin)
-            if (ballsRemaining > 0) {
-                balls.clear()
-                showBowlerChangeDialog.value = true
-            } else {
-                //end of innings
-                if (firstBatsman.name.value != "") {
-                    if (firstBatsman.active.value) {
-                        dbHelper.updateBattingStats(matchId, firstBatsman.name.value, "striker", "not out")
-                    } else {
-                        dbHelper.updateBattingStats(matchId, firstBatsman.name.value, "non-striker", "not out")
-                    }
+        val firstTeamId = dbHelper.getTeamForPlayer(matchId,firstBattingTeamCaptain.name)
+        val secondTeamId = if (firstTeamId == 1) 2 else 1
+        val team1wickets = dbHelper.getTeamWickets(matchId,firstTeamId)
+        val team2wickets = dbHelper.getTeamWickets(matchId,secondTeamId)
+        val team2batters = dbHelper.getTeamBatters(matchId,secondTeamId)
+        val team1OversBowled = dbHelper.getTeamOversBowled(matchId, firstTeamId)
+
+        if ((team1wickets == 12) and (team2batters == 0)) {
+            navController.navigate("secondinningssetup")
+        } else if ((team1wickets == 12) and (team2wickets == 12)) {
+            dbHelper.updateMatchIsStarted(matchId)
+            Toast.makeText(context,"End of Match!", Toast.LENGTH_SHORT).show()
+        } else {
+            if (endOfOverReached(balls)) {
+                if (team1OversBowled == 12.0){
+                    navController.navigate("secondinningssetup")
+                } else {
+                    showBowlerChangeDialog.value = true
                 }
-                if (secondBatsman.name.value != "") {
-                    if (secondBatsman.active.value) {
-                        dbHelper.updateBattingStats(matchId, secondBatsman.name.value, "striker", "not out")
-                    } else {
-                        dbHelper.updateBattingStats(matchId, secondBatsman.name.value, "non-striker", "not out")
-                    }
-                }
-                navController.navigate("secondinningssetup")
             }
         }
+
 
         // Innings Score Box
         Box(
@@ -387,7 +384,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         title = { Text("Change Bowler") },
                         text = {
                             Column {
-                                bowlingTeam?.forEach { player ->
+                                bowlingTeam.forEach { player ->
                                     if (currentOverBowlerStats.name.value != player.name) {
                                         val consStats = dbHelper.getConsolidatedBowlerStats(matchId,player.name)
                                         Button(
@@ -402,6 +399,8 @@ fun ScoreCardPage(navController: NavHostController) {
                                                 if (manualBowlerChange.value) {
                                                     dbHelper.deleteCurrentBowler(matchId)
                                                     manualBowlerChange.value = false
+                                                } else {
+                                                    dbHelper.updateBowlingStats(matchId,"bowled")
                                                 }
                                                 dbHelper.addBowlingStats(
                                                     matchId,
@@ -486,7 +485,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         title = { Text("Change Keeper") },
                         text = {
                             Column {
-                                bowlingTeam?.forEach { player ->
+                                bowlingTeam.forEach { player ->
                                     if ((currentOverBowlerStats.name.value != player.name) && (currentOverBowlerStats.keepername.value != player.name)) {
                                         Button(onClick = {
                                             dbHelper.updateBowlingStatsKeeper(
@@ -951,20 +950,16 @@ fun ScoreCardPage(navController: NavHostController) {
                     title = { Text("Select Fielder") },
                     text = {
                         Column {
-                            when {
-                                bowlingTeam!= null -> {
-                                    bowlingTeam.forEach { player ->
-                                        // List of options to choose from
-                                        Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                            selectedFielder.value = player.name
-                                            showFielderDialog.value = false
-                                            showNextBatsmanDialog.value = true
-                                        }) {
-                                            Text(player.name, fontSize = if (isTablet) 30.sp else 20.sp)
-                                        }
-                                        Spacer(modifier = Modifier.height(16.dp))
-                                    }
+                            bowlingTeam.forEach { player ->
+                                // List of options to choose from
+                                Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                                    selectedFielder.value = player.name
+                                    showFielderDialog.value = false
+                                    showNextBatsmanDialog.value = true
+                                }) {
+                                    Text(player.name, fontSize = if (isTablet) 30.sp else 20.sp)
                                 }
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
                     },
@@ -982,83 +977,111 @@ fun ScoreCardPage(navController: NavHostController) {
             if (showNextBatsmanDialog.value) {
 
                 //Get List of Team Players
+                val strikerBatsman = getActiveBatsman(firstBatsmanStats,secondBatsmanStats)
                 val nonStrikerBatsman = getInactiveBatsman(firstBatsmanStats,secondBatsmanStats)
+                var excludeBatsman = ""
+
 
                 val teamId = dbHelper.getTeamForPlayer(matchId, firstBatsmanStats.name.value)
-                val players = teamId?.let { dbHelper.getTeamPlayers(matchId, it,1) }
+                val players = teamId.let { dbHelper.getTeamPlayers(matchId, it,1) }
 
                 //Remove Players who have batted/got out twice already
                 val battedFullyAlreadyPlayers =
-                    teamId?.let { dbHelper.getFullyBattedAlreadyPlayers(matchId, it) }
+                    teamId.let { dbHelper.getFullyBattedAlreadyPlayers(matchId, it) }
 
-                val availablePlayers = players?.filter { player ->
-                    battedFullyAlreadyPlayers?.contains(player) == false && player != Player(nonStrikerBatsman)
+                val previousBattingCount = dbHelper.getBattingCount(matchId,strikerBatsman)
+                if (previousBattingCount > 0) {
+                    excludeBatsman = strikerBatsman
                 }
-                //For current user, if current time getting out is second turn then don't allow any more
 
-                AlertDialog(
-                    onDismissRequest = {
-                        showNextBatsmanDialog.value = false
-                        showWicketsDialog.value = true
-                                       },
-                    title = { Text("Select NEXT Batsman") },
-                    text = {
-                        Column {
-                            when {
-                                availablePlayers != null -> {
-                                    availablePlayers.forEach { player ->
-                                        // List of options to choose from
-                                        Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                            showNextBatsmanDialog.value = false
-                                            val batsmanOut:String = if (firstBatsmanStats.active.value) {
-                                                firstBatsmanStats.name.value
-                                            } else {
-                                                secondBatsmanStats.name.value
-                                            }
+                val availablePlayers = players.filter { player ->
+                    !battedFullyAlreadyPlayers.contains(player) && player != Player(nonStrikerBatsman) && player != Player(excludeBatsman)
+                }
 
-                                            val newBatsman = player.name
-                                            selectedWicketsOption.value += ",$batsmanOut,$newBatsman"
-                                            updateStats(context,balls,selectedWicketsOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                if (availablePlayers.isEmpty()) {
+                    showNextBatsmanDialog.value = false
+                    val batsmanOut = getActiveBatsman(firstBatsmanStats, secondBatsmanStats)
+                    selectedWicketsOption.value += ",$batsmanOut"
+                    updateStats(context,balls,selectedWicketsOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                    currentBowler.value = dbHelper.getCurrentBowler(matchId)
+                    val wicketDescription = getWicketDescription(selectedWicketsOption.value,currentBowler.value,selectedFielder.value)
+                    markBatsmanAsOutInDB(context,matchId,firstBatsmanStats,secondBatsmanStats,wicketDescription,"",false)
+                    if (dbHelper.getTeamWickets(matchId,dbHelper.getTeamForPlayer(matchId,batsmanOut)) < 12) {
+                        dbHelper.updateBattingStats(matchId,nonStrikerBatsman,"non-striker","striker")
+                    }
+                } else {
 
-                                            val wicketDescription = getWicketDescription(selectedWicketsOption.value,currentBowler.value,selectedFielder.value)
+                    //For current user, if current time getting out is second turn then don't allow any more
+                    AlertDialog(
+                        onDismissRequest = {
+                            showNextBatsmanDialog.value = false
+                            showWicketsDialog.value = true
+                        },
+                        title = { Text("Select NEXT Batsman") },
+                        text = {
+                            Column {
+                                availablePlayers.forEach { player ->
+                                    // List of options to choose from
+                                    Button(modifier = Modifier.fillMaxWidth(), onClick = {
+                                        showNextBatsmanDialog.value = false
+                                        val batsmanOut = getActiveBatsman(
+                                            firstBatsmanStats,
+                                            secondBatsmanStats
+                                        )
 
-                                            if (firstBatsmanStats.active.value) {
-                                                //save out batsman to database
-                                                dbHelper.updateBattingStats(matchId,"out",firstBatsmanStats,wicketDescription)
-                                                
-                                                firstBatsmanStats.name.value = newBatsman
-                                                firstBatsmanStats.active.value = true
-                                                firstBatsmanStats.runs.value = 0
-                                                firstBatsmanStats.balls.value = 0
-                                                firstBatsmanStats.fours.value = 0
-                                                firstBatsmanStats.sixes.value = 0
-                                            } else {
-                                                //save out batsman to database
-                                                dbHelper.updateBattingStats(matchId,"out",secondBatsmanStats,wicketDescription)
+                                        val newBatsman = player.name
+                                        selectedWicketsOption.value += ",$batsmanOut,$newBatsman"
+                                        updateStats(
+                                            context,
+                                            balls,
+                                            selectedWicketsOption.value,
+                                            currentOverBowlerStats,
+                                            firstBatsmanStats,
+                                            secondBatsmanStats,
+                                            firstBattingTeamStats,
+                                            secondBattingTeamStats,
+                                            runsToWin
+                                        )
 
-                                                secondBatsmanStats.name.value = newBatsman
-                                                secondBatsmanStats.active.value = true
-                                                secondBatsmanStats.runs.value = 0
-                                                secondBatsmanStats.balls.value = 0
-                                                secondBatsmanStats.fours.value = 0
-                                                secondBatsmanStats.sixes.value = 0
-                                            }
-                                            dbHelper.addBattingStats(matchId,teamId,newBatsman,"striker")
-                                        }) {
-                                            Text(player.name, fontSize = if (isTablet) 30.sp else 20.sp)
-                                        }
-                                        Spacer(modifier = Modifier.height(16.dp))
+                                        currentBowler.value = dbHelper.getCurrentBowler(matchId)
+                                        val wicketDescription = getWicketDescription(
+                                            selectedWicketsOption.value,
+                                            currentBowler.value,
+                                            selectedFielder.value
+                                        )
+
+                                        markBatsmanAsOutInDB(
+                                            context,
+                                            matchId,
+                                            firstBatsmanStats,
+                                            secondBatsmanStats,
+                                            wicketDescription,
+                                            newBatsman,
+                                            true
+                                        )
+                                        dbHelper.addBattingStats(
+                                            matchId,
+                                            teamId,
+                                            newBatsman,
+                                            "striker"
+                                        )
+                                    }) {
+                                        Text(
+                                            player.name,
+                                            fontSize = if (isTablet) 30.sp else 20.sp
+                                        )
                                     }
+                                    Spacer(modifier = Modifier.height(16.dp))
                                 }
                             }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showNextBatsmanDialog.value = false }) {
+                                Text("Cancel")
+                            }
                         }
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { showNextBatsmanDialog.value = false }) {
-                            Text("Cancel")
-                        }
-                    }
-                )
+                    )
+                }
             }
             CircleButton("UNDO", if (isTablet) 26 else 16) {
                 updateStats(
