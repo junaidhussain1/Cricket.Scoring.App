@@ -41,6 +41,7 @@ fun ExistingMatchesPage() {
         for (match in matches) {
             val team1Captain = Player(dbHelper.getCaptainForTeam(match.matchId, 1)).name
             val team2Captain = Player(dbHelper.getCaptainForTeam(match.matchId, 2)).name
+            val matchDate = dbHelper.getDateForMatch(match.matchId)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -54,7 +55,7 @@ fun ExistingMatchesPage() {
                 )
                 {
                     Text(
-                        text = "$team1Captain vs $team2Captain",
+                        text = "$team1Captain vs $team2Captain ($matchDate)",
                         style = androidx.compose.ui.text.TextStyle(
                             textAlign = TextAlign.Start,
                             fontSize = 18.sp

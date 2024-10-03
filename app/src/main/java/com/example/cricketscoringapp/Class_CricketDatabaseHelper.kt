@@ -18,7 +18,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 12
+        const val DATABASE_VERSION = 13
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -213,7 +213,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     fun getMatchId(): String {
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT match_id FROM $TABLE_MATCHES WHERE winning_team_captain = ? LIMIT 1", arrayOf(""))
+        val cursor = db.rawQuery("SELECT match_id FROM $TABLE_MATCHES WHERE is_finished = ? LIMIT 1", arrayOf("0"))
         val matchId:String
 
         if (cursor.moveToFirst()) {
@@ -308,7 +308,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     fun getMatches() : List<Match> {
         val matches = mutableListOf<Match>()
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_MATCHES", null)
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_MATCHES WHERE is_finished = ?", arrayOf("1"))
         while (cursor.moveToNext()) {
             val matchId = cursor.getStringOrEmpty("match_id")
             val firstBattingTeamCaptain = cursor.getStringOrEmpty("first_batting_team_captain")
@@ -708,6 +708,20 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return isStarted
     }
 
+    fun getDateForMatch(matchId: String): String {
+        val db = readableDatabase
+        val query = "SELECT match_date FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId))
+
+        val matchDate = if (cursor.moveToFirst())  {
+            cursor.getStringOrEmpty("match_date")
+        } else {
+            ""
+        }
+        cursor.close()
+        return matchDate
+    }
+
     fun getTeamStats(matchId: String, currentTeamId: Int, captainName: String): TeamStats {
         val otherTeamId = if (currentTeamId == 1) 2 else 1
         // Initialize with default values
@@ -941,6 +955,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         values.put("second_batting_team_captain","")
         values.put("winning_team_captain","")
         values.put("is_started",0)
+        values.put("is_finished",0)
         values.put("is_synced",0)
         db.insert(TABLE_MATCHES, null, values)
         db.close()
@@ -1015,6 +1030,19 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("is_started", 1)
+        }
+        val whereClause = "match_id = ?"
+        val whereArgs = arrayOf(matchId)
+
+        return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
+    }
+
+    fun updateMatchIsFinished(matchId: String, winningTeamCaptain: String) : Int {
+        val db = writableDatabase
+        val contentValues = ContentValues().apply {
+            put("is_started", 0)
+            put("is_finished", 1)
+            put("winning_team_captain", winningTeamCaptain)
         }
         val whereClause = "match_id = ?"
         val whereArgs = arrayOf(matchId)

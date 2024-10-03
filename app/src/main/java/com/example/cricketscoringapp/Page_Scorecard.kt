@@ -47,6 +47,8 @@ fun ScoreCardPage(navController: NavHostController) {
     val currentBowler = remember { mutableStateOf(dbHelper.getCurrentBowler(matchId)) }
     val bowlingTeamId = dbHelper.getTeamForPlayer(matchId,currentBowler.value)
     val bowlingTeam = bowlingTeamId.let { dbHelper.getTeamPlayers(matchId, it,1) }
+    val firstTeamId = dbHelper.getTeamForPlayer(matchId,dbHelper.getFirstBattingTeamStriker(matchId))
+    val secondTeamId = if (firstTeamId == 1) 2 else 1
 
     val showWidesDialog = remember { mutableStateOf(false) }
     val selectedWidesOption = remember { mutableStateOf("") }
@@ -186,24 +188,27 @@ fun ScoreCardPage(navController: NavHostController) {
             balls.add(ball)
         }
 
-        val firstTeamId = dbHelper.getTeamForPlayer(matchId,firstBattingTeamCaptain.name)
-        val secondTeamId = if (firstTeamId == 1) 2 else 1
-        val team1wickets = dbHelper.getTeamWickets(matchId,firstTeamId)
+        //Handle End of Over, End of Innings, End of Match
+       val team1wickets = dbHelper.getTeamWickets(matchId,firstTeamId)
         val team2wickets = dbHelper.getTeamWickets(matchId,secondTeamId)
         val team2batters = dbHelper.getTeamBatters(matchId,secondTeamId)
         val team1OversBowled = dbHelper.getTeamOversBowled(matchId, firstTeamId)
 
-        if ((team1wickets == 12) and (team2batters == 0)) {
-            navController.navigate("secondinningssetup")
-        } else if ((team1wickets == 12) and (team2wickets == 12)) {
-            dbHelper.updateMatchIsStarted(matchId)
-            Toast.makeText(context,"End of Match!", Toast.LENGTH_SHORT).show()
-        } else {
-            if (endOfOverReached(balls)) {
-                if (team1OversBowled == 12.0){
-                    navController.navigate("secondinningssetup")
-                } else {
-                    showBowlerChangeDialog.value = true
+        if (dbHelper.getIsMatchStarted(matchId)) {
+            if ((team1wickets == 12) and (team2batters == 0)) {
+                navController.navigate("secondinningssetup")
+            } else if ((team1wickets == 12) and (team2wickets == 12)) {
+                dbHelper.updateMatchIsFinished(matchId, "")
+                navController.navigate("homepage")
+                Toast.makeText(context, "End of Match (${runsToWin.value})!", Toast.LENGTH_LONG)
+                    .show()
+            } else {
+                if (endOfOverReached(balls)) {
+                    if (team1OversBowled == 12.0) {
+                        navController.navigate("secondinningssetup")
+                    } else {
+                        showBowlerChangeDialog.value = true
+                    }
                 }
             }
         }
@@ -981,9 +986,12 @@ fun ScoreCardPage(navController: NavHostController) {
                 val nonStrikerBatsman = getInactiveBatsman(firstBatsmanStats,secondBatsmanStats)
                 var excludeBatsman = ""
 
-
-                val teamId = dbHelper.getTeamForPlayer(matchId, firstBatsmanStats.name.value)
-                val players = teamId.let { dbHelper.getTeamPlayers(matchId, it,1) }
+                val teamId = if (firstBatsmanStats.name.value != "") {
+                    dbHelper.getTeamForPlayer(matchId, firstBatsmanStats.name.value)
+                } else {
+                    dbHelper.getTeamForPlayer(matchId, secondBatsmanStats.name.value)
+                }
+                val players = dbHelper.getTeamPlayers(matchId, teamId,1)
 
                 //Remove Players who have batted/got out twice already
                 val battedFullyAlreadyPlayers =
