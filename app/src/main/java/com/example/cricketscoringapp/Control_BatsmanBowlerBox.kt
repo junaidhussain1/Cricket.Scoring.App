@@ -45,7 +45,7 @@ fun BatsmanBowlerKeeperBox(col1: String,
                     onClick = onClick,
                     shape = RectangleShape,
                     modifier = Modifier
-                        .height((if (isTablet) 50.dp else 30.dp))
+                        .height((if (isTablet) 44.dp else 30.dp))
                         .weight(3f),
                     contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.buttonColors(

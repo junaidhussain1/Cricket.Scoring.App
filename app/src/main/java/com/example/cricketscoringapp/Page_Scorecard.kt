@@ -60,6 +60,7 @@ fun ScoreCardPage(navController: NavHostController) {
     val showWicketsDialog = remember { mutableStateOf(false) }
     val selectedWicketsOption = remember { mutableStateOf("") }
     val showNextBatsmanDialog = remember { mutableStateOf(false) }
+    val showUndoConfirmationDialog = remember { mutableStateOf(false) }
 
     val showBowlerChangeDialog = remember { mutableStateOf(false) }
     val showKeeperChangeDialog = remember { mutableStateOf(false) }
@@ -1091,15 +1092,29 @@ fun ScoreCardPage(navController: NavHostController) {
                 }
             }
             CircleButton("UNDO", if (isTablet) 26 else 16) {
-                updateStats(
-                    context,
-                    balls,
-                    "UNDO",
-                    currentOverBowlerStats,
-                    firstBatsmanStats,
-                    secondBatsmanStats,
-                    firstBattingTeamStats,
-                    secondBattingTeamStats
+                showUndoConfirmationDialog.value = true
+            }
+
+            if (showUndoConfirmationDialog.value) {
+                ConfirmationDialog(
+                    message = "Are you sure you want to UNDO?",
+                    onConfirm = {
+                        showUndoConfirmationDialog.value = false
+
+                        updateStats(
+                            context,
+                            balls,
+                            "UNDO",
+                            currentOverBowlerStats,
+                            firstBatsmanStats,
+                            secondBatsmanStats,
+                            firstBattingTeamStats,
+                            secondBattingTeamStats
+                        )
+                    },
+                    onDismiss = {
+                        showUndoConfirmationDialog.value = false
+                    }
                 )
             }
         }
