@@ -199,7 +199,7 @@ fun ScoreCardPage(navController: NavHostController) {
                 dbHelper.updateBowlingStats(matchId,"bowled")
                 handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
                 navController.navigate("secondinningssetup")
-            } else if ((team1wickets == 12) and (team2wickets == 12)) {
+            } else if (team2wickets == 12) {
                 handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
                 navController.navigate("homepage")
             } else {
@@ -208,7 +208,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         dbHelper.updateBowlingStats(matchId,"bowled")
                         handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
                         navController.navigate("secondinningssetup")
-                    } else if ((team1OversBowled == 12.0) && (team2OversBowled == 12.0)) {
+                    } else if (team2OversBowled == 12.0) {
                         handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
                         navController.navigate("homepage")
                     } else {
@@ -248,8 +248,9 @@ fun ScoreCardPage(navController: NavHostController) {
                             ),
                     color1 = if (firstBattingTeamStats.active.value) Color(19, 207, 69) else Color.Black
                 ) {
-                    val teamID = 1
-                    navController.navigate("inningstats/${teamID}")
+                    val teamIdA = 1
+                    val teamIdB = 0
+                    navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
                 }
                 TeamScoreBox(
                     name1 = secondBattingTeamStats.name.value,
@@ -270,8 +271,9 @@ fun ScoreCardPage(navController: NavHostController) {
                             ),
                     color1 = if (firstBattingTeamStats.active.value) Color.Black else Color(19, 207, 69)
                 ) {
-                    val teamID = 2
-                    navController.navigate("inningstats/${teamID}")
+                    val teamIdA = 2
+                    val teamIdB = 0
+                    navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
                 }
             }
         }

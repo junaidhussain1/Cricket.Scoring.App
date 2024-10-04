@@ -57,12 +57,16 @@ fun AppNavHost(navController: NavHostController) {
         composable("team1PlayerSelection") { Team1PlayerSelectionPage()}
         composable("team2PlayerSelection") { Team2PlayerSelectionPage()}
         composable("scorecard") { ScoreCardPage(navController = navController) }
-        composable("existingmatches") { ExistingMatchesPage() }
+        composable("existingmatches") { ExistingMatchesPage(navController = navController) }
         composable("secondinningssetup") { SecondInningsSetupPage(navController = navController) }
-        composable("inningstats/{teamID}") { backStackEntry ->
-            val teamID = backStackEntry.arguments?.getString("teamID")?.toIntOrNull() ?: 1
-            InningStatsPage(teamID = teamID)
-        }
+            composable("inningstats/{matchId}/{teamIdA}/{teamIdB}") { backStackEntry ->
+                val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
+                val teamIdA = backStackEntry.arguments?.getString("teamIdA")?.toIntOrNull() ?: 0
+                val teamIdB = backStackEntry.arguments?.getString("teamIdB")?.toIntOrNull() ?: 0
+
+                // Call InningStatsPage with both arguments
+                InningStatsPage(matchId = matchId, teamIdA = teamIdA, teamIdB = teamIdB)
+            }
     }
 }
 

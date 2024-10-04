@@ -8,21 +8,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 
 @Composable
-fun ExistingMatchesPage() {
+fun ExistingMatchesPage(navController: NavHostController) {
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -38,43 +45,73 @@ fun ExistingMatchesPage() {
         val dbHelper = CricketDatabaseHelper(context)
 
         val matches = dbHelper.getMatches()
-        for (match in matches) {
-            val team1Captain = Player(dbHelper.getCaptainForTeam(match.matchId, 1)).name
-            val team2Captain = Player(dbHelper.getCaptainForTeam(match.matchId, 2)).name
-            val matchDate = dbHelper.getDateForMatch(match.matchId)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp), // Adds some padding between rows
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 30.dp),
-                        horizontalAlignment = Alignment.Start
-                )
-                {
-                    Text(
-                        text = "$team1Captain vs $team2Captain ($matchDate)",
-                        style = androidx.compose.ui.text.TextStyle(
-                            textAlign = TextAlign.Start,
-                            fontSize = 18.sp
+        if (matches.isNotEmpty()) {
+            for (match in matches) {
+                val team1Captain = Player(dbHelper.getCaptainForTeam(match.matchId, 1)).name
+                val team2Captain = Player(dbHelper.getCaptainForTeam(match.matchId, 2)).name
+                if (team1Captain.isNotEmpty() && team2Captain.isNotEmpty()) {
+                    val matchDate = dbHelper.getDateForMatch(match.matchId)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp), // Adds some padding between rows
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .weight(5f)
+                                .padding(start = 30.dp),
+                            horizontalAlignment = Alignment.Start
                         )
-                    )
-                }
+                        {
+                            Button(
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(255, 252, 228) // Set the background color
+                                ),
+                                onClick = {
+                                    // Define the action when the button is clicked
+                                    val matchId = match.matchId
+                                    val teamIdA = 1
+                                    val teamIdB = 2
+                                    navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
+                                },
+                                modifier = Modifier.fillMaxWidth() // Make the button take full width
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(), // Fill the entire width of the button
+                                    horizontalArrangement = Arrangement.Start // Align content to the left
+                                ) {
+                                    Text(
+                                        text = when {
+                                            match.isStarted -> "$matchDate - $team1Captain vs $team2Captain (In Progress)"
+                                            match.isFinished -> "$matchDate - $team1Captain vs $team2Captain"
+                                            else -> "Match not started" // Fallback text when neither isStarted nor isFinished
+                                        },
+                                        style = androidx.compose.ui.text.TextStyle(
+                                            textAlign = TextAlign.Start,
+                                            fontSize = if (isTablet) 20.sp else 10.sp
+                                        )
+                                    )
+                                }
+                            }
+                        }
 
-                Column(modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 30.dp),
-                    horizontalAlignment = Alignment.End
-                )
-                {
-                    // Synchronization Icon
-                    Icon(
-                        imageVector = Icons.Default.Sync,
-                        contentDescription = "Sync Status",
-                        tint = if (match.isSynced) Color.Green else Color.Gray
-                    )
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 30.dp),
+                            horizontalAlignment = Alignment.End
+                        )
+                        {
+                            // Synchronization Icon
+                            Icon(
+                                imageVector = Icons.Default.Sync,
+                                contentDescription = "Sync Status",
+                                tint = if (match.isSynced) Color.Green else Color.Gray,
+                                modifier = Modifier.size(if (isTablet) 48.dp else 24.dp) // Size based on isTablet
+                            )
+                        }
+                    }
                 }
             }
         }

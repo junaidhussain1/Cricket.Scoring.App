@@ -308,15 +308,15 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     fun getMatches() : List<Match> {
         val matches = mutableListOf<Match>()
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_MATCHES WHERE is_finished = ?", arrayOf("1"))
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_MATCHES", null)
         while (cursor.moveToNext()) {
             val matchId = cursor.getStringOrEmpty("match_id")
             val firstBattingTeamCaptain = cursor.getStringOrEmpty("first_batting_team_captain")
             val secondBattingTeamCaptain = cursor.getStringOrEmpty("second_batting_team_captain")
             val winningTeamCaptain = cursor.getStringOrEmpty("winning_team_captain")
-            val isStarted = cursor.getStringOrEmpty("is_started").toBoolean()
-            val isFinished = cursor.getStringOrEmpty("is_finished").toBoolean()
-            val isSynced = cursor.getStringOrEmpty("is_synced").toBoolean()
+            val isStarted = cursor.getIntOrZero("is_started") == 1
+            val isFinished = cursor.getIntOrZero("is_finished") == 1
+            val isSynced = cursor.getIntOrZero("is_synced") == 1
             matches.add(Match(matchId,firstBattingTeamCaptain,secondBattingTeamCaptain,winningTeamCaptain,isStarted,isFinished,isSynced))
         }
         cursor.close()
