@@ -52,8 +52,8 @@ fun InningStatsPage(teamID: Int) {
             val teamCaptain = dbHelper.getBattingTeamCaptain(matchId,teamID)
             val battersList = remember { mutableStateListOf<BatsmanStats>() }
             val bowlersList = remember { mutableStateListOf<BowlerStats>() }
-            var totalByes: Int = 0
-            var totalLegByes: Int = 0
+            var totalByes = 0
+            var totalLegByes = 0
 
             battersList.clear()
             battersList.addAll(dbHelper.getTeamBattingStats(matchId, teamID))
@@ -100,6 +100,12 @@ fun InningStatsPage(teamID: Int) {
 
                     // List of batters
                     items(battersList) { player ->
+                        val strikeRate = if (player.balls.value == 0) {
+                            0.0
+                        } else {
+                            player.runs.value.toDouble() / player.balls.value.toDouble() * 100
+                        }
+0
                         BatsmanFullStats(
                             batsman = player.name.value,
                             wicketDescription = player.wicketDescription.value,
@@ -126,8 +132,7 @@ fun InningStatsPage(teamID: Int) {
                             strikeRate = String.format(
                                 Locale.UK,
                                 "%.2f",
-                                //player.strikeRate.value
-                                150.00
+                                strikeRate
                             ),
                             fontBold1 = FontWeight.Normal, // Changed to normal for list items
                             fontColor1 = Color.White

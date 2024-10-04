@@ -45,6 +45,7 @@ import java.io.InputStreamReader
 fun HomePage(navController: NavHostController) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
+    val dbHelper = CricketDatabaseHelper(context)
 
     // Check screen size and adjust the layout accordingly
     val isTablet = configuration.screenWidthDp >= 600
@@ -139,6 +140,14 @@ fun HomePage(navController: NavHostController) {
 
                 )
             }
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            val versionName = getAppVersion(context)?.versionName
+
+            val dbVersion = dbHelper.getDBVersion()
+
+            Text("App Version: $versionName, DB Version: $dbVersion")
         }
     }
 }
@@ -246,3 +255,4 @@ fun loadClientSecrets(context: Context): GoogleClientSecrets {
     val inputStream = context.resources.openRawResource(R.raw.clientsecret) // Replace with the correct file name
     return GoogleClientSecrets.load(jsonFactory, InputStreamReader(inputStream))
 }
+

@@ -138,12 +138,21 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                         onClick = {
                                             facingBatsman = player
                                             facingBatsman?.name?.let {
-                                                dbHelper.addBattingStats(
-                                                    matchId,
-                                                    battingTeamId,
-                                                    it,
-                                                    "striker"
-                                                )
+                                                val striker =
+                                                    dbHelper.getStriker(matchId)
+                                                if (striker != "") {
+                                                    dbHelper.updateStriker(
+                                                        matchId,
+                                                        it
+                                                    )
+                                                } else {
+                                                    dbHelper.addBattingStats(
+                                                        matchId,
+                                                        battingTeamId,
+                                                        it,
+                                                        "striker"
+                                                    )
+                                                }
                                             }
                                             expanded4 = false
                                         }
@@ -199,14 +208,23 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                         },
                                         onClick = {
                                             secondBatsman = player
-                                            secondBatsman?.name?.let {
-                                                dbHelper.addBattingStats(
-                                                    matchId,
-                                                    battingTeamId,
-                                                    it,
-                                                    "non-striker"
-                                                )
-                                            }
+                                                secondBatsman?.name?.let {
+                                                    val nonStriker =
+                                                        dbHelper.getNonStriker(matchId)
+                                                    if (nonStriker != "") {
+                                                        dbHelper.updateNonStriker(
+                                                            matchId,
+                                                            it
+                                                        )
+                                                    } else {
+                                                        dbHelper.addBattingStats(
+                                                            matchId,
+                                                            battingTeamId,
+                                                            it,
+                                                            "non-striker"
+                                                        )
+                                                    }
+                                                }
                                             expanded5 = false
                                         }
                                     )
@@ -269,17 +287,22 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                         },
                                         onClick = {
                                             openingBowler = player
-                                            dbHelper.updateBowlingStats(
-                                                matchId,
-                                                "bowled"
-                                            )
-                                            dbHelper.addBowlingStats(
-                                                matchId,
-                                                bowlingTeamId,
-                                                player.name,
-                                                "",
-                                                "bowling"
-                                            )
+                                            val bowler =
+                                                dbHelper.getBowler(matchId)
+                                            if (bowler != "") {
+                                                dbHelper.updateBowler(
+                                                    matchId,
+                                                    player.name
+                                                )
+                                            } else {
+                                                dbHelper.addBowlingStats(
+                                                    matchId,
+                                                    bowlingTeamId,
+                                                    player.name,
+                                                    "",
+                                                    "bowling"
+                                                )
+                                            }
                                             expanded6 = false
                                         }
                                     )
@@ -334,11 +357,20 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                         },
                                         onClick = {
                                             openingKeeper = player
-                                            dbHelper.updateBowlingStatsKeeper(
-                                                matchId,
-                                                bowlingTeamId,
-                                                player.name
-                                            )
+                                            val keeper =
+                                                dbHelper.getKeeper(matchId)
+                                            if (keeper != "") {
+                                                dbHelper.updateKeeper(
+                                                    matchId,
+                                                    player.name
+                                                )
+                                            } else {
+                                                dbHelper.updateBowlingStatsKeeper(
+                                                    matchId,
+                                                    bowlingTeamId,
+                                                    player.name
+                                                )
+                                            }
                                             expanded7 = false
                                         }
                                     )

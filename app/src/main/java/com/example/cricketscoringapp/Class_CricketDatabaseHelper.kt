@@ -896,6 +896,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return playerName
     }
 
+    fun getDBVersion() : Int {
+        return DATABASE_VERSION
+    }
+
     //DELETE FUNCTIONS *****************************************************************************
 
     fun deletePlayer(name: String): Int {

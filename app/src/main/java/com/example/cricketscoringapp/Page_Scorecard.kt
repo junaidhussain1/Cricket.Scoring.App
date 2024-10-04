@@ -1,6 +1,5 @@
 package com.example.cricketscoringapp
 
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -189,23 +188,29 @@ fun ScoreCardPage(navController: NavHostController) {
         }
 
         //Handle End of Over, End of Innings, End of Match
-       val team1wickets = dbHelper.getTeamWickets(matchId,firstTeamId)
+        val team1wickets = dbHelper.getTeamWickets(matchId,firstTeamId)
         val team2wickets = dbHelper.getTeamWickets(matchId,secondTeamId)
         val team2batters = dbHelper.getTeamBatters(matchId,secondTeamId)
-        val team1OversBowled = dbHelper.getTeamOversBowled(matchId, firstTeamId)
+        val team1OversBowled = dbHelper.getTeamOversBowled(matchId, secondTeamId)
+        val team2OversBowled = dbHelper.getTeamOversBowled(matchId, firstTeamId)
 
         if (dbHelper.getIsMatchStarted(matchId)) {
             if ((team1wickets == 12) and (team2batters == 0)) {
+                dbHelper.updateBowlingStats(matchId,"bowled")
+                handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
                 navController.navigate("secondinningssetup")
             } else if ((team1wickets == 12) and (team2wickets == 12)) {
-                dbHelper.updateMatchIsFinished(matchId, "")
+                handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
                 navController.navigate("homepage")
-                Toast.makeText(context, "End of Match (${runsToWin.value})!", Toast.LENGTH_LONG)
-                    .show()
             } else {
                 if (endOfOverReached(balls)) {
-                    if (team1OversBowled == 12.0) {
+                    if ((team1OversBowled == 12.0) && (team2OversBowled == 0.0)) {
+                        dbHelper.updateBowlingStats(matchId,"bowled")
+                        handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
                         navController.navigate("secondinningssetup")
+                    } else if ((team1OversBowled == 12.0) && (team2OversBowled == 12.0)) {
+                        handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
+                        navController.navigate("homepage")
                     } else {
                         showBowlerChangeDialog.value = true
                     }
@@ -553,8 +558,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    runsToWin
+                    secondBattingTeamStats
                 )
             }
             CircleButton("1", if (isTablet) 50 else 40) {
@@ -566,8 +570,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    runsToWin
+                    secondBattingTeamStats
                 )
             }
             CircleButton("2", if (isTablet) 50 else 40) {
@@ -579,8 +582,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    runsToWin
+                    secondBattingTeamStats
                 )
             }
             CircleButton("3", if (isTablet) 50 else 40) {
@@ -592,8 +594,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    runsToWin
+                    secondBattingTeamStats
                 )
             }
         }
@@ -614,8 +615,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    runsToWin
+                    secondBattingTeamStats
                 )
             }
             CircleButton("6", if (isTablet) 50 else 40) {
@@ -627,8 +627,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    runsToWin
+                    secondBattingTeamStats
                 )
             }
             CircleButton("WIDE", if (isTablet) 26 else 16) {
@@ -644,7 +643,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W"
                                 showWidesDialog.value = false
-                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("WIDE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -652,7 +651,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W+1"
                                 showWidesDialog.value = false
-                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("WIDE + 1", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -660,7 +659,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W+2"
                                 showWidesDialog.value = false
-                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("WIDE + 2", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -731,8 +730,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                         firstBatsmanStats,
                                                         secondBatsmanStats,
                                                         firstBattingTeamStats,
-                                                        secondBattingTeamStats,
-                                                        runsToWin
+                                                        secondBattingTeamStats
                                                     )
                                                 },
                                                 colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
@@ -779,7 +777,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedByesOption.value = "B1"
                                 showByesDialog.value = false
-                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("1 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -787,7 +785,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedByesOption.value = "B2"
                                 showByesDialog.value = false
-                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("2 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -795,7 +793,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedByesOption.value = "B3"
                                 showByesDialog.value = false
-                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("3 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -821,7 +819,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB1"
                                 showLegByesDialog.value = false
-                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("1 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -829,7 +827,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB2"
                                 showLegByesDialog.value = false
-                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("2 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -837,7 +835,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedLegByesOption.value = "LB3"
                                 showLegByesDialog.value = false
-                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("3 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -1010,7 +1008,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     showNextBatsmanDialog.value = false
                     val batsmanOut = getActiveBatsman(firstBatsmanStats, secondBatsmanStats)
                     selectedWicketsOption.value += ",$batsmanOut"
-                    updateStats(context,balls,selectedWicketsOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats,runsToWin)
+                    updateStats(context,balls,selectedWicketsOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                     currentBowler.value = dbHelper.getCurrentBowler(matchId)
                     val wicketDescription = getWicketDescription(selectedWicketsOption.value,currentBowler.value,selectedFielder.value)
                     markBatsmanAsOutInDB(context,matchId,firstBatsmanStats,secondBatsmanStats,wicketDescription,"",false)
@@ -1047,8 +1045,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                             firstBatsmanStats,
                                             secondBatsmanStats,
                                             firstBattingTeamStats,
-                                            secondBattingTeamStats,
-                                            runsToWin
+                                            secondBattingTeamStats
                                         )
 
                                         currentBowler.value = dbHelper.getCurrentBowler(matchId)
@@ -1100,8 +1097,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    runsToWin
+                    secondBattingTeamStats
                 )
             }
         }

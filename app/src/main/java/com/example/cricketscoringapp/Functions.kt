@@ -2,6 +2,7 @@ package com.example.cricketscoringapp
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.widget.Toast
 import androidx.compose.runtime.MutableState
 
 fun swapBatsmenDB(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats) {
@@ -54,8 +55,7 @@ fun updateStats(context: Context,
                 firstBatsmanStats: BatsmanStats,
                 secondBatsmanStats: BatsmanStats,
                 firstTeamStats: TeamStats,
-                secondTeamStats: TeamStats,
-                runsToWinTxt: MutableState<String>) {
+                secondTeamStats: TeamStats) {
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
     val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3")
@@ -195,7 +195,7 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, runsToW
     return ballsRemaining
 }
 
-fun calcNoOfWickets(context: Context,matchId: String,firstTeamStats: TeamStats,secondTeamStats: TeamStats) : Int {
+fun calcNoOfWickets(context: Context,matchId: String,firstTeamStats: TeamStats) : Int {
     val dbHelper = CricketDatabaseHelper(context)
     return if (firstTeamStats.active.value) {
         dbHelper.getTeamWickets(matchId,1)
@@ -676,4 +676,13 @@ fun markBatsmanAsOutInDB(context: Context,matchId: String,firstBatsmanStats: Bat
         secondBatsmanStats.fours.value = 0
         secondBatsmanStats.sixes.value = 0
     }
+}
+
+fun handleEndOfMatch(context: Context, matchId: String, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, runsToWin: MutableState<String>) {
+    val dbHelper = CricketDatabaseHelper(context)
+    dbHelper.updateBowlingStats(matchId,"bowled")
+    handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
+    dbHelper.updateMatchIsFinished(matchId, "")
+    Toast.makeText(context, "End of Match (${runsToWin.value})!", Toast.LENGTH_LONG)
+        .show()
 }
