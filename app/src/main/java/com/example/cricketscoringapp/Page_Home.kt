@@ -92,12 +92,17 @@ fun HomePage(navController: NavHostController) {
 
         Button(
             onClick = {
-                //Toast.makeText(context, getDataFromSheet(context), Toast.LENGTH_SHORT).show()
-                //val gs: GoogleSheets = GoogleSheets()
+                val googleSheetsService = GoogleSheetsService(context)
+                val data = googleSheetsService.readData()
 
-                //val cellvalue = gs.doCallGoogleSheetAPI()
-                val intent = Intent(context, GoogleSheets::class.java)
-                startActivity(context,intent, null)
+                if (data.isNotEmpty()) {
+                    Toast.makeText(context,"Data from Google Sheet:", Toast.LENGTH_SHORT).show()
+                    /*data.forEach { row ->
+                        println(row)
+                    }*/
+                } else {
+                    Toast.makeText(context, "No data found.", Toast.LENGTH_SHORT).show()
+                }
 
                 //Toast.makeText(context, cellvalue, Toast.LENGTH_SHORT).show()
             },

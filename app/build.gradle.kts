@@ -59,7 +59,10 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.google.api.client)
+    implementation(libs.google.oauth.client.jetty.v1321)
+    implementation(libs.google.api.services.sheets.vv4rev6141250)
+    implementation(libs.google.api.client.v1315)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -71,6 +74,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.room.compiler)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.security.crypto.ktx)
     //implementation(libs.androidx.room.compiler)
     //implementation(libs.identity.jvm)
     testImplementation(libs.junit)
@@ -97,4 +101,12 @@ dependencies {
     implementation(libs.google.api.services.sheets)
     implementation(libs.androidx.material.icons.extended)
     implementation("com.google.android.gms:play-services-auth:20.5.0")
+    implementation(libs.google.oauth.client.jetty.v1315)
+    implementation(libs.google.api.services.sheets.vv4rev6141250)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.google.http.client.jackson2)
+    implementation(libs.google.api.client)
+    implementation(libs.google.oauth.client.jetty.v1321)
+    implementation(libs.google.api.services.sheets.vv4rev6141250)
 }
