@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,7 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -37,7 +35,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -864,49 +861,6 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     }
                 }
             }
-        }
-    }
-
-    @Composable
-    fun ShowConfirmationDialog() {
-        var showDialog by remember { mutableStateOf(false) }
-
-        // Trigger to show the dialog
-        Button(onClick = { showDialog = true }) {
-            Text(text = "Show Confirmation")
-        }
-
-        // Confirmation Dialog
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = {
-                    showDialog = false
-                }, // Close the dialog when touched outside or back press
-                title = { Text(text = "Confirm Action") },
-                text = { Text(text = "Are you sure you want to delete this item?") },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            // Handle confirm action
-                            showDialog = false
-                            // Perform the deletion or any other action here
-                        }
-                    ) {
-                        Text("Yes")
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            // Handle dismiss action
-                            showDialog = false
-                        }
-                    ) {
-                        Text("No")
-                    }
-                },
-                properties = DialogProperties(dismissOnClickOutside = false)
-            )
         }
     }
 }
