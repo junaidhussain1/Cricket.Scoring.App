@@ -29,6 +29,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cricketscoringapp.ui.theme.CricketScoringAppTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,7 +108,7 @@ fun AuthScreen(navController: NavHostController) {
         Button(
             onClick = {
                 if (authCode.isNotEmpty()) {
-                    Toast.makeText(context, "Auth Code Submitted: $authCode", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(context, "Auth Code Submitted: $authCode", Toast.LENGTH_SHORT).show()
 
                     // Exchange the auth code for tokens and navigate to the main page
                     googleSheetsService.exchangeAuthorizationCodeForTokens(authCode)
@@ -120,18 +123,20 @@ fun AuthScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
-            val data = googleSheetsService.readData()
-            val listSize = data.size
-            val values = data.joinToString(separator = "\n") { it.joinToString(", ") }
+            //val data = googleSheetsService.readData()
+            CoroutineScope(Dispatchers.Main).launch {
+                val data = googleSheetsService.readData()  // readData() is now a suspend function
 
-            // Display the Toast message with the size and values
-            Toast.makeText(
-                context, // Replace with your actual context
-                "List size: $listSize\nValues:\n$values",
-                Toast.LENGTH_LONG
-            ).show()
+                // After fetching the data, show a Toast message with the size of the list
+                val listSize = data.size
+                val values = data.joinToString(separator = "\n") { it.joinToString(", ") }
 
-            //Toast.makeText(context, "Testing JH", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context, // Replace with your actual context
+                    "List size: $listSize\nValues:\n$values",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }) {
             Text(text = "Get Data from Google Sheet")
         }

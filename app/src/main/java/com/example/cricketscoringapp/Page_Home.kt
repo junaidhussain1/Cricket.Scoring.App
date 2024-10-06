@@ -1,7 +1,6 @@
 package com.example.cricketscoringapp
 
 //import com.google.api.client.extensions.android.http.AndroidHttp
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -88,29 +87,29 @@ fun HomePage(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Button(
-            onClick = {
-                val googleSheetsService = GoogleSheetsService(context)
-                val data = googleSheetsService.readData()
-
-                if (data.isNotEmpty()) {
-                    Toast.makeText(context,"Data from Google Sheet:", Toast.LENGTH_SHORT).show()
-                    /*data.forEach { row ->
-                        println(row)
-                    }*/
-                } else {
-                    Toast.makeText(context, "No data found.", Toast.LENGTH_SHORT).show()
-                }
-
-                //Toast.makeText(context, cellvalue, Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f)
-        ) {
-            Text(
-                text = "Google Sheet Test",
-                fontSize = if (isTablet) 26.sp else 22.sp
-            )
-        }
+//        Button(
+//            onClick = {
+//                val googleSheetsService = GoogleSheetsService(context)
+//                val data = googleSheetsService.readData()
+//
+//                if (data.isNotEmpty()) {
+//                    Toast.makeText(context,"Data from Google Sheet:", Toast.LENGTH_SHORT).show()
+//                    /*data.forEach { row ->
+//                        println(row)
+//                    }*/
+//                } else {
+//                    Toast.makeText(context, "No data found.", Toast.LENGTH_SHORT).show()
+//                }
+//
+//                //Toast.makeText(context, cellvalue, Toast.LENGTH_SHORT).show()
+//            },
+//            modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f)
+//        ) {
+//            Text(
+//                text = "Google Sheet Test",
+//                fontSize = if (isTablet) 26.sp else 22.sp
+//            )
+//        }
     }
 }
 

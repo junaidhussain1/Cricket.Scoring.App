@@ -14,7 +14,12 @@ import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
 import com.google.api.services.sheets.v4.model.ValueRange
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
+
 
 class GoogleSheetsService(private val context: Context) {
     private val APPLICATION_NAME = "Cricket Scoring App"
@@ -89,21 +94,47 @@ class GoogleSheetsService(private val context: Context) {
         dialog.show()  // Show the dialog
     }
 
-    // Function to exchange the authorization code for OAuth tokens
     fun exchangeAuthorizationCodeForTokens(authorizationCode: String) {
-        try {
-            val flow = authorizationCodeFlow ?: return
-            val tokenResponse = flow.newTokenRequest(authorizationCode)
-                .setRedirectUri(redirectUri)
-                .execute()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // Use withContext(Dispatchers.IO) to run network operation
+                val inputStream = context.resources.openRawResource(R.raw.clientsecret)  // Replace with your correct file
+                val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, InputStreamReader(inputStream))
 
-            // Store the credential for future use
-            flow.createAndStoreCredential(tokenResponse, "user")
-            Toast.makeText(context, "Authorization Successful!", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Toast.makeText(context, "Error exchanging authorization code: ${e.message}", Toast.LENGTH_LONG).show()
+                // Use FileDataStoreFactory to store OAuth tokens in the app's private directory
+                val dataStoreDir = context.filesDir
+                val dataStoreFactory = FileDataStoreFactory(dataStoreDir)
+
+                val flow = GoogleAuthorizationCodeFlow.Builder(
+                    HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES
+                )
+                    .setDataStoreFactory(dataStoreFactory)
+                    .setAccessType("offline")
+                    .build()
+
+                authorizationCodeFlow = flow
+
+                // Perform the token request in a background thread
+                val tokenResponse = flow.newTokenRequest(authorizationCode)
+                    .setRedirectUri(redirectUri)
+                    .execute()
+
+                // Store the credential for future use
+                flow.createAndStoreCredential(tokenResponse, "user")
+
+                // Switch back to the main thread to update the UI (Toast)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Authorization Successful!", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                // Switch back to the main thread to show error toast
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Error exchanging authorization code: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
+
 
     // Example function to interact with Google Sheets API (replace with actual usage)
     fun getSheetsService(): Sheets? {
@@ -133,17 +164,24 @@ class GoogleSheetsService(private val context: Context) {
     }
 
     // Function to read data from Google Sheets
-    fun readData(): List<List<Any>> {
-        val sheetsService = getSheetsService() ?: return listOf()
+    suspend fun readData(): List<List<Any>> = withContext(Dispatchers.IO) {
+        val sheetsService = getSheetsService() ?: return@withContext listOf()
 
-        // Fetch data from the specified range in the spreadsheet
-        val response = sheetsService.spreadsheets().values()
-            .get(SPREADSHEET_ID, RANGE)
-            .execute()
+        try {
+            // Fetch data from the specified range in the spreadsheet
+            val response = sheetsService.spreadsheets().values()
+                .get(SPREADSHEET_ID, RANGE)
+                .execute()
 
-        // Return the fetched data
-        return response.getValues() ?: listOf()
+            // Return the fetched data
+            return@withContext response.getValues() ?: listOf()
+        } catch (e: Exception) {
+            // Handle exceptions (e.g., network errors, API failures)
+            e.printStackTrace()
+            return@withContext listOf()  // Return an empty list in case of error
+        }
     }
+
 
     // Function to write data to Google Sheets
     fun writeData(values: List<List<Any>>) {
