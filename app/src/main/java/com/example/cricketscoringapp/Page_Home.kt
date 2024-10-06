@@ -1,7 +1,6 @@
 package com.example.cricketscoringapp
 
 //import com.google.api.client.extensions.android.http.AndroidHttp
-import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +21,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
 
 
@@ -71,7 +69,7 @@ fun HomePage(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f)
         ) {
             Text(
-                text = "New Match",
+                text = "New Match AA",
                 fontSize = if (isTablet) 26.sp else 22.sp
             )
         }

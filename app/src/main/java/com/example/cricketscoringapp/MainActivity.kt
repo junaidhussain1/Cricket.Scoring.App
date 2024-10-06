@@ -4,16 +4,25 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -52,10 +61,9 @@ fun MainScreenContent() {
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
+    val context = LocalContext.current
     NavHost(navController = navController, startDestination = "auth") {
         composable("auth") { AuthScreen(navController = navController) }
-        composable("homepage") { Homepage(navController = navController) }
-        composable("newmatch") { NewMatchPage() }
     }
 }
 
@@ -63,6 +71,7 @@ fun AppNavHost(navController: NavHostController) {
 fun AuthScreen(navController: NavHostController) {
     val context = LocalContext.current
     var authCode by remember { mutableStateOf("") }
+    val googleSheetsService = GoogleSheetsService(context)
 
     Column(
         modifier = Modifier
@@ -74,7 +83,6 @@ fun AuthScreen(navController: NavHostController) {
         // Button to trigger Google login
         Button(
             onClick = {
-                val googleSheetsService = GoogleSheetsService(context)
                 googleSheetsService.authorize() // Trigger Google login
             }
         ) {
@@ -100,13 +108,8 @@ fun AuthScreen(navController: NavHostController) {
                     Toast.makeText(context, "Auth Code Submitted: $authCode", Toast.LENGTH_SHORT).show()
 
                     // Exchange the auth code for tokens and navigate to the main page
-                    val googleSheetsService = GoogleSheetsService(context)
                     googleSheetsService.exchangeAuthorizationCodeForTokens(authCode)
 
-                    // Navigate to the homepage
-                    navController.navigate("homepage") {
-                        popUpTo("auth") { inclusive = true }
-                    }
                 } else {
                     Toast.makeText(context, "Authorization code cannot be empty", Toast.LENGTH_SHORT).show()
                 }
@@ -114,39 +117,23 @@ fun AuthScreen(navController: NavHostController) {
         ) {
             Text("Submit Authorization Code")
         }
-    }
-}
 
-@Composable
-fun Homepage(navController: NavHostController) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "Welcome to Cricket Scoring App")
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { navController.navigate("newmatch") }) {
-            Text(text = "New Match")
+        Button(onClick = {
+            val data = googleSheetsService.readData()
+            val listSize = data.size
+            val values = data.joinToString(separator = "\n") { it.joinToString(", ") }
+
+            // Display the Toast message with the size and values
+            Toast.makeText(
+                context, // Replace with your actual context
+                "List size: $listSize\nValues:\n$values",
+                Toast.LENGTH_LONG
+            ).show()
+
+            //Toast.makeText(context, "Testing JH", Toast.LENGTH_SHORT).show()
+        }) {
+            Text(text = "Get Data from Google Sheet")
         }
     }
-}
-
-@Composable
-fun NewMatchPage() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Your new match page content here...
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MainScreenContent()
 }

@@ -1,13 +1,11 @@
 package com.example.cricketscoringapp
 
 import android.content.Context
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import com.google.api.client.auth.oauth2.Credential
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
@@ -16,7 +14,6 @@ import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
 import com.google.api.services.sheets.v4.model.ValueRange
-import java.io.File
 import java.io.InputStreamReader
 
 class GoogleSheetsService(private val context: Context) {
@@ -110,9 +107,25 @@ class GoogleSheetsService(private val context: Context) {
 
     // Example function to interact with Google Sheets API (replace with actual usage)
     fun getSheetsService(): Sheets? {
-        authorize()  // Initiate authorization when needed
+        //authorize()  // Initiate authorization when needed
 
-        val credentials = authorizationCodeFlow?.loadCredential("user") ?: return null
+        val credentials = authorizationCodeFlow?.let {
+            val loadedCredential = it.loadCredential("user")
+            if (loadedCredential == null) {
+                Toast.makeText(
+                    context, // Replace with your actual context
+                    "No credentials found for the user",
+                    Toast.LENGTH_LONG).show()
+            }
+            loadedCredential
+        } ?: run {
+            Toast.makeText(
+                context, // Replace with your actual context
+                "authorizationCodeFlow is null",
+                Toast.LENGTH_LONG).show()
+            return null
+        }
+
 
         return Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credentials)
             .setApplicationName(APPLICATION_NAME)
