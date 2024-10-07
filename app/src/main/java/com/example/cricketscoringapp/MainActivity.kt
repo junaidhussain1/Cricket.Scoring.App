@@ -32,6 +32,7 @@ import com.example.cricketscoringapp.ui.theme.CricketScoringAppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,7 +65,6 @@ fun MainScreenContent() {
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
-    val context = LocalContext.current
     NavHost(navController = navController, startDestination = "auth") {
         composable("auth") { AuthScreen(navController = navController) }
     }
@@ -74,6 +74,7 @@ fun AppNavHost(navController: NavHostController) {
 fun AuthScreen(navController: NavHostController) {
     val context = LocalContext.current
     var authCode by remember { mutableStateOf("") }
+    var newData by remember { mutableStateOf("") }
     val googleSheetsService = GoogleSheetsService(context)
 
     Column(
@@ -86,7 +87,7 @@ fun AuthScreen(navController: NavHostController) {
         // Button to trigger Google login
         Button(
             onClick = {
-                googleSheetsService.authorize() // Trigger Google login
+                googleSheetsService.authorize(context) // Trigger Google login
             }
         ) {
             Text("Login with Google")
@@ -111,7 +112,7 @@ fun AuthScreen(navController: NavHostController) {
                     //Toast.makeText(context, "Auth Code Submitted: $authCode", Toast.LENGTH_SHORT).show()
 
                     // Exchange the auth code for tokens and navigate to the main page
-                    googleSheetsService.exchangeAuthorizationCodeForTokens(authCode)
+                    googleSheetsService.exchangeAuthorizationCodeForTokens(context,authCode)
 
                 } else {
                     Toast.makeText(context, "Authorization code cannot be empty", Toast.LENGTH_SHORT).show()
@@ -125,7 +126,7 @@ fun AuthScreen(navController: NavHostController) {
         Button(onClick = {
             //val data = googleSheetsService.readData()
             CoroutineScope(Dispatchers.Main).launch {
-                val data = googleSheetsService.readData()  // readData() is now a suspend function
+                val data = googleSheetsService.readData(context)  // readData() is now a suspend function
 
                 // After fetching the data, show a Toast message with the size of the list
                 val listSize = data.size
@@ -133,12 +134,55 @@ fun AuthScreen(navController: NavHostController) {
 
                 Toast.makeText(
                     context, // Replace with your actual context
-                    "List size: $listSize\nValues:\n$values",
+                    "List size: $listSize Values: $values",
                     Toast.LENGTH_LONG
                 ).show()
             }
         }) {
             Text(text = "Get Data from Google Sheet")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Input field for the authentication code
+        OutlinedTextField(
+            value = newData,
+            onValueChange = { newData = it },
+            label = { Text("Data to add to sheet") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Button to submit the authentication code
+        Button(
+            onClick = {
+                if (newData.isNotEmpty()) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        try {
+                            val dataToWrite = listOf(
+                                listOf<Any>(newData)
+                            )
+                            val rtnMessage = googleSheetsService.writeData(context,dataToWrite)
+
+                            // Switch back to the Main thread to show Toast
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    rtnMessage,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }
+            }
+        ) {
+            Text("Add Data")
         }
     }
 }

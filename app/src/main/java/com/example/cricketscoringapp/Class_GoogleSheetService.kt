@@ -21,12 +21,14 @@ import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
 
 
-class GoogleSheetsService(private val context: Context) {
+class GoogleSheetsService(private val initContext: Context) {
     private val APPLICATION_NAME = "Cricket Scoring App"
     private val SCOPES = listOf(SheetsScopes.SPREADSHEETS)
-    private val SPREADSHEET_ID = "1z62HTf3OvhDLYrqVFwEKWoKY242Ja6yZpAG33S_XCmA"
-    private val RANGE = "Sheet1!A1:A1"
-    private val AUTH_CODE_REQUEST = 1001
+    //private val SPREADSHEET_ID = "1z62HTf3OvhDLYrqVFwEKWoKY242Ja6yZpAG33S_XCmA"
+    //private val RANGE = "Sheet1!A1:A1"
+    private val SPREADSHEET_ID = "1hoqVNgiQz6e2lkhZV_3ZizhFTlpoMa8QBLFXyhWR7c0"
+    private val RANGE = "Junaid!A1:A1"
+    private val NEWRANGE = "RawData!A1:A1"
 
     private var authorizationCodeFlow: GoogleAuthorizationCodeFlow? = null
     private var redirectUri = "urn:ietf:wg:oauth:2.0:oob"
@@ -36,7 +38,7 @@ class GoogleSheetsService(private val context: Context) {
     private val JSON_FACTORY = JacksonFactory.getDefaultInstance()
 
     // Function to handle the OAuth flow and request an authorization code
-    fun authorize() {
+    fun authorize(context: Context) {
         // Load OAuth2 credentials file from res/raw (or wherever it’s located)
         val inputStream = context.resources.openRawResource(R.raw.clientsecret)  // Replace with your correct file
         val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, InputStreamReader(inputStream))
@@ -58,21 +60,21 @@ class GoogleSheetsService(private val context: Context) {
         val authorizationUrl = flow.newAuthorizationUrl().setRedirectUri(redirectUri).build()
 
         // Open the browser to prompt the user to authorize the app
-        openBrowserWithAuthorizationUrl(authorizationUrl)
+        openBrowserWithAuthorizationUrl(context,authorizationUrl)
 
         // Show the dialog for the user to input the authorization code
-        showAuthorizationCodeInputDialog()
+        showAuthorizationCodeInputDialog(context)
     }
 
     // Function to open the browser with the OAuth URL
-    private fun openBrowserWithAuthorizationUrl(authorizationUrl: String) {
+    private fun openBrowserWithAuthorizationUrl(context: Context, authorizationUrl: String) {
         val intent = Intent(Intent.ACTION_VIEW)
         intent.data = Uri.parse(authorizationUrl)
         context.startActivity(intent)
     }
 
     // Function to show the input dialog for the authorization code
-    private fun showAuthorizationCodeInputDialog() {
+    private fun showAuthorizationCodeInputDialog(context: Context) {
         val input = EditText(context)  // Create the input field programmatically
 
         val dialog = AlertDialog.Builder(context)
@@ -83,7 +85,7 @@ class GoogleSheetsService(private val context: Context) {
                 val authorizationCode = input.text.toString().trim()
                 if (authorizationCode.isNotEmpty()) {
                     // Process the authorization code
-                    exchangeAuthorizationCodeForTokens(authorizationCode)
+                    exchangeAuthorizationCodeForTokens(context,authorizationCode)
                 } else {
                     Toast.makeText(context, "Authorization code cannot be empty", Toast.LENGTH_SHORT).show()
                 }
@@ -94,7 +96,7 @@ class GoogleSheetsService(private val context: Context) {
         dialog.show()  // Show the dialog
     }
 
-    fun exchangeAuthorizationCodeForTokens(authorizationCode: String) {
+    fun exchangeAuthorizationCodeForTokens(context: Context,authorizationCode: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // Use withContext(Dispatchers.IO) to run network operation
@@ -137,35 +139,83 @@ class GoogleSheetsService(private val context: Context) {
 
 
     // Example function to interact with Google Sheets API (replace with actual usage)
-    fun getSheetsService(): Sheets? {
-        //authorize()  // Initiate authorization when needed
+//    fun getSheetsService(context: Context): Sheets? {
+//        //authorize()  // Initiate authorization when needed
+//
+//        val credentials = authorizationCodeFlow?.let {
+//            val loadedCredential = it.loadCredential("user")
+//            if (loadedCredential == null) {
+//                Toast.makeText(
+//                    context, // Replace with your actual context
+//                    "No credentials found for the user",
+//                    Toast.LENGTH_LONG).show()
+//            }
+//            loadedCredential
+//        } ?: run {
+//            Toast.makeText(
+//                context, // Replace with your actual context
+//                "authorizationCodeFlow is null",
+//                Toast.LENGTH_LONG).show()
+//            return null
+//        }
+//        return Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credentials)
+//            .setApplicationName(APPLICATION_NAME)
+//            .build()
+//    }
 
-        val credentials = authorizationCodeFlow?.let {
-            val loadedCredential = it.loadCredential("user")
-            if (loadedCredential == null) {
-                Toast.makeText(
-                    context, // Replace with your actual context
-                    "No credentials found for the user",
-                    Toast.LENGTH_LONG).show()
+    suspend fun getSheetsService(context: Context): Sheets? = withContext(Dispatchers.IO) {
+        try {
+            val inputStream = context.resources.openRawResource(R.raw.clientsecret)  // Replace with your correct file
+            val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, InputStreamReader(inputStream))
+
+            // Use FileDataStoreFactory to store OAuth tokens in the app's private directory
+            val dataStoreDir = context.filesDir
+            val dataStoreFactory = FileDataStoreFactory(dataStoreDir)
+
+            val flow = GoogleAuthorizationCodeFlow.Builder(
+                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES
+            )
+                .setDataStoreFactory(dataStoreFactory)
+                .setAccessType("offline")
+                .build()
+
+            authorizationCodeFlow = flow
+            
+            // Load credentials (ensure authorizationCodeFlow and context are initialized correctly)
+            val credentials = authorizationCodeFlow?.let {
+                val loadedCredential = it.loadCredential("user")
+                if (loadedCredential == null) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "No credentials found for the user", Toast.LENGTH_LONG).show()
+                    }
+                    return@withContext null
+                }
+                loadedCredential
+            } ?: run {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "authorizationCodeFlow is null", Toast.LENGTH_LONG).show()
+                }
+                return@withContext null
             }
-            loadedCredential
-        } ?: run {
-            Toast.makeText(
-                context, // Replace with your actual context
-                "authorizationCodeFlow is null",
-                Toast.LENGTH_LONG).show()
-            return null
+
+            // Create and return Sheets service instance
+            return@withContext Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credentials)
+                .setApplicationName(APPLICATION_NAME)
+                .build()
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "Failed to initialize Sheets service: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+            return@withContext null
         }
-
-
-        return Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credentials)
-            .setApplicationName(APPLICATION_NAME)
-            .build()
     }
 
+
     // Function to read data from Google Sheets
-    suspend fun readData(): List<List<Any>> = withContext(Dispatchers.IO) {
-        val sheetsService = getSheetsService() ?: return@withContext listOf()
+    suspend fun readData(context: Context): List<List<Any>> = withContext(Dispatchers.IO) {
+        val sheetsService = getSheetsService(context) ?: return@withContext listOf()
 
         try {
             // Fetch data from the specified range in the spreadsheet
@@ -184,18 +234,34 @@ class GoogleSheetsService(private val context: Context) {
 
 
     // Function to write data to Google Sheets
-    fun writeData(values: List<List<Any>>) {
-        val sheetsService = getSheetsService() ?: return
+    // Function to write data to Google Sheets using coroutines
+    suspend fun writeData(context: Context, values: List<List<Any>>): String = withContext(Dispatchers.IO) {
+        val sheetsService = getSheetsService(context) ?: return@withContext "Service initialization failed."
 
-        // Prepare the data to write
-        val body = ValueRange().setValues(values)
+        try {
+            // Prepare the data to write
+            val body = ValueRange().setValues(values)
 
-        // Update the specified range with the new data
-        sheetsService.spreadsheets().values()
-            .update(SPREADSHEET_ID, RANGE, body)
-            .setValueInputOption("RAW")
-            .execute()
+            // Update the specified range with the new data
+            val response = sheetsService.spreadsheets().values()
+                .update(SPREADSHEET_ID, NEWRANGE, body)
+                .setValueInputOption("RAW")
+                .execute()
 
-        Toast.makeText(context, "Data written to Google Sheets successfully.", Toast.LENGTH_SHORT).show()
+            // Check if the response contains updated values
+            if (response != null) {
+                val updatedRows = response.updatedRows
+                val updatedColumns = response.updatedColumns
+                val updatedCells = response.updatedCells
+
+                // Return success information
+                return@withContext "Update successful: $updatedRows rows, $updatedColumns columns, $updatedCells cells updated."
+            } else {
+                return@withContext "Update failed: No response from server."
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext "Update failed: ${e.message}"
+        }
     }
 }
