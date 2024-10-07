@@ -9,7 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
-import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.client.json.gson.GsonFactory
 import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
@@ -20,35 +20,34 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
 
-
-class GoogleSheetsService(private val initContext: Context) {
-    private val APPLICATION_NAME = "Cricket Scoring App"
-    private val SCOPES = listOf(SheetsScopes.SPREADSHEETS)
+class GoogleSheetsService {
+    private val applicationName = "Cricket Scoring App"
+    private val scopes = listOf(SheetsScopes.SPREADSHEETS)
     //private val SPREADSHEET_ID = "1z62HTf3OvhDLYrqVFwEKWoKY242Ja6yZpAG33S_XCmA"
     //private val RANGE = "Sheet1!A1:A1"
-    private val SPREADSHEET_ID = "1hoqVNgiQz6e2lkhZV_3ZizhFTlpoMa8QBLFXyhWR7c0"
-    private val RANGE = "Junaid!A1:A1"
-    private val NEWRANGE = "RawData!A1:A1"
+    private val spreadsheetId = "1hoqVNgiQz6e2lkhZV_3ZizhFTlpoMa8QBLFXyhWR7c0"
+    private val readRange = "Junaid!A1:A1"
+    private val writeRange = "RawData!A1:A1"
 
     private var authorizationCodeFlow: GoogleAuthorizationCodeFlow? = null
     private var redirectUri = "urn:ietf:wg:oauth:2.0:oob"
 
     // Initialize the HTTP transport and JSON factory
-    private val HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport()
-    private val JSON_FACTORY = JacksonFactory.getDefaultInstance()
+    private val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
+    private val gsonFactory = GsonFactory.getDefaultInstance()
 
     // Function to handle the OAuth flow and request an authorization code
     fun authorize(context: Context) {
         // Load OAuth2 credentials file from res/raw (or wherever it’s located)
         val inputStream = context.resources.openRawResource(R.raw.clientsecret)  // Replace with your correct file
-        val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, InputStreamReader(inputStream))
+        val clientSecrets = GoogleClientSecrets.load(gsonFactory, InputStreamReader(inputStream))
 
         // Use FileDataStoreFactory to store OAuth tokens in the app's private directory
         val dataStoreDir = context.filesDir
         val dataStoreFactory = FileDataStoreFactory(dataStoreDir)
 
         val flow = GoogleAuthorizationCodeFlow.Builder(
-            HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES
+            httpTransport, gsonFactory, clientSecrets, scopes
         )
             .setDataStoreFactory(dataStoreFactory)
             .setAccessType("offline")
@@ -101,14 +100,14 @@ class GoogleSheetsService(private val initContext: Context) {
             try {
                 // Use withContext(Dispatchers.IO) to run network operation
                 val inputStream = context.resources.openRawResource(R.raw.clientsecret)  // Replace with your correct file
-                val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, InputStreamReader(inputStream))
+                val clientSecrets = GoogleClientSecrets.load(gsonFactory, InputStreamReader(inputStream))
 
                 // Use FileDataStoreFactory to store OAuth tokens in the app's private directory
                 val dataStoreDir = context.filesDir
                 val dataStoreFactory = FileDataStoreFactory(dataStoreDir)
 
                 val flow = GoogleAuthorizationCodeFlow.Builder(
-                    HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES
+                    httpTransport, gsonFactory, clientSecrets, scopes
                 )
                     .setDataStoreFactory(dataStoreFactory)
                     .setAccessType("offline")
@@ -137,50 +136,24 @@ class GoogleSheetsService(private val initContext: Context) {
         }
     }
 
-
-    // Example function to interact with Google Sheets API (replace with actual usage)
-//    fun getSheetsService(context: Context): Sheets? {
-//        //authorize()  // Initiate authorization when needed
-//
-//        val credentials = authorizationCodeFlow?.let {
-//            val loadedCredential = it.loadCredential("user")
-//            if (loadedCredential == null) {
-//                Toast.makeText(
-//                    context, // Replace with your actual context
-//                    "No credentials found for the user",
-//                    Toast.LENGTH_LONG).show()
-//            }
-//            loadedCredential
-//        } ?: run {
-//            Toast.makeText(
-//                context, // Replace with your actual context
-//                "authorizationCodeFlow is null",
-//                Toast.LENGTH_LONG).show()
-//            return null
-//        }
-//        return Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credentials)
-//            .setApplicationName(APPLICATION_NAME)
-//            .build()
-//    }
-
-    suspend fun getSheetsService(context: Context): Sheets? = withContext(Dispatchers.IO) {
+    private suspend fun getSheetsService(context: Context): Sheets? = withContext(Dispatchers.IO) {
         try {
             val inputStream = context.resources.openRawResource(R.raw.clientsecret)  // Replace with your correct file
-            val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, InputStreamReader(inputStream))
+            val clientSecrets = GoogleClientSecrets.load(gsonFactory, InputStreamReader(inputStream))
 
             // Use FileDataStoreFactory to store OAuth tokens in the app's private directory
             val dataStoreDir = context.filesDir
             val dataStoreFactory = FileDataStoreFactory(dataStoreDir)
 
             val flow = GoogleAuthorizationCodeFlow.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES
+                httpTransport, gsonFactory, clientSecrets, scopes
             )
                 .setDataStoreFactory(dataStoreFactory)
                 .setAccessType("offline")
                 .build()
 
             authorizationCodeFlow = flow
-            
+
             // Load credentials (ensure authorizationCodeFlow and context are initialized correctly)
             val credentials = authorizationCodeFlow?.let {
                 val loadedCredential = it.loadCredential("user")
@@ -199,8 +172,8 @@ class GoogleSheetsService(private val initContext: Context) {
             }
 
             // Create and return Sheets service instance
-            return@withContext Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, credentials)
-                .setApplicationName(APPLICATION_NAME)
+            return@withContext Sheets.Builder(httpTransport, gsonFactory, credentials)
+                .setApplicationName(applicationName)
                 .build()
 
         } catch (e: Exception) {
@@ -212,7 +185,6 @@ class GoogleSheetsService(private val initContext: Context) {
         }
     }
 
-
     // Function to read data from Google Sheets
     suspend fun readData(context: Context): List<List<Any>> = withContext(Dispatchers.IO) {
         val sheetsService = getSheetsService(context) ?: return@withContext listOf()
@@ -220,7 +192,7 @@ class GoogleSheetsService(private val initContext: Context) {
         try {
             // Fetch data from the specified range in the spreadsheet
             val response = sheetsService.spreadsheets().values()
-                .get(SPREADSHEET_ID, RANGE)
+                .get(spreadsheetId, readRange)
                 .execute()
 
             // Return the fetched data
@@ -232,8 +204,6 @@ class GoogleSheetsService(private val initContext: Context) {
         }
     }
 
-
-    // Function to write data to Google Sheets
     // Function to write data to Google Sheets using coroutines
     suspend fun writeData(context: Context, values: List<List<Any>>): String = withContext(Dispatchers.IO) {
         val sheetsService = getSheetsService(context) ?: return@withContext "Service initialization failed."
@@ -244,7 +214,7 @@ class GoogleSheetsService(private val initContext: Context) {
 
             // Update the specified range with the new data
             val response = sheetsService.spreadsheets().values()
-                .update(SPREADSHEET_ID, NEWRANGE, body)
+                .update(spreadsheetId, writeRange, body)
                 .setValueInputOption("RAW")
                 .execute()
 

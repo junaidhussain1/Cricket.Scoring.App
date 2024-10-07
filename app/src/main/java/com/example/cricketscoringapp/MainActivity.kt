@@ -75,7 +75,7 @@ fun AuthScreen(navController: NavHostController) {
     val context = LocalContext.current
     var authCode by remember { mutableStateOf("") }
     var newData by remember { mutableStateOf("") }
-    val googleSheetsService = GoogleSheetsService(context)
+    val googleSheetsService = GoogleSheetsService()
 
     Column(
         modifier = Modifier
