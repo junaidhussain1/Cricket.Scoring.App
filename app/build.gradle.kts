@@ -71,15 +71,15 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation("androidx.compose.material:material:1.6.8")
-    implementation("com.google.api-client:google-api-client:2.6.0")
-    implementation("com.google.api-client:google-api-client-android:2.6.0")
-    implementation("com.google.oauth-client:google-oauth-client-jetty:1.36.0")
-    implementation("com.google.http-client:google-http-client-gson:1.44.2")
+    implementation(libs.androidx.material)
+    implementation(libs.androidx.material.icons.extended)
+
+    implementation(libs.google.api.client.android)
     implementation(libs.google.api.services.sheets)
-    implementation("com.google.auth:google-auth-library-oauth2-http:1.24.1")
+    implementation(libs.google.oauth.client.jetty)
+    implementation(libs.google.auth.library.oauth2.http)
+    implementation(libs.google.http.client.gson.v1442)
+    implementation(libs.google.http.client.jackson2.v1442)
     implementation(libs.gson)
-    implementation("androidx.compose.material:material-icons-extended:1.6.8")
-    implementation("com.google.http-client:google-http-client-jackson2:1.41.5")
-    implementation("com.google.http-client:google-http-client-android:1.41.5")
+
 }

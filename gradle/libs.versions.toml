@@ -1,5 +1,5 @@
 [versions]
-agp = "8.6.0"
+agp = "8.6.1"
 coreKtxVersion = "1.10.0"
 googleApiClient = "1.32.1"
 googleApiClientAndroid = "2.6.0"
@@ -13,7 +13,9 @@ googleAuthLibraryOauth2Http = "1.24.1"
 googleAuthLibraryOauth2HttpVersion = "1.7.0"
 googleGoogleOauthClientJetty = "1.31.5"
 googleHttpClientGson = "1.23.0"
+googleHttpClientGsonVersion = "1.44.2"
 googleHttpClientJackson2 = "1.41.5"
+googleHttpClientJackson2Version = "1.44.2"
 googleOauthClientJetty = "1.36.0"
 googleOauthClientJettyVersion = "1.32.1"
 gradle = "8.5.2"
@@ -41,6 +43,7 @@ securityCryptoKtx = "1.0.0"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.13.1" }
 androidx-core-ktx-v1100 = { module = "androidx.core:core-ktx", version = "1.13.1" }
+androidx-material = { module = "androidx.compose.material:material", version.ref = "materialIconsExtended" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-security-crypto = { module = "androidx.security:security-crypto", version.ref = "securityCrypto" }
 google-api-client = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClientAndroid" }
@@ -56,9 +59,10 @@ google-apis-sheets = { module = "com.google.apis:google-apis-sheets", version.re
 google-auth-library-oauth2-http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleAuthLibraryOauth2Http" }
 google-auth-library-oauth2-http-v170 = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleAuthLibraryOauth2HttpVersion" }
 google-http-client-gson = { module = "com.google.http-client:google-http-client-gson", version.ref = "googleHttpClientGson" }
+google-http-client-gson-v1442 = { module = "com.google.http-client:google-http-client-gson", version.ref = "googleHttpClientGsonVersion" }
 google-http-client-jackson2 = { module = "com.google.http-client:google-http-client-jackson2", version.ref = "googleHttpClientJackson2" }
+google-http-client-jackson2-v1442 = { module = "com.google.http-client:google-http-client-jackson2", version.ref = "googleHttpClientJackson2Version" }
 google-oauth-client-jetty = { module = "com.google.oauth-client:google-oauth-client-jetty", version.ref = "googleOauthClientJetty" }
-google-oauth-client-jetty-v1315 = { module = "com.google.oauth-client:google-oauth-client-jetty", version.ref = "googleGoogleOauthClientJetty" }
 google-oauth-client-jetty-v1321 = { module = "com.google.oauth-client:google-oauth-client-jetty", version.ref = "googleOauthClientJettyVersion" }
 gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
