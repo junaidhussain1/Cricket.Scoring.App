@@ -1,8 +1,6 @@
 package com.example.cricketscoringapp
 
-//import com.google.api.client.extensions.android.http.AndroidHttp
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -125,19 +123,17 @@ fun HomePage(navController: NavHostController) {
             Spacer(modifier = Modifier.height(30.dp))
 
             Button(
-                onClick = {
-                    Toast.makeText(context, getDataFromSheet(context), Toast.LENGTH_SHORT).show()
-                },
+                onClick = { navController.navigate("settings") },
+                    //Toast.makeText(context, getDataFromSheet(context), Toast.LENGTH_SHORT).show()
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(255, 252, 228) // Set the background color
                 )
             ) {
                 Text(
-                    text = "Google Sheet Test",
+                    text = "Settings",
                     fontSize = if (isTablet) 26.sp else 22.sp,
                     color = Color(10, 18, 32)
-
                 )
             }
 
@@ -147,7 +143,9 @@ fun HomePage(navController: NavHostController) {
 
             val dbVersion = dbHelper.getDBVersion()
 
-            Text("App Version: $versionName, DB Version: $dbVersion")
+            Text("App Version: $versionName, DB Version: $dbVersion",
+                color = Color(255, 252, 228)
+                )
         }
     }
 }

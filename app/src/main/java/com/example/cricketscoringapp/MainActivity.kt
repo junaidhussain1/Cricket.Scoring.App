@@ -51,22 +51,25 @@ fun MainScreenContent() {
 @Composable
 fun AppNavHost(navController: NavHostController) {
         NavHost(navController = navController, startDestination = "homepage") {
-        composable("homepage") { HomePage(navController = navController) }
-        composable("playermgt") { PlayerMgtPage() }
-        composable("newmatch") { NewMatchSetupPage(navController = navController) }
-        composable("team1PlayerSelection") { Team1PlayerSelectionPage()}
-        composable("team2PlayerSelection") { Team2PlayerSelectionPage()}
-        composable("scorecard") { ScoreCardPage(navController = navController) }
-        composable("existingmatches") { ExistingMatchesPage(navController = navController) }
-        composable("secondinningssetup") { SecondInningsSetupPage(navController = navController) }
-            composable("inningstats/{matchId}/{teamIdA}/{teamIdB}") { backStackEntry ->
-                val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
-                val teamIdA = backStackEntry.arguments?.getString("teamIdA")?.toIntOrNull() ?: 0
-                val teamIdB = backStackEntry.arguments?.getString("teamIdB")?.toIntOrNull() ?: 0
 
-                // Call InningStatsPage with both arguments
-                InningStatsPage(matchId = matchId, teamIdA = teamIdA, teamIdB = teamIdB)
-            }
+            composable("homepage") { HomePage(navController = navController) }
+            composable("playermgt") { PlayerMgtPage() }
+            composable("newmatch") { NewMatchSetupPage(navController = navController) }
+            composable("team1PlayerSelection") { Team1PlayerSelectionPage()}
+            composable("team2PlayerSelection") { Team2PlayerSelectionPage()}
+            composable("scorecard") { ScoreCardPage(navController = navController) }
+            composable("existingmatches") { ExistingMatchesPage(navController = navController) }
+            composable("secondinningssetup") { SecondInningsSetupPage(navController = navController) }
+            composable("settings") { SettingsPage(navController = navController) }
+            composable("googlesheetsettings") { GoogleSheetSettingsPage() }
+            composable("inningstats/{matchId}/{teamIdA}/{teamIdB}") { backStackEntry ->
+            val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
+            val teamIdA = backStackEntry.arguments?.getString("teamIdA")?.toIntOrNull() ?: 0
+            val teamIdB = backStackEntry.arguments?.getString("teamIdB")?.toIntOrNull() ?: 0
+
+            // Call InningStatsPage with both arguments
+            InningStatsPage(matchId = matchId, teamIdA = teamIdA, teamIdB = teamIdB)
+        }
     }
 }
 
