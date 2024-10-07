@@ -135,7 +135,7 @@ fun GoogleSheetSettingsPage() {
 
                         Toast.makeText(
                             context, // Use your actual context
-                            "List size: $listSize\nValues:\n$values",
+                            "List size: $listSize Values: $values",
                             Toast.LENGTH_LONG
                         ).show()
                     }
