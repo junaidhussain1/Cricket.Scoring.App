@@ -141,7 +141,7 @@ fun PlayerMgtPage() {
 
                     CoroutineScope(Dispatchers.Main).launch {
                         // Read data asynchronously from Google Sheets
-                        val data = googleSheetsService.readData(context)
+                        val data = googleSheetsService.readData(context,"Names!A:A")
 
                         data.drop(1).forEach { row ->
                             if (row.isNotEmpty()) {

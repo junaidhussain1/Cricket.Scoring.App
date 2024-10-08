@@ -1,5 +1,6 @@
 package com.example.cricketscoringapp
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +27,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ExistingMatchesPage(navController: NavHostController) {
@@ -104,12 +110,52 @@ fun ExistingMatchesPage(navController: NavHostController) {
                         )
                         {
                             // Synchronization Icon
-                            Icon(
-                                imageVector = Icons.Default.Sync,
-                                contentDescription = "Sync Status",
-                                tint = if (match.isSynced) Color.Green else Color.Gray,
-                                modifier = Modifier.size(if (isTablet) 48.dp else 24.dp) // Size based on isTablet
-                            )
+                            IconButton(
+                                enabled = match.isFinished && !match.isSynced,
+                                onClick = {
+                                    val googleSheetsService = GoogleSheetsService()
+
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        try {
+                                            // Step 1: Read existing data from column A to find the last row
+                                            val existingData = googleSheetsService.readData(context,"Data Raw!A:A")
+                                            val lastRowIndex = existingData.size // This gives the number of existing rows
+
+                                            val newData = "Hanan"
+                                            // Step 2: Prepare the new data with the correct range
+                                            val dataToWrite = listOf(
+                                                listOf<Any>(newData)
+                                            )
+
+                                            // Define the range starting from the next available row in column A
+                                            val rangeToWrite = "Data Raw!A${lastRowIndex + 1}" // A1, A2, A3, ..., An
+
+                                            // Step 3: Write the new data to the calculated range
+                                            val rtnMessage = googleSheetsService.writeData(context, rangeToWrite, dataToWrite)
+
+                                            // Switch back to the Main thread to show Toast
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(
+                                                    context,
+                                                    rtnMessage,
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            }
+                                        } catch (e: Exception) {
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                            }
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Sync,
+                                    contentDescription = "Sync Status",
+                                    tint = Color.Green,
+                                    modifier = Modifier.size(if (isTablet) 48.dp else 24.dp) // Size based on isTablet
+                                )
+                            }
                         }
                     }
                 }

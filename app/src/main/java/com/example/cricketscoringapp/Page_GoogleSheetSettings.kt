@@ -127,7 +127,7 @@ fun GoogleSheetSettingsPage() {
                 onClick = {
                     CoroutineScope(Dispatchers.Main).launch {
                         // Read data asynchronously from Google Sheets
-                        val data = googleSheetsService.readData(context)
+                        val data = googleSheetsService.readData(context,"Names!A:A")
 
                         // After fetching the data, show a Toast message with the size of the list
                         val listSize = data.size
@@ -173,7 +173,7 @@ fun GoogleSheetSettingsPage() {
                                 val dataToWrite = listOf(
                                     listOf<Any>(newData)
                                 )
-                                val rtnMessage = googleSheetsService.writeData(context,dataToWrite)
+                                val rtnMessage = googleSheetsService.writeData(context,"Names!C1:C1",dataToWrite)
 
                                 // Switch back to the Main thread to show Toast
                                 withContext(Dispatchers.Main) {

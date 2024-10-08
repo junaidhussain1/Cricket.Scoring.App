@@ -24,10 +24,7 @@ class GoogleSheetsService {
     private val applicationName = "Cricket Scoring App"
     private val scopes = listOf(SheetsScopes.SPREADSHEETS)
     //private val SPREADSHEET_ID = "1z62HTf3OvhDLYrqVFwEKWoKY242Ja6yZpAG33S_XCmA"
-    //private val RANGE = "Sheet1!A1:A1"
     private val spreadsheetId = "1hoqVNgiQz6e2lkhZV_3ZizhFTlpoMa8QBLFXyhWR7c0"
-    private val readRange = "Players!A:A"
-    private val writeRange = "RawData!A1:A1"
 
     private var authorizationCodeFlow: GoogleAuthorizationCodeFlow? = null
     private var redirectUri = "urn:ietf:wg:oauth:2.0:oob"
@@ -186,7 +183,7 @@ class GoogleSheetsService {
     }
 
     // Function to read data from Google Sheets
-    suspend fun readData(context: Context): List<List<Any>> = withContext(Dispatchers.IO) {
+    suspend fun readData(context: Context,readRange: String): List<List<Any>> = withContext(Dispatchers.IO) {
         val sheetsService = getSheetsService(context) ?: return@withContext listOf()
 
         try {
@@ -205,7 +202,7 @@ class GoogleSheetsService {
     }
 
     // Function to write data to Google Sheets using coroutines
-    suspend fun writeData(context: Context, values: List<List<Any>>): String = withContext(Dispatchers.IO) {
+    suspend fun writeData(context: Context, writeRange: String, values: List<List<Any>>): String = withContext(Dispatchers.IO) {
         val sheetsService = getSheetsService(context) ?: return@withContext "Service initialization failed."
 
         try {
