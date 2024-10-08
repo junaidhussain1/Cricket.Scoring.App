@@ -26,7 +26,7 @@ class GoogleSheetsService {
     //private val SPREADSHEET_ID = "1z62HTf3OvhDLYrqVFwEKWoKY242Ja6yZpAG33S_XCmA"
     //private val RANGE = "Sheet1!A1:A1"
     private val spreadsheetId = "1hoqVNgiQz6e2lkhZV_3ZizhFTlpoMa8QBLFXyhWR7c0"
-    private val readRange = "Junaid!A1:A1"
+    private val readRange = "Players!A:A"
     private val writeRange = "RawData!A1:A1"
 
     private var authorizationCodeFlow: GoogleAuthorizationCodeFlow? = null
