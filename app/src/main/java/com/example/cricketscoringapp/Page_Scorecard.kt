@@ -53,14 +53,13 @@ fun ScoreCardPage(navController: NavHostController) {
     val selectedWidesOption = remember { mutableStateOf("") }
     val showNoBallDialog = remember { mutableStateOf(false) }
     val selectedNoBallOption = remember { mutableStateOf("") }
-    val showByesDialog = remember { mutableStateOf(false) }
-    val selectedByesOption = remember { mutableStateOf("") }
-    val showLegByesDialog = remember { mutableStateOf(false) }
-    val selectedLegByesOption = remember { mutableStateOf("") }
+    val showExtrasDialog = remember { mutableStateOf(false) }
+    val selectedExtrasOption = remember { mutableStateOf("") }
     val showWicketsDialog = remember { mutableStateOf(false) }
     val selectedWicketsOption = remember { mutableStateOf("") }
     val showNextBatsmanDialog = remember { mutableStateOf(false) }
     val showUndoConfirmationDialog = remember { mutableStateOf(false) }
+    val showMoreDialog = remember { mutableStateOf(false) }
 
     val showBowlerChangeDialog = remember { mutableStateOf(false) }
     val showKeeperChangeDialog = remember { mutableStateOf(false) }
@@ -767,85 +766,105 @@ fun ScoreCardPage(navController: NavHostController) {
                 .padding(6.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            CircleButton("BYE", if (isTablet) 26 else 16) {
-                showByesDialog.value = true
+            CircleButton("EXTRAS", if (isTablet) 26 else 16) {
+                showExtrasDialog.value = true
             }
-            if (showByesDialog.value) {
+            if (showExtrasDialog.value) {
                 AlertDialog(
-                    onDismissRequest = { showByesDialog.value = false },
+                    onDismissRequest = { showExtrasDialog.value = false },
                     title = { Text("Select BYES Option") },
                     text = {
                         Column {
                             // List of options to choose from
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                selectedByesOption.value = "B1"
-                                showByesDialog.value = false
-                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                selectedExtrasOption.value = "B1"
+                                showExtrasDialog.value = false
+                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("1 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                selectedByesOption.value = "B2"
-                                showByesDialog.value = false
-                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                selectedExtrasOption.value = "B2"
+                                showExtrasDialog.value = false
+                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("2 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                selectedByesOption.value = "B3"
-                                showByesDialog.value = false
-                                updateStats(context,balls,selectedByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                selectedExtrasOption.value = "B3"
+                                showExtrasDialog.value = false
+                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("3 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
-                        }
-                    },
-                    confirmButton = {
-                        Button(onClick = { showByesDialog.value = false }) {
-                            Text("Cancel")
-                        }
-                    }
-                )
-            }
-            CircleButton("LEG BYE", if (isTablet) 26 else 16) {
-                showLegByesDialog.value = true
-            }
-            if (showLegByesDialog.value) {
-                AlertDialog(
-                    onDismissRequest = { showLegByesDialog.value = false },
-                    title = { Text("Select LEG BYES Option") },
-                    text = {
-                        Column {
-                            // List of options to choose from
+                            Spacer(modifier = Modifier.height(32.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                selectedLegByesOption.value = "LB1"
-                                showLegByesDialog.value = false
-                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                selectedExtrasOption.value = "LB1"
+                                showExtrasDialog.value = false
+                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("1 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                selectedLegByesOption.value = "LB2"
-                                showLegByesDialog.value = false
-                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                selectedExtrasOption.value = "LB2"
+                                showExtrasDialog.value = false
+                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("2 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                selectedLegByesOption.value = "LB3"
-                                showLegByesDialog.value = false
-                                updateStats(context,balls,selectedLegByesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                selectedExtrasOption.value = "LB3"
+                                showExtrasDialog.value = false
+                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                             }) {
                                 Text("3 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                         }
                     },
                     confirmButton = {
-                        Button(onClick = { showLegByesDialog.value = false }) {
+                        Button(onClick = { showExtrasDialog.value = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+            CircleButton("MORE", if (isTablet) 26 else 16) {
+                showMoreDialog.value = true
+            }
+            if (showMoreDialog.value) {
+                AlertDialog(
+                    onDismissRequest = { showMoreDialog.value = false },
+                    title = { Text("More Options") },
+                    text = {
+                        Column {
+                            // List of options to choose from
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                                //If activate batsman has faced 0 balls
+                                //Then show next batsman change dialog
+                                //Just replace active batsman
+                            }) {
+                                Text("Change Batsman", fontSize = if (isTablet) 30.sp else 20.sp)
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                                //
+                            }) {
+                                Text("Retire Batsman", fontSize = if (isTablet) 30.sp else 20.sp)
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                                //
+                            }) {
+                                Text("End Innings", fontSize = if (isTablet) 30.sp else 20.sp)
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        Button(onClick = { showMoreDialog.value = false }) {
                             Text("Cancel")
                         }
                     }

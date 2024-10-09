@@ -69,6 +69,8 @@ fun TeamStatsSection (matchId: String, teamId: Int, context: Context) {
     val bowlersList = remember { mutableStateListOf<BowlerStats>() }
     var totalByes = 0
     var totalLegByes = 0
+    var totalWides = 0
+    var totalNoBalls = 0
 
     battersList.clear()
     battersList.addAll(dbHelper.getTeamBattingStats(matchId, teamId))
@@ -192,7 +194,7 @@ fun TeamStatsSection (matchId: String, teamId: Int, context: Context) {
                 totalOvers = "O",
                 totalMaidens = "M",
                 totalRuns = "R",
-                totalWickets = "WI",
+                totalWickets = "Wk",
                 totalNoBalls = "NB",
                 totalWides = "WD",
                 totalFours = "4s",
@@ -207,6 +209,8 @@ fun TeamStatsSection (matchId: String, teamId: Int, context: Context) {
             bowlersList.forEach { player ->
                 totalByes += player.byes.value
                 totalLegByes += player.legbyes.value
+                totalWides += player.wides.value
+                totalNoBalls += player.noballs.value
                 BowlerFullStats(
                     bowler = player.name.value,
                     totalOvers = String.format(
@@ -300,6 +304,54 @@ fun TeamStatsSection (matchId: String, teamId: Int, context: Context) {
                 )
                 Text(
                     text = totalLegByes.toString(),
+                    fontWeight = FontWeight.Normal,
+                    fontSize = if (isTablet) 16.sp else 10.sp,
+                    color = Color.White,
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.CenterVertically) // Aligns text vertically center
+                        .wrapContentWidth(Alignment.Start) // Centers text horizontally
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(2.dp)  // Optional padding
+            ) {
+                Text(
+                    text = "Wides",
+                    fontWeight = FontWeight.Normal,
+                    fontSize = if (isTablet) 16.sp else 10.sp,
+                    color = Color.White,
+                    modifier = Modifier.weight(1f) // This pushes the next Text to the right
+                )
+                Text(
+                    text = totalWides.toString(),
+                    fontWeight = FontWeight.Normal,
+                    fontSize = if (isTablet) 16.sp else 10.sp,
+                    color = Color.White,
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.CenterVertically) // Aligns text vertically center
+                        .wrapContentWidth(Alignment.Start) // Centers text horizontally
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(2.dp)  // Optional padding
+            ) {
+                Text(
+                    text = "No Balls",
+                    fontWeight = FontWeight.Normal,
+                    fontSize = if (isTablet) 16.sp else 10.sp,
+                    color = Color.White,
+                    modifier = Modifier.weight(1f) // This pushes the next Text to the right
+                )
+                Text(
+                    text = totalNoBalls.toString(),
                     fontWeight = FontWeight.Normal,
                     fontSize = if (isTablet) 16.sp else 10.sp,
                     color = Color.White,
