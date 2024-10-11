@@ -420,6 +420,9 @@ fun setCurrentBowlerAndKeeper(bowlerStats: BowlerStats, bowlerName: String, keep
     bowlerStats.wickets.value = 0
     bowlerStats.noballs.value = 0
     bowlerStats.wides.value = 0
+    bowlerStats.fours.value = 0
+    bowlerStats.sixes.value = 0
+    bowlerStats.dotballs.value = 0
     bowlerStats.byes.value = 0
     bowlerStats.legbyes.value = 0
 }

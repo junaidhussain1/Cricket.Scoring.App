@@ -148,6 +148,7 @@ fun ScoreCardPage(navController: NavHostController) {
                 legbyes = mutableIntStateOf(currentOverBowler.legbyes.value),
                 fours = mutableIntStateOf(currentOverBowler.fours.value),
                 sixes = mutableIntStateOf(currentOverBowler.sixes.value),
+                dotballs = mutableIntStateOf(currentOverBowler.dotballs.value),
                 keepername = mutableStateOf(currentOverBowler.keepername.value),
                 overrecord = mutableStateOf(currentOverBowler.overrecord.value)
             )
@@ -167,6 +168,7 @@ fun ScoreCardPage(navController: NavHostController) {
                 legbyes = mutableIntStateOf(consolidatedBowler.legbyes.value),
                 fours = mutableIntStateOf(consolidatedBowler.fours.value),
                 sixes = mutableIntStateOf(consolidatedBowler.sixes.value),
+                dotballs = mutableIntStateOf(consolidatedBowler.dotballs.value),
                 keepername = mutableStateOf(consolidatedBowler.keepername.value),
                 overrecord = mutableStateOf(consolidatedBowler.overrecord.value)
             )

@@ -22,6 +22,7 @@ fun BatsmanFullStats(batsman: String,
                      balls: String,
                      fours: String,
                      sixes: String,
+                     dotballs: String,
                      strikeRate: String,
                      fontBold1: FontWeight,
                      fontColor1: Color) {
@@ -84,6 +85,16 @@ fun BatsmanFullStats(batsman: String,
             )
             Text(
                 text = sixes,
+                fontWeight = fontBold1,
+                fontSize = fontSize1,
+                color = fontColor1,
+                modifier = Modifier
+                    .weight(1f)
+                    .align(Alignment.CenterVertically)  // Aligns text vertically center
+                    .wrapContentWidth(Alignment.CenterHorizontally) // Centers text horizontally
+            )
+            Text(
+                text = dotballs,
                 fontWeight = fontBold1,
                 fontSize = fontSize1,
                 color = fontColor1,

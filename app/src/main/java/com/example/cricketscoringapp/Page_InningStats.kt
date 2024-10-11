@@ -126,6 +126,7 @@ fun TeamStatsSection (matchId: String, teamId: Int, context: Context) {
                 balls = "B",
                 fours = "4s",
                 sixes = "6s",
+                dotballs = "DB",
                 strikeRate = "S/R",
                 fontBold1 = FontWeight.Bold,
                 fontColor1 = Color.Gray
@@ -164,6 +165,11 @@ fun TeamStatsSection (matchId: String, teamId: Int, context: Context) {
                         "%d",
                         player.sixes.value
                     ),
+                    dotballs = String.format(
+                        Locale.UK,
+                        "%d",
+                        player.dotballs.value
+                    ),
                     strikeRate = String.format(
                         Locale.UK,
                         "%.2f",
@@ -199,6 +205,7 @@ fun TeamStatsSection (matchId: String, teamId: Int, context: Context) {
                 totalWides = "WD",
                 totalFours = "4s",
                 totalSixes = "6s",
+                totalDotBalls = "DB",
                 fontBold1 = FontWeight.Bold,
                 fontColor1 = Color.Gray
             )
@@ -252,6 +259,11 @@ fun TeamStatsSection (matchId: String, teamId: Int, context: Context) {
                         Locale.UK,
                         "%d",
                         player.sixes.value
+                    ),
+                    totalDotBalls = String.format(
+                        Locale.UK,
+                        "%d",
+                        player.dotballs.value
                     ),
                     fontBold1 = FontWeight.Normal, // Changed to normal for list items
                     fontColor1 = Color.White

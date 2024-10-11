@@ -439,6 +439,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 legbyes = mutableIntStateOf(cursor.getIntOrZero("legbyes")),
                 fours = mutableIntStateOf(cursor.getIntOrZero("fours")),
                 sixes = mutableIntStateOf(cursor.getIntOrZero("sixes")),
+                dotballs = mutableIntStateOf(cursor.getIntOrZero("dotballs")),
                 keepername = mutableStateOf(cursor.getStringOrEmpty("keeper_name")),
                 overrecord = mutableStateOf(cursor.getStringOrEmpty("over_record"))
             )
@@ -463,7 +464,8 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 SUM(byes) AS total_byes, 
                 SUM(legbyes) AS total_legbyes, 
                 SUM(fours) AS total_fours, 
-                SUM(sixes) AS total_sixes
+                SUM(sixes) AS total_sixes,
+                SUM(dotballs) AS total_dotballs
             FROM 
                 $TABLE_BOWLINGSTATS
             WHERE 
@@ -486,6 +488,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 legbyes = mutableIntStateOf(cursor.getIntOrZero("total_legbyes")),
                 fours = mutableIntStateOf(cursor.getIntOrZero("total_fours")),
                 sixes = mutableIntStateOf(cursor.getIntOrZero("total_sixes")),
+                dotballs = mutableIntStateOf(cursor.getIntOrZero("total_dotballs")),
                 keepername = mutableStateOf(""),
                 overrecord = mutableStateOf("")
             )
@@ -626,7 +629,8 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 SUM(byes) AS total_byes, 
                 SUM(legbyes) AS total_legbyes, 
                 SUM(fours) AS total_fours, 
-                SUM(sixes) AS total_sixes
+                SUM(sixes) AS total_sixes,
+                SUM(dotballs) AS total_dotballs
             FROM 
                 $TABLE_BOWLINGSTATS
             WHERE 
@@ -648,6 +652,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                     wides = mutableIntStateOf(it.getIntOrZero("total_wides")),
                     fours = mutableIntStateOf(it.getIntOrZero("total_fours")),
                     sixes = mutableIntStateOf(it.getIntOrZero("total_sixes")),
+                    dotballs = mutableIntStateOf(it.getIntOrZero("total_dotballs")),
                     byes = mutableIntStateOf(it.getIntOrZero("total_byes")),
                     legbyes = mutableIntStateOf(it.getIntOrZero("total_legbyes"))
                 )
