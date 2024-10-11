@@ -8,6 +8,7 @@ data class BatsmanStats(
     var balls: MutableState<Int>,
     var fours: MutableState<Int>,
     var sixes: MutableState<Int>,
+    var dotballs: MutableState<Int>,
     var active: MutableState<Boolean>,
     var wicketDescription: MutableState<String>
 

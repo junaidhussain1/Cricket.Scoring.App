@@ -18,7 +18,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 13
+        const val DATABASE_VERSION = 15
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -26,7 +26,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         const val TABLE_TEAMS = "teams"
         const val TABLE_BATTINGSTATS = "battingstats"
         const val TABLE_BOWLINGSTATS = "bowlingstats"
-        const val TABLE_BOWLINGSTATSSUMMARY = "bowlingsummary"
     }
 
     // SQL statements to create tables
@@ -76,7 +75,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             balls INTEGER,
             fours INTEGER,
             sixes INTEGER,
+            dotballs INTEGER,
             wicket_description TEXT,
+            wicket_type TEXT,
+            wicket_bowler TEXT,
+            wicket_fielder TEXT,
             PRIMARY KEY (match_id, batting_order)
         )
     """
@@ -100,25 +103,9 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             legbyes INTEGER,
             fours INTEGER,
             sixes INTEGER,
+            dotballs INTEGER,
             over_record TEXT,
             PRIMARY KEY (match_id, bowling_order)
-        )
-    """
-
-    private val createBOWLINGSTATSSUMMARY = """
-        CREATE TABLE $TABLE_BOWLINGSTATSSUMMARY (
-            match_id TEXT,
-            team_id INTEGER,
-            player_name TEXT,
-            over REAL,
-            maiden INTEGER,
-            runs INTEGER,
-            wickets INTEGER,
-            noballs INTEGER,
-            wides INTEGER,
-            byes INTEGER,
-            legbyes INTEGER,
-            PRIMARY KEY (match_id, player_name)
         )
     """
     
@@ -128,7 +115,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db?.execSQL(createTEAMSTABLE)
         db?.execSQL(createBATTINGSTATS)
         db?.execSQL(createBOWLINGSTATS)
-        db?.execSQL(createBOWLINGSTATSSUMMARY)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
@@ -137,7 +123,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_TEAMS")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_BATTINGSTATS")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_BOWLINGSTATS")
-        db?.execSQL("DROP TABLE IF EXISTS $TABLE_BOWLINGSTATSSUMMARY")
         onCreate(db)
     }
 
@@ -389,6 +374,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             balls = mutableIntStateOf(value = 0),
             fours = mutableIntStateOf(value = 0),
             sixes = mutableIntStateOf(value = 0),
+            dotballs = mutableIntStateOf(value = 0),
             wicketDescription = mutableStateOf(value = ""),
             active = mutableStateOf(value = false)
         )
@@ -402,6 +388,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             val balls: Int = cursor.getIntOrZero("balls")
             val fours: Int = cursor.getIntOrZero("fours")
             val sixes: Int = cursor.getIntOrZero("sixes")
+            val dotballs: Int = cursor.getIntOrZero("dotballs")
             val wicketDescription: String = cursor.getStringOrEmpty("wicket_description")
 
             // Assign the retrieved values to batsmanStats
@@ -411,6 +398,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 balls = mutableIntStateOf(value = balls),
                 fours = mutableIntStateOf(value = fours),
                 sixes = mutableIntStateOf(value = sixes),
+                dotballs = mutableIntStateOf(value = dotballs),
                 wicketDescription = mutableStateOf(value = wicketDescription),
                 active = mutableStateOf(value = battingStatus == "striker")
             )
@@ -574,6 +562,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                     balls = mutableIntStateOf(it.getIntOrZero("balls")),
                     fours = mutableIntStateOf(it.getIntOrZero("fours")),
                     sixes = mutableIntStateOf(it.getIntOrZero("sixes")),
+                    dotballs = mutableIntStateOf(it.getIntOrZero("dotballs")),
                     wicketDescription =  mutableStateOf(it.getStringOrEmpty("wicket_description")),
                     active = mutableStateOf(it.getStringOrEmpty("batting_status") == "striker")
                 )
@@ -585,6 +574,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                     balls = mutableIntStateOf(0),
                     fours = mutableIntStateOf(0),
                     sixes = mutableIntStateOf(0),
+                    dotballs = mutableIntStateOf(0),
                     wicketDescription = mutableStateOf(""),
                     active = mutableStateOf(false)
                 )
@@ -610,6 +600,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                     balls = mutableIntStateOf(it.getIntOrZero("balls")),
                     fours = mutableIntStateOf(it.getIntOrZero("fours")),
                     sixes = mutableIntStateOf(it.getIntOrZero("sixes")),
+                    dotballs = mutableIntStateOf(it.getIntOrZero("dotballs")),
                     wicketDescription = mutableStateOf(it.getStringOrEmpty("wicket_description")),
                     active = mutableStateOf(it.getStringOrEmpty("batting_status") == "striker")
                 )
@@ -912,7 +903,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db.delete(TABLE_TEAMS, "match_id = ?", arrayOf(matchId))
         db.delete(TABLE_BATTINGSTATS, "match_id = ?", arrayOf(matchId))
         db.delete(TABLE_BOWLINGSTATS, "match_id = ?", arrayOf(matchId))
-        db.delete(TABLE_BOWLINGSTATSSUMMARY, "match_id = ?", arrayOf(matchId))
         db.delete(TABLE_MATCHES, "match_id = ?", arrayOf(matchId))
     }
 
@@ -1128,7 +1118,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_BATTINGSTATS, contentValues, whereClause, whereArgs)
     }
 
-    fun updateBattingStats(matchId: String, newBattingStatus: String, batsmanStats: BatsmanStats, wicketDescription: String) : Int {
+    fun updateBattingStats(matchId: String, newBattingStatus: String, batsmanStats: BatsmanStats, wicketDescription: String, wicketType: String, wicketBowler: String, wicketFielder: String) : Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("batting_status", newBattingStatus)
@@ -1136,7 +1126,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             put("balls", batsmanStats.balls.value)
             put("fours", batsmanStats.fours.value)
             put("sixes", batsmanStats.sixes.value)
+            put("dotballs",batsmanStats.dotballs.value)
             put("wicket_description",wicketDescription)
+            put("wicket_type",wicketType)
+            put("wicket_bowler",wicketBowler)
+            put("wicket_fielder",wicketFielder)
         }
         val whereClause = "match_id = ? AND batting_status = ?"
         val whereArgs = arrayOf(matchId, "striker")
@@ -1179,6 +1173,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             put("legbyes",bowlerStats.legbyes.value)
             put("fours",bowlerStats.fours.value)
             put("sixes",bowlerStats.sixes.value)
+            put("dotballs",bowlerStats.dotballs.value)
             put("over_record",bowlerStats.overrecord.value)
         }
         val whereClause = "match_id = ? AND bowling_status = ?"

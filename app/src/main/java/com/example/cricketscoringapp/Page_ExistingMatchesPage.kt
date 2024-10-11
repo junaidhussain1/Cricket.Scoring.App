@@ -152,7 +152,7 @@ fun ExistingMatchesPage(navController: NavHostController) {
                                 Icon(
                                     imageVector = Icons.Default.Sync,
                                     contentDescription = "Sync Status",
-                                    tint = Color.Green,
+                                    tint = if (match.isSynced) Color.Green else Color.Gray,
                                     modifier = Modifier.size(if (isTablet) 48.dp else 24.dp) // Size based on isTablet
                                 )
                             }

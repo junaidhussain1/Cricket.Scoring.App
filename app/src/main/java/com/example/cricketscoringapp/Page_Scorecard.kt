@@ -114,6 +114,7 @@ fun ScoreCardPage(navController: NavHostController) {
                 balls = mutableIntStateOf(value = firstBatsman.balls.value),
                 fours = mutableIntStateOf(value = firstBatsman.fours.value),
                 sixes = mutableIntStateOf(value = firstBatsman.sixes.value),
+                dotballs = mutableIntStateOf(value = firstBatsman.dotballs.value),
                 wicketDescription = mutableStateOf(value = firstBatsman.wicketDescription.value),
                 active = mutableStateOf(value = firstBatsman.active.value)
             )
@@ -127,6 +128,7 @@ fun ScoreCardPage(navController: NavHostController) {
                 balls = mutableIntStateOf(value = secondBatsman.balls.value),
                 fours = mutableIntStateOf(value = secondBatsman.fours.value),
                 sixes = mutableIntStateOf(value = secondBatsman.sixes.value),
+                dotballs = mutableIntStateOf(value = secondBatsman.dotballs.value),
                 wicketDescription = mutableStateOf(value = secondBatsman.name.value),
                 active = mutableStateOf(value = secondBatsman.active.value)
             )
@@ -1033,7 +1035,8 @@ fun ScoreCardPage(navController: NavHostController) {
                     updateStats(context,balls,selectedWicketsOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
                     currentBowler.value = dbHelper.getCurrentBowler(matchId)
                     val wicketDescription = getWicketDescription(selectedWicketsOption.value,currentBowler.value,selectedFielder.value)
-                    markBatsmanAsOutInDB(context,matchId,firstBatsmanStats,secondBatsmanStats,wicketDescription,"",false)
+                    val wicketType = getWicketType(selectedWicketsOption.value)
+                    markBatsmanAsOutInDB(context,matchId,firstBatsmanStats,secondBatsmanStats,wicketDescription,wicketType,currentBowler.value,selectedFielder.value,"",false)
                     if (dbHelper.getTeamWickets(matchId,dbHelper.getTeamForPlayer(matchId,batsmanOut)) < 12) {
                         dbHelper.updateBattingStats(matchId,nonStrikerBatsman,"non-striker","striker")
                     }
@@ -1076,6 +1079,8 @@ fun ScoreCardPage(navController: NavHostController) {
                                             currentBowler.value,
                                             selectedFielder.value
                                         )
+                                        val wicketType = getWicketType(
+                                            selectedWicketsOption.value)
 
                                         markBatsmanAsOutInDB(
                                             context,
@@ -1083,6 +1088,9 @@ fun ScoreCardPage(navController: NavHostController) {
                                             firstBatsmanStats,
                                             secondBatsmanStats,
                                             wicketDescription,
+                                            wicketType,
+                                            currentBowler.value,
+                                            selectedFielder.value,
                                             newBatsman,
                                             true
                                         )

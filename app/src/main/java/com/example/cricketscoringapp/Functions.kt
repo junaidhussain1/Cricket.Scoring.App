@@ -125,7 +125,7 @@ fun updateStats(context: Context,
                 dbHelper.deleteBatsman(matchId,activeBatsman)
                 dbHelper.updateBattingStats(matchId,batsmanOutFromDB.name.value,"out","striker")
                 batsmanOutFromDB.balls.value -= 1
-                dbHelper.updateBattingStats(matchId,"striker",batsmanOutFromDB,"")
+                dbHelper.updateBattingStats(matchId,"striker",batsmanOutFromDB,"","","","")
 
                 if (firstBatsmanStats.name.value == activeBatsman) {
                     firstBatsmanStats.name.value = batsmanOut
@@ -251,6 +251,9 @@ fun updateBowler(
         "sixes" -> {
             bowlerStats.sixes.value += updateValue.toInt()
         }
+        "dotballs" -> {
+            bowlerStats.dotballs.value += updateValue.toInt()
+        }
     }
     if (!undo) {
         if (ballAction != "")  {
@@ -308,11 +311,18 @@ fun updateBatsman(
                 secondBatsmanStats.sixes.value += updateValue
             }
         }
+        "dotballs" -> {
+            if (firstBatsmanStats.active.value) {
+                firstBatsmanStats.dotballs.value += updateValue
+            } else {
+                secondBatsmanStats.dotballs.value += updateValue
+            }
+        }
     }
     if (firstBatsmanStats.active.value) {
-        dbHelper.updateBattingStats(matchId, "striker", firstBatsmanStats, "")
+        dbHelper.updateBattingStats(matchId, "striker", firstBatsmanStats, "","","","")
     } else {
-        dbHelper.updateBattingStats(matchId, "striker", secondBatsmanStats, "")
+        dbHelper.updateBattingStats(matchId, "striker", secondBatsmanStats, "","","","")
     }
 }
 
@@ -436,6 +446,20 @@ fun getWicketDescription(wicketType: String, bowler: String, fielder: String) : 
     return ""
 }
 
+fun getWicketType(wicketType: String) : String {
+    val processedWicketType = wicketType.substringBefore(",")
+    when (processedWicketType) {
+        "WKB" -> return "bowled"
+        "WKC" -> return "caught"
+        "WKCB" -> return "caught behind"
+        in listOf("WKRO", "WKRONB") -> return "run out"
+        in listOf("WKST", "WKSTW") -> return "stumped"
+        "WKHW" -> return "hit wicket"
+        "WKLB" -> return "lbw"
+    }
+    return ""
+}
+
 fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: String, multiplier: Int, bowlerStats: BowlerStats, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, firstTeamStats: TeamStats, secondTeamStats: TeamStats) {
     val activeBatsman = getActiveBatsman(firstBatsmanStats,secondBatsmanStats)
     if (newValue.contains("WK")) {
@@ -444,6 +468,10 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
         updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
     } else {
         when (newValue) {
+            "0" -> {
+                updateBowler(matchId,undo,"dotballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBatsman(matchId,"dotballs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
+            }
             "1" -> {
                 updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
@@ -652,12 +680,12 @@ fun handleLastBatsmen(context: Context, matchId: String, firstBatsman: BatsmanSt
     }
 }
 
-fun markBatsmanAsOutInDB(context: Context,matchId: String,firstBatsmanStats: BatsmanStats,secondBatsmanStats: BatsmanStats, wicketDescription: String, newBatsman: String, newActive: Boolean) {
+fun markBatsmanAsOutInDB(context: Context,matchId: String,firstBatsmanStats: BatsmanStats,secondBatsmanStats: BatsmanStats, wicketDescription: String, wicketType: String,wicketBowler: String, wicketFielder: String, newBatsman: String, newActive: Boolean) {
     val dbHelper = CricketDatabaseHelper(context)
 
     if (firstBatsmanStats.active.value) {
         //save out batsman to database
-        dbHelper.updateBattingStats(matchId,"out",firstBatsmanStats,wicketDescription)
+        dbHelper.updateBattingStats(matchId,"out",firstBatsmanStats,wicketDescription,wicketType,wicketBowler, wicketFielder)
 
         firstBatsmanStats.name.value = newBatsman
         firstBatsmanStats.active.value = newActive
@@ -667,7 +695,7 @@ fun markBatsmanAsOutInDB(context: Context,matchId: String,firstBatsmanStats: Bat
         firstBatsmanStats.sixes.value = 0
     } else {
         //save out batsman to database
-        dbHelper.updateBattingStats(matchId,"out",secondBatsmanStats,wicketDescription)
+        dbHelper.updateBattingStats(matchId,"out",secondBatsmanStats,wicketDescription,wicketType,wicketBowler, wicketFielder)
 
         secondBatsmanStats.name.value = newBatsman
         secondBatsmanStats.active.value = newActive
