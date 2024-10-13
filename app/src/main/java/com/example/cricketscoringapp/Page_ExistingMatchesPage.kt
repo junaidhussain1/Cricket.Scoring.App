@@ -121,17 +121,16 @@ fun ExistingMatchesPage(navController: NavHostController) {
                                             val existingData = googleSheetsService.readData(context,"Data Raw!A:A")
                                             val lastRowIndex = existingData.size // This gives the number of existing rows
 
-                                            val newData = "Hanan"
-                                            // Step 2: Prepare the new data with the correct range
-                                            val dataToWrite = listOf(
-                                                listOf<Any>(newData)
-                                            )
+                                            val (dataToWrite, matchDataSize) = getMatchDataToUpload(context, match.matchId)
+
+                                            val startRow = lastRowIndex + 1
+                                            val endRow = lastRowIndex + matchDataSize
 
                                             // Define the range starting from the next available row in column A
-                                            val rangeToWrite = "Data Raw!A${lastRowIndex + 1}" // A1, A2, A3, ..., An
+                                            val rangeToWrite = "Data Raw!A${lastRowIndex + 1}:AN${lastRowIndex + matchDataSize}"
 
                                             // Step 3: Write the new data to the calculated range
-                                            val rtnMessage = googleSheetsService.writeData(context, rangeToWrite, dataToWrite)
+                                            val rtnMessage = googleSheetsService.writeData(context, rangeToWrite, startRow, endRow, dataToWrite)
 
                                             // Switch back to the Main thread to show Toast
                                             withContext(Dispatchers.Main) {

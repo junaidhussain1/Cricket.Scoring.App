@@ -202,12 +202,22 @@ class GoogleSheetsService {
     }
 
     // Function to write data to Google Sheets using coroutines
-    suspend fun writeData(context: Context, writeRange: String, values: List<List<Any>>): String = withContext(Dispatchers.IO) {
+    suspend fun writeData(context: Context, writeRange: String, startRow:Int, endRow: Int, values: List<List<Any>>): String = withContext(Dispatchers.IO) {
         val sheetsService = getSheetsService(context) ?: return@withContext "Service initialization failed."
 
         try {
+
+            val rangeForBC = "Data Raw!C$startRow:F$endRow"  // Adjust this to the correct range for columns B and C
+            val existingDataResponse = sheetsService.spreadsheets().values().get(spreadsheetId, rangeForBC).execute()
+            val existingDataBC = existingDataResponse.getValues() ?: return@withContext "Failed to retrieve existing data."
+
+            val mergedData = values.mapIndexed { index, newRow ->
+                val existingRowBC = existingDataBC.getOrNull(index) ?: listOf(null, null, null, null) // Ensure it has 4 elements
+                newRow.take(2) + existingRowBC.take(4) + newRow.drop(6)
+            }
+
             // Prepare the data to write
-            val body = ValueRange().setValues(values)
+            val body = ValueRange().setValues(mergedData)
 
             // Update the specified range with the new data
             val response = sheetsService.spreadsheets().values()

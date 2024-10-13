@@ -26,6 +26,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         const val TABLE_TEAMS = "teams"
         const val TABLE_BATTINGSTATS = "battingstats"
         const val TABLE_BOWLINGSTATS = "bowlingstats"
+        const val VIEW_MATCHSTATS = "vwmatchstats"
     }
 
     // SQL statements to create tables
@@ -108,13 +109,111 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             PRIMARY KEY (match_id, bowling_order)
         )
     """
-    
+
+    private val createMATCHSTATSVIEW = """
+    CREATE VIEW $VIEW_MATCHSTATS AS
+    SELECT 
+        tm.match_id,
+        tm.team_id,
+        tm.player_name,
+        CASE 
+            WHEN tm.is_captain = 1 THEN 'YES'  
+            ELSE ''                          
+        END AS is_captain,
+        (SELECT COUNT(*) 
+            FROM $TABLE_BATTINGSTATS bs 
+            WHERE tm.player_name = bs.wicket_fielder 
+            AND bs.wicket_type = 'caught'
+        ) AS catches,
+        (SELECT COUNT(*) 
+            FROM $TABLE_BATTINGSTATS bs 
+            WHERE tm.player_name = bs.wicket_fielder 
+            AND bs.wicket_type = 'stumped'
+        ) AS stumpings,
+        (SELECT COUNT(*) 
+            FROM $TABLE_BATTINGSTATS bs 
+            WHERE tm.player_name = bs.wicket_fielder 
+            AND bs.wicket_type = 'run out'
+        ) AS runOuts,
+        inning1.runs AS firstInningsRunsScored,
+        inning1.balls AS firstInningsBallsFaced,
+        inning1.fours AS firstInningsFours,
+        inning1.sixes AS firstInningsSixes,
+        inning1.dotballs AS firstInningDotBalls,
+        CASE 
+            WHEN inning1.batting_status = 'out' THEN 'Out'
+            WHEN inning1.batting_status = 'not out' THEN 'Not out'
+            ELSE 'DNB'
+        END AS firstInningBattingStatus,
+        inning1.wicket_type AS firstInningHowOut,
+        inning1.wicket_bowler AS firstInningBowler,
+        CASE 
+            WHEN inning1.wicket_type = 'caught' THEN inning1.wicket_fielder  
+            ELSE ''                          
+        END AS firstInningCaughtBy,
+        CASE 
+            WHEN inning1.wicket_type = 'run out' THEN inning1.wicket_fielder  
+            ELSE ''                          
+        END AS firstInningRunOutBy,
+        inning2.runs AS secondInningsRunsScored,
+        inning2.balls AS secondInningsBallsFaced,
+        inning2.fours AS secondInningsFours,
+        inning2.sixes AS secondInningsSixes,
+        inning2.dotballs AS secondInningDotBalls,
+        CASE 
+            WHEN inning2.batting_status = 'out' THEN 'Out'
+            WHEN inning2.batting_status = 'not out' THEN 'Not out'
+            ELSE 'DNB'
+        END AS secondInningBattingStatus,
+        inning2.wicket_type AS secondInningHowOut,
+        inning2.wicket_bowler AS secondInningBowler,
+        CASE 
+            WHEN inning2.wicket_type = 'caught' THEN inning2.wicket_fielder  
+            ELSE ''                          
+        END AS secondInningCaughtBy,
+        CASE 
+            WHEN inning2.wicket_type = 'run out' THEN inning2.wicket_fielder  
+            ELSE ''                          
+        END AS secondInningRunOutBy,
+        '' AS mBowler,
+        SUM(bowling.over) AS oversBowled,
+        SUM(bowling.runs) AS runsConceded,
+        SUM(bowling.wickets) AS wickets,
+        SUM(bowling.maiden) AS maidens,
+        SUM(bowling.sixes) AS sixes,                
+        SUM(bowling.fours) AS fours,
+        SUM(bowling.dotballs) AS dotballs,
+        SUM(bowling.wides) AS wides,
+        SUM(bowling.noballs) AS noballs,
+        '' AS winLossTie
+    FROM 
+        $TABLE_TEAMS tm
+    LEFT JOIN $TABLE_BATTINGSTATS inning1 
+        ON inning1.match_id = tm.match_id 
+        AND inning1.team_id = tm.team_id
+        AND inning1.player_name = tm.player_name
+        AND inning1.batting_turn = 1
+    LEFT JOIN $TABLE_BATTINGSTATS inning2 
+        ON inning2.match_id = tm.match_id 
+        AND inning2.team_id = tm.team_id
+        AND inning2.player_name = tm.player_name
+        AND inning2.batting_turn = 2
+    LEFT JOIN $TABLE_BOWLINGSTATS bowling 
+        ON bowling.match_id = tm.match_id 
+        AND bowling.team_id = tm.team_id
+        AND bowling.player_name = tm.player_name
+    GROUP BY 
+        tm.player_name
+    ORDER BY tm.team_id, tm.is_captain DESC
+"""
+
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL(createPLAYERSTABLE)
         db?.execSQL(createMATCHESTABLE)
         db?.execSQL(createTEAMSTABLE)
         db?.execSQL(createBATTINGSTATS)
         db?.execSQL(createBOWLINGSTATS)
+        db?.execSQL(createMATCHSTATSVIEW)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
@@ -123,6 +222,9 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_TEAMS")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_BATTINGSTATS")
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_BOWLINGSTATS")
+
+        db?.execSQL("DROP VIEW IF EXISTS $VIEW_MATCHSTATS")
+
         onCreate(db)
     }
 
@@ -306,6 +408,56 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         }
         cursor.close()
         return matches
+    }
+
+    fun getMatchStats(matchId: String): List<UploadRow> {
+        val matchStats = mutableListOf<UploadRow>()
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $VIEW_MATCHSTATS WHERE match_id = ? ORDER BY team_id", arrayOf(matchId))
+        while (cursor.moveToNext()) {
+            matchStats.add(
+                UploadRow(
+                    cursor.getStringOrEmpty("player_name"),
+                    cursor.getStringOrEmpty("is_captain"),
+                    cursor.getIntOrZero("catches"),
+                    cursor.getIntOrZero("stumpings"),
+                    cursor.getIntOrZero("runOuts"),
+                    cursor.getIntOrZero("firstInningsRunsScored"),
+                    cursor.getIntOrZero("firstInningsBallsFaced"),
+                    cursor.getIntOrZero("firstInningsFours"),
+                    cursor.getIntOrZero("firstInningsSixes"),
+                    cursor.getIntOrZero("firstInningDotBalls"),
+                    cursor.getStringOrEmpty("firstInningBattingStatus"),
+                    cursor.getStringOrEmpty("firstInningHowOut"),
+                    cursor.getStringOrEmpty("firstInningBowler"),
+                    cursor.getStringOrEmpty("firstInningCaughtBy"),
+                    cursor.getStringOrEmpty("firstInningRunOutBy"),
+                    cursor.getIntOrZero("secondInningsRunsScored"),
+                    cursor.getIntOrZero("secondInningsBallsFaced"),
+                    cursor.getIntOrZero("secondInningsFours"),
+                    cursor.getIntOrZero("secondInningsSixes"),
+                    cursor.getIntOrZero("secondInningDotBalls"),
+                    cursor.getStringOrEmpty("secondInningBattingStatus"),
+                    cursor.getStringOrEmpty("secondInningHowOut"),
+                    cursor.getStringOrEmpty("secondInningBowler"),
+                    cursor.getStringOrEmpty("secondInningCaughtBy"),
+                    cursor.getStringOrEmpty("secondInningRunOutBy"),
+                    cursor.getStringOrEmpty("mBowler"),
+                    cursor.getDoubleOrZero("oversBowled"),
+                    cursor.getIntOrZero("runsConceded"),
+                    cursor.getIntOrZero("wickets"),
+                    cursor.getIntOrZero("maidens"),
+                    cursor.getIntOrZero("sixes"),
+                    cursor.getIntOrZero("fours"),
+                    cursor.getIntOrZero("dotballs"),
+                    cursor.getIntOrZero("wides"),
+                    cursor.getIntOrZero("noballs"),
+                    cursor.getStringOrEmpty("winLossTie")
+                )
+            )
+        }
+        cursor.close()
+        return matchStats
     }
 
     fun getTeamPlayers(matchId: String, teamId: Int, includeCaptain: Int): List<Player> {

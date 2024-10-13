@@ -717,3 +717,100 @@ fun handleEndOfMatch(context: Context, matchId: String, firstBatsmanStats: Batsm
     Toast.makeText(context, "End of Match (${runsToWin.value})!", Toast.LENGTH_LONG)
         .show()
 }
+
+fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>>, Int> {
+    // Define a list of players using the Player data class
+    val dbHelper = CricketDatabaseHelper(context)
+    val matchStats = dbHelper.getMatchStats(matchId)
+
+    val uploadData = matchStats.map { matchStatsForPlayer ->
+            UploadRow(
+                matchStatsForPlayer.player,
+                matchStatsForPlayer.captain,
+                matchStatsForPlayer.catches,
+                matchStatsForPlayer.stumping,
+                matchStatsForPlayer.runOuts,
+                matchStatsForPlayer.firstInningsRunsScored,
+                matchStatsForPlayer.firstInningsBallsFaced,
+                matchStatsForPlayer.firstInningsFours,
+                matchStatsForPlayer.firstInningsSixes,
+                matchStatsForPlayer.firstInningDotBalls,
+                matchStatsForPlayer.firstInningBattingStatus,
+                matchStatsForPlayer.firstInningHowOut,
+                matchStatsForPlayer.firstInningBowler,
+                matchStatsForPlayer.firstInningCaughtBy,
+                matchStatsForPlayer.firstInningRunOutBy,
+                matchStatsForPlayer.secondInningsRunsScored,
+                matchStatsForPlayer.secondInningsBallsFaced,
+                matchStatsForPlayer.secondInningsFours,
+                matchStatsForPlayer.secondInningsSixes,
+                matchStatsForPlayer.secondInningDotBalls,
+                matchStatsForPlayer.secondInningBattingStatus,
+                matchStatsForPlayer.secondInningHowOut,
+                matchStatsForPlayer.secondInningBowler,
+                matchStatsForPlayer.secondInningCaughtBy,
+                matchStatsForPlayer.secondInningRunOutBy,
+                matchStatsForPlayer.mBowler,
+                matchStatsForPlayer.oversBowled,
+                matchStatsForPlayer.runsConceded,
+                matchStatsForPlayer.wickets,
+                matchStatsForPlayer.maiden,
+                matchStatsForPlayer.sixes,
+                matchStatsForPlayer.fours,
+                matchStatsForPlayer.dotBalls,
+                matchStatsForPlayer.wides,
+                matchStatsForPlayer.noBalls,
+                matchStatsForPlayer.winLossTie
+                )
+    }
+
+    // Map the player data to the format required for Google Sheets
+    val transformedData =  uploadData.map { uploadRow ->
+        listOf<Any>(
+            uploadRow.player,                       // Column A
+            uploadRow.captain,                      // Column B
+            "",//null,                                   // Column C
+            "",//null,                                   // Column D
+            "",//null,                                   // Column E
+            "",//null,                                   // Column F
+            uploadRow.catches,                      // Column G
+            uploadRow.stumping,                     // Column H
+            uploadRow.runOuts,                      // Column I
+            uploadRow.firstInningsRunsScored,       // Column J
+            uploadRow.firstInningsBallsFaced,       // Column K
+            uploadRow.firstInningsFours,            // Column L
+            uploadRow.firstInningsSixes,            // Column M
+            uploadRow.firstInningDotBalls,          // Column N
+            uploadRow.firstInningBattingStatus,     // Column O
+            uploadRow.firstInningHowOut,            // Column P
+            uploadRow.firstInningBowler,            // Column Q
+            uploadRow.firstInningCaughtBy,          // Column R
+            uploadRow.firstInningRunOutBy,          // Column S
+            uploadRow.secondInningsRunsScored,      // Column T
+            uploadRow.secondInningsBallsFaced,      // Column U
+            uploadRow.secondInningsFours,           // Column V
+            uploadRow.secondInningsSixes,           // Column W
+            uploadRow.secondInningDotBalls,         // Column X
+            uploadRow.secondInningBattingStatus,    // Column Y
+            uploadRow.secondInningHowOut,           // Column Z
+            uploadRow.secondInningBowler,           // Column AA
+            uploadRow.secondInningCaughtBy,         // Column AB
+            uploadRow.secondInningRunOutBy,         // Column AC
+            uploadRow.mBowler,                      // Column AD
+            uploadRow.oversBowled,                  // Column AE
+            uploadRow.runsConceded,                 // Column AF
+            uploadRow.wickets,                      // Column AG
+            uploadRow.maiden,                       // Column AH
+            uploadRow.sixes,                        // Column AI
+            uploadRow.fours,                        // Column AJ
+            uploadRow.dotBalls,                     // Column AK
+            uploadRow.wides,                        // Column AL
+            uploadRow.noBalls,                      // Column AM
+            uploadRow.winLossTie                    // Column AN
+        )
+    }
+
+    val matchDataSize = matchStats.size
+
+    return Pair(transformedData,matchDataSize)
+}

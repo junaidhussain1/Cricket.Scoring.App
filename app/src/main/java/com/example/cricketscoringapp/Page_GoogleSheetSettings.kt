@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 @Composable
@@ -166,30 +165,31 @@ fun GoogleSheetSettingsPage() {
 
             // Button to submit the authentication code
             Button(
+                enabled = false,
                 onClick = {
-                    if (newData.isNotEmpty()) {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            try {
-                                val dataToWrite = listOf(
-                                    listOf<Any>(newData)
-                                )
-                                val rtnMessage = googleSheetsService.writeData(context,"Names!C1:C1",dataToWrite)
-
-                                // Switch back to the Main thread to show Toast
-                                withContext(Dispatchers.Main) {
-                                    Toast.makeText(
-                                        context,
-                                        rtnMessage,
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            } catch (e: Exception) {
-                                withContext(Dispatchers.Main) {
-                                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                                }
-                            }
-                        }
-                    }
+//                    if (newData.isNotEmpty()) {
+//                        CoroutineScope(Dispatchers.Main).launch {
+//                            try {
+//                                val dataToWrite = listOf(
+//                                    listOf<Any>(newData)
+//                                )
+//                                val rtnMessage = googleSheetsService.writeData(context,"Names!C1:C1",dataToWrite)
+//
+//                                // Switch back to the Main thread to show Toast
+//                                withContext(Dispatchers.Main) {
+//                                    Toast.makeText(
+//                                        context,
+//                                        rtnMessage,
+//                                        Toast.LENGTH_LONG
+//                                    ).show()
+//                                }
+//                            } catch (e: Exception) {
+//                                withContext(Dispatchers.Main) {
+//                                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+//                                }
+//                            }
+//                        }
+//                    }
                 },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f), // Adjust button width for tablets
                 colors = ButtonDefaults.buttonColors(
