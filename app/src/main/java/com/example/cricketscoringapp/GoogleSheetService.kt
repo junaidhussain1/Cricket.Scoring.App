@@ -24,7 +24,7 @@ class GoogleSheetsService {
     private val applicationName = "Cricket Scoring App"
     private val scopes = listOf(SheetsScopes.SPREADSHEETS)
     //private val SPREADSHEET_ID = "1z62HTf3OvhDLYrqVFwEKWoKY242Ja6yZpAG33S_XCmA"
-    private val spreadsheetId = "1hoqVNgiQz6e2lkhZV_3ZizhFTlpoMa8QBLFXyhWR7c0"
+    private val spreadsheetId = "1hoqVNgiQz6e2lkhZV_3ZizhFTlpoMa8QBLFXyhWR7c0" //JH Test Sheet
 
     private var authorizationCodeFlow: GoogleAuthorizationCodeFlow? = null
     private var redirectUri = "urn:ietf:wg:oauth:2.0:oob"

@@ -50,7 +50,8 @@ fun ExistingMatchesPage(navController: NavHostController) {
         val context = LocalContext.current
         val dbHelper = CricketDatabaseHelper(context)
 
-        val matches = dbHelper.getMatches()
+        val matches = dbHelper.getMatches().filter { it.isFinished }
+
         if (matches.isNotEmpty()) {
             for (match in matches) {
                 val team1Captain = Player(dbHelper.getCaptainForTeam(match.matchId, 1)).name

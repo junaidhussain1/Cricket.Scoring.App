@@ -73,7 +73,7 @@ fun updateStats(context: Context,
         val includedBallsCount = balls.count { it.action !in excludedValuesFromBallsBalled }
         if (includedBallsCount == 7) {
             if (emptyIndex == -1) {
-                balls.removeLast() // Remove the last item if added
+                balls.removeAt(balls.lastIndex) // Remove the last item if added
             } else {
                 balls[emptyIndex] = Ball("",activeBatsman) // Reset the value at the empty index
             }
@@ -769,10 +769,10 @@ fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>
         listOf<Any>(
             uploadRow.player,                       // Column A
             uploadRow.captain,                      // Column B
-            "",//null,                                   // Column C
-            "",//null,                                   // Column D
-            "",//null,                                   // Column E
-            "",//null,                                   // Column F
+            "",//null,                              // Column C
+            "",//null,                              // Column D
+            "",//null,                              // Column E
+            "",//null,                              // Column F
             uploadRow.catches,                      // Column G
             uploadRow.stumping,                     // Column H
             uploadRow.runOuts,                      // Column I

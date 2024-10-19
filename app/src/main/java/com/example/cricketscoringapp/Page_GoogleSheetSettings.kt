@@ -40,7 +40,6 @@ fun GoogleSheetSettingsPage() {
     var authCode by remember { mutableStateOf("") }
     var newData by remember { mutableStateOf("") }
     val googleSheetsService = GoogleSheetsService()
-    val dbHelper = CricketDatabaseHelper(context)
 
     // Check screen size and adjust the layout accordingly
     val isTablet = configuration.screenWidthDp >= 600
