@@ -61,6 +61,7 @@ fun ScoreCardPage(navController: NavHostController) {
     val showNextBatsmanDialog = remember { mutableStateOf(false) }
     val batsmanOverride = remember { mutableStateOf(false) }
     val showUndoConfirmationDialog = remember { mutableStateOf(false) }
+    val showInningsConfirmationDialog = remember { mutableStateOf(false) }
     val showMoreDialog = remember { mutableStateOf(false) }
 
     val showBowlerChangeDialog = remember { mutableStateOf(false) }
@@ -108,7 +109,7 @@ fun ScoreCardPage(navController: NavHostController) {
         
         calcRunsToWin(team1Stats, team2Stats, runsToWin)
 
-        var firstBatsman = dbHelper.getBatsmanByStatus(matchId,"striker")
+        val firstBatsman = dbHelper.getBatsmanByStatus(matchId,"striker")
         val firstBatsmanStats = remember {
             BatsmanStats(
                 name = mutableStateOf(value = firstBatsman.name.value),
@@ -193,7 +194,7 @@ fun ScoreCardPage(navController: NavHostController) {
             balls.add(ball)
         }
 
-        //Handle End of Over, End of Innings, End of Match
+        //Automatically handle: End of Over, End of Innings, End of Match
         val team1wickets = dbHelper.getTeamWickets(matchId,firstTeamId)
         val team2wickets = dbHelper.getTeamWickets(matchId,secondTeamId)
         val team2batters = dbHelper.getTeamBatters(matchId,secondTeamId)
@@ -864,14 +865,17 @@ fun ScoreCardPage(navController: NavHostController) {
                                 Text("Change Batsman", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
+
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 Toast.makeText(context, "Not working yet!", Toast.LENGTH_SHORT).show()
                             }) {
                                 Text("Retire Batsman", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
+
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                //
+                                showMoreDialog.value = false
+                                showInningsConfirmationDialog.value = true
                             }) {
                                 Text("End Innings", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -884,6 +888,38 @@ fun ScoreCardPage(navController: NavHostController) {
                     }
                 )
             }
+
+            if (showInningsConfirmationDialog.value) {
+                val endOf1stInning = ((team1OversBowled == 0.0) || (team2OversBowled == 0.0))
+                ConfirmationDialog(
+                    message = if (endOf1stInning) "End the 1st Inning?" else "End the Match?",
+                    onConfirm = {
+                        showInningsConfirmationDialog.value = false
+                        showMoreDialog.value = false
+                        if (endOf1stInning) {
+                            //If 1st innings then ask to confirm end of innings and start of second
+                            dbHelper.updateBowlingStats(matchId,"bowled")
+                            handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
+                            navController.navigate("secondinningssetup")
+                        } else {
+                            //If 2nd innings then ask to confirm end of match
+                            handleEndOfMatch(
+                                context,
+                                matchId,
+                                firstBatsmanStats,
+                                secondBatsmanStats,
+                                runsToWin
+                            )
+                            navController.navigate("homepage")
+                        }
+                    },
+                    onDismiss = {
+                        showInningsConfirmationDialog.value = false
+                        showMoreDialog.value = true
+                    }
+                )
+            }
+
             CircleButton("WICKET", if (isTablet) 26 else 16) {
                 showWicketsDialog.value = true
                 checkAndPlayDuckSound(firstBatsmanStats,secondBatsmanStats,context)
