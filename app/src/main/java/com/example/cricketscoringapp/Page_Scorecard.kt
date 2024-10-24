@@ -59,6 +59,7 @@ fun ScoreCardPage(navController: NavHostController) {
     val showWicketsDialog = remember { mutableStateOf(false) }
     val selectedWicketsOption = remember { mutableStateOf("") }
     val showNextBatsmanDialog = remember { mutableStateOf(false) }
+    val showBatsmanRunOutSelectionDialog = remember { mutableStateOf(false) }
     val batsmanOverride = remember { mutableStateOf(false) }
     val showUndoConfirmationDialog = remember { mutableStateOf(false) }
     val showInningsConfirmationDialog = remember { mutableStateOf(false) }
@@ -934,75 +935,75 @@ fun ScoreCardPage(navController: NavHostController) {
                             // List of options to choose from
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKB"
-                                showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
+                                showWicketsDialog.value = false
                             }) {
                                 Text("Bowled", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKCB"
-                                showWicketsDialog.value = false
                                 selectedFielder.value = dbHelper.getCurrentKeeper(matchId)
                                 showNextBatsmanDialog.value = true
+                                showWicketsDialog.value = false
                             }) {
                                 Text("Caught Behind", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKC"
-                                showWicketsDialog.value = false
                                 showFielderDialog.value = true
+                                showWicketsDialog.value = false
                             }) {
                                 Text("Caught", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKRO"
+                                showBatsmanRunOutSelectionDialog.value = true
                                 showWicketsDialog.value = false
-                                showFielderDialog.value = true
                             }) {
                                 Text("Run Out", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKRONB"
+                                showBatsmanRunOutSelectionDialog.value = true
                                 showWicketsDialog.value = false
-                                showFielderDialog.value = true
                             }) {
                                 Text("Run Out NB", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKST"
-                                showWicketsDialog.value = false
                                 selectedFielder.value = dbHelper.getCurrentKeeper(matchId)
                                 showNextBatsmanDialog.value = true
+                                showWicketsDialog.value = false
                             }) {
                                 Text("Stumped", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKSTW"
-                                showWicketsDialog.value = false
                                 selectedFielder.value = dbHelper.getCurrentKeeper(matchId)
                                 showNextBatsmanDialog.value = true
+                                showWicketsDialog.value = false
                             }) {
                                 Text("Stumped Wide", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKHW"
-                                showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
+                                showWicketsDialog.value = false
                             }) {
                                 Text("Hit Wicket", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKLB"
-                                showWicketsDialog.value = false
                                 showNextBatsmanDialog.value = true
+                                showWicketsDialog.value = false
                             }) {
                                 Text("LBW", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -1010,6 +1011,50 @@ fun ScoreCardPage(navController: NavHostController) {
                     },
                     confirmButton = {
                         Button(onClick = { showWicketsDialog.value = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+
+            if (showBatsmanRunOutSelectionDialog.value) {
+                AlertDialog(
+                    onDismissRequest = {
+                        showFielderDialog.value = false
+                        showWicketsDialog.value = true
+                    },
+                    title = { Text("Select runout batsman?") },
+                    text = {
+                        Column {
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                                if (!firstBatsmanStats.active.value) {
+                                    swapBatsmen(firstBatsmanStats,secondBatsmanStats)
+                                }
+                                showBatsmanRunOutSelectionDialog.value = false
+                                showFielderDialog.value = true
+                            }) {
+                                Text(firstBatsmanStats.name.value, fontSize = if (isTablet) 30.sp else 20.sp)
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                                if (!secondBatsmanStats.active.value) {
+                                    swapBatsmen(firstBatsmanStats,secondBatsmanStats)
+                                }
+                                showBatsmanRunOutSelectionDialog.value = false
+                                showFielderDialog.value = true
+                            }) {
+                                Text(secondBatsmanStats.name.value, fontSize = if (isTablet) 30.sp else 20.sp)
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            selectedFielder.value = ""
+                            showFielderDialog.value = false
+                            showBatsmanRunOutSelectionDialog.value = false
+                        }) {
                             Text("Cancel")
                         }
                     }
