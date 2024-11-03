@@ -441,7 +441,7 @@ fun getWicketDescription(wicketType: String, bowler: String, fielder: String) : 
             else
                 "c $fielder b $bowler"
         }
-        in listOf("WKRO", "WKRONB") -> return "run out $fielder"
+        in listOf("WKRO", "WKRONB","WKROW") -> return "run out $fielder"
         in listOf("WKST", "WKSTW") -> return "st $fielder b $bowler"
         "WKHW" -> return "hit wicket"
         "WKLB" -> return "lbw b $bowler"
@@ -455,7 +455,7 @@ fun getWicketType(wicketType: String) : String {
         "WKB" -> return "bowled"
         "WKC" -> return "caught"
         "WKCB" -> return "caught behind"
-        in listOf("WKRO", "WKRONB") -> return "run out"
+        in listOf("WKRO", "WKRONB","WKROW") -> return "run out"
         in listOf("WKST", "WKSTW") -> return "stumped"
         "WKHW" -> return "hit wicket"
         "WKLB" -> return "lbw"
@@ -466,7 +466,20 @@ fun getWicketType(wicketType: String) : String {
 fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: String, multiplier: Int, bowlerStats: BowlerStats, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, firstTeamStats: TeamStats, secondTeamStats: TeamStats) {
     val activeBatsman = getActiveBatsman(firstBatsmanStats,secondBatsmanStats)
     if (newValue.contains("WK")) {
-        updateBowler(matchId,undo,"wickets",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+        if (newValue.contains("WKRO")) {
+            if (newValue.contains("WKRONB")) {
+                updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,undo,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+            }
+            if (newValue.contains("WKROW")) {
+                updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,undo,"wides",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+            }
+        } else {
+            updateBowler(matchId,undo,"wickets",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+        }
+        updateBatsman(matchId,"dotballs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
+        updateBowler(matchId,undo,"dotballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
         updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
         updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
     } else {
@@ -475,6 +488,7 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
                 updateBowler(matchId,undo,"dotballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateBatsman(matchId,"dotballs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
             }
+
             "1" -> {
                 updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)

@@ -435,6 +435,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                     player.name,
                                                     existingKeeper
                                                 )
+                                                swapBatsmenDB(context,matchId,firstBatsmanStats, secondBatsmanStats)
                                                 balls.clear()
                                             },
                                             modifier = Modifier.fillMaxWidth()
@@ -972,6 +973,14 @@ fun ScoreCardPage(navController: NavHostController) {
                                 showWicketsDialog.value = false
                             }) {
                                 Text("Run Out NB", fontSize = if (isTablet) 30.sp else 20.sp)
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                                selectedWicketsOption.value = "WKROW"
+                                showBatsmanRunOutSelectionDialog.value = true
+                                showWicketsDialog.value = false
+                            }) {
+                                Text("Run Out Wide", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
