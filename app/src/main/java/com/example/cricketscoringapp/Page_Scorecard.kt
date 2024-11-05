@@ -1037,7 +1037,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         Column {
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 if (!firstBatsmanStats.active.value) {
-                                    swapBatsmen(firstBatsmanStats,secondBatsmanStats)
+                                    swapBatsmenDB(context,matchId,firstBatsmanStats,secondBatsmanStats)
                                 }
                                 showBatsmanRunOutSelectionDialog.value = false
                                 showFielderDialog.value = true
@@ -1049,7 +1049,7 @@ fun ScoreCardPage(navController: NavHostController) {
 
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 if (!secondBatsmanStats.active.value) {
-                                    swapBatsmen(firstBatsmanStats,secondBatsmanStats)
+                                    swapBatsmenDB(context,matchId,firstBatsmanStats,secondBatsmanStats)
                                 }
                                 showBatsmanRunOutSelectionDialog.value = false
                                 showFielderDialog.value = true

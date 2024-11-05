@@ -58,8 +58,9 @@ fun updateStats(context: Context,
                 secondTeamStats: TeamStats) {
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
-    val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3")
-    val excludedValuesFromBallsFaced = setOf("W","W+1","W+2")
+    val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3","WKRONB","WKROW","WKSTW")
+    val excludedValuesFromBallsFaced1 = setOf("W","W+1","W+2","WKROW","WKSTW")
+    val excludedValuesFromBallsFaced2 = setOf("W","W+1","W+2")
     val activeBatsman = getActiveBatsman(firstBatsmanStats,secondBatsmanStats)
 
     if (newValue != "UNDO") {
@@ -70,7 +71,11 @@ fun updateStats(context: Context,
             balls[emptyIndex] = Ball(newValue,activeBatsman) // Update the first empty spot
         }
 
-        val includedBallsCount = balls.count { it.action !in excludedValuesFromBallsBalled }
+        val includedBallsCount = balls.count {
+            val action = it.action.split(",").firstOrNull() ?: it.action
+            action !in excludedValuesFromBallsBalled
+        }
+
         if (includedBallsCount == 7) {
             if (emptyIndex == -1) {
                 balls.removeAt(balls.lastIndex) // Remove the last item if added
@@ -83,11 +88,14 @@ fun updateStats(context: Context,
         updateBowler(matchId,false,"over",bowlerStats,activeBatsman,0.0,newValue,context)
 
         // Increment the bowlerOver by 0.1 only if it's a valid ball value
-        if (newValue !in excludedValuesFromBallsBalled) {
+        var containsExcludedValue = newValue.split(",").any { it in excludedValuesFromBallsBalled }
+        if (!containsExcludedValue) {
             updateBowler(matchId,false,"over",bowlerStats,activeBatsman,0.1,"",context)
             updateTeam("overs", firstTeamStats, secondTeamStats, 0.1)
         }
-        if (newValue !in excludedValuesFromBallsFaced) {
+
+        containsExcludedValue = newValue.split(",").any { it in excludedValuesFromBallsFaced1 }
+        if (!containsExcludedValue) {
             updateBatsman(matchId,"balls", firstBatsmanStats, secondBatsmanStats, 1,context)
         }
 
@@ -95,7 +103,7 @@ fun updateStats(context: Context,
 
         if ((newValue == "1") || (newValue == "2")) swapBatsmenDB(context,matchId,firstBatsmanStats, secondBatsmanStats)
 
-        if (balls.size == 6 && balls.take(6).all { it.action == "0" }) {
+        if (balls.size == 6 && balls.take(6).all { it.action == "0" || it.action.contains("WK") }) {
             updateBowler(matchId,false,"maiden",bowlerStats,activeBatsman,1.00,"",context)
         }
     } else {
@@ -106,7 +114,8 @@ fun updateStats(context: Context,
         val lastBall = balls[lastNonEmptyIndex].action
 
         // Decrement the bowlerOver by 0.1 only if the last ball was a valid ball value
-        if (lastBall !in excludedValuesFromBallsBalled) {
+        var containsExcludedValue = lastBall.split(",").any { it in excludedValuesFromBallsBalled }
+        if (!containsExcludedValue) {
             if ((lastBall == "1") || (lastBall == "2")) {
                 swapBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats,balls[lastNonEmptyIndex].batsman)
             }
@@ -116,7 +125,8 @@ fun updateStats(context: Context,
 
         doUpdateStats(context,matchId,true,lastBall,-1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
 
-        if (lastBall !in excludedValuesFromBallsFaced) {
+        containsExcludedValue = lastBall.split(",").any { it in excludedValuesFromBallsFaced2 }
+        if (!containsExcludedValue) {
             if (lastBall.contains("WK")) {
                 //Restore out batsman
                 val batsmanOut = balls[lastNonEmptyIndex].batsman
@@ -124,7 +134,12 @@ fun updateStats(context: Context,
                 val batsmanOutFromDB = dbHelper.getBatsmanStats(matchId,batsmanOut)
                 dbHelper.deleteBatsman(matchId,activeBatsman)
                 dbHelper.updateBattingStats(matchId,batsmanOutFromDB.name.value,"out","striker")
-                batsmanOutFromDB.balls.value -= 1
+
+                containsExcludedValue = lastBall.split(",").any { it in excludedValuesFromBallsFaced1 }
+                if (!containsExcludedValue) {
+                    batsmanOutFromDB.balls.value -= 1
+                }
+
                 dbHelper.updateBattingStats(matchId,"striker",batsmanOutFromDB,"","","","")
 
                 if (firstBatsmanStats.name.value == activeBatsman) {
@@ -387,8 +402,12 @@ fun removePipeDelimitedValue(noOfBalls: Int, pipeDelimitedValue: String): String
 }
 
 fun endOfOverReached(balls: MutableList<Ball>): Boolean {
-    val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3")
-    val noOfValidBallsBowled = balls.filter { it.action !in excludedValuesFromBallsBalled }.size
+    val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3","WKRONB","WKROW","WKSTW")
+    val noOfValidBallsBowled = balls.filter {
+        val action = it.action.split(",").firstOrNull() ?: it.action
+        action !in excludedValuesFromBallsBalled
+    }.size
+
     return noOfValidBallsBowled >= 6
 }
 
@@ -470,6 +489,7 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
             if (newValue.contains("WKRONB")) {
                 updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateBowler(matchId,undo,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBatsman(matchId,"dotballs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
             }
             if (newValue.contains("WKROW")) {
                 updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
@@ -477,9 +497,9 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
             }
         } else {
             updateBowler(matchId,undo,"wickets",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+            updateBatsman(matchId,"dotballs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
+            updateBowler(matchId,undo,"dotballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
         }
-        updateBatsman(matchId,"dotballs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
-        updateBowler(matchId,undo,"dotballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
         updateTeam("inningWickets", firstTeamStats, secondTeamStats, 1.0 * multiplier)
         updateTeam("inningScore", firstTeamStats, secondTeamStats, -3.0 * multiplier)
     } else {

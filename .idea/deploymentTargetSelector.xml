@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-10-18T19:04:15.573653300Z">
+        <DropdownSelection timestamp="2024-11-05T21:11:20.237288400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Junaid.hussain\.android\avd\Lenova_Tab_M9_API_33.avd" />
