@@ -550,16 +550,16 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
             }
 
             "W+1" -> {
-                updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,2.00 * multiplier,"",context)
                 updateBowler(matchId,undo,"wides",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
-                updateBowler(matchId,undo,"byes",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 2.0 * multiplier)
             }
 
             "W+2" -> {
-                updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,3.00 * multiplier,"",context)
                 updateBowler(matchId,undo,"wides",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
-                updateBowler(matchId,undo,"byes",bowlerStats,activeBatsman,2.00 * multiplier,"",context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 2 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
 
