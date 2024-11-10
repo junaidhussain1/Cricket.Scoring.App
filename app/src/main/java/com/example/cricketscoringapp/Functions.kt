@@ -490,10 +490,12 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
                 updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateBowler(matchId,undo,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateBatsman(matchId,"dotballs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
-            }
-            if (newValue.contains("WKROW")) {
+            } else if (newValue.contains("WKROW")) {
                 updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateBowler(matchId,undo,"wides",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+            } else {
+                updateBatsman(matchId,"dotballs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
+                updateBowler(matchId,undo,"dotballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
             }
         } else {
             updateBowler(matchId,undo,"wickets",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
