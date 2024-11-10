@@ -730,6 +730,7 @@ fun markBatsmanAsOutInDB(context: Context,matchId: String,firstBatsmanStats: Bat
         firstBatsmanStats.balls.value = 0
         firstBatsmanStats.fours.value = 0
         firstBatsmanStats.sixes.value = 0
+        firstBatsmanStats.dotballs.value = 0
     } else {
         //save out batsman to database
         dbHelper.updateBattingStats(matchId,"out",secondBatsmanStats,wicketDescription,wicketType,wicketBowler, wicketFielder)
@@ -740,6 +741,7 @@ fun markBatsmanAsOutInDB(context: Context,matchId: String,firstBatsmanStats: Bat
         secondBatsmanStats.balls.value = 0
         secondBatsmanStats.fours.value = 0
         secondBatsmanStats.sixes.value = 0
+        secondBatsmanStats.dotballs.value = 0
     }
 }
 
