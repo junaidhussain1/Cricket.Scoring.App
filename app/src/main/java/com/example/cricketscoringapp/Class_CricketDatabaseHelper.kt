@@ -1275,7 +1275,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_BATTINGSTATS, contentValues, whereClause, whereArgs)
     }
 
-    fun updateBattingStats(matchId: String, newBattingStatus: String, batsmanStats: BatsmanStats, wicketDescription: String, wicketType: String, wicketBowler: String, wicketFielder: String) : Int {
+    fun updateBattingStats(matchId: String, existingBattingStatus: String, newBattingStatus: String, batsmanStats: BatsmanStats, wicketDescription: String, wicketType: String, wicketBowler: String, wicketFielder: String) : Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("batting_status", newBattingStatus)
@@ -1290,7 +1290,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             put("wicket_fielder",wicketFielder)
         }
         val whereClause = "match_id = ? AND batting_status = ?"
-        val whereArgs = arrayOf(matchId, "striker")
+        val whereArgs = arrayOf(matchId, existingBattingStatus)
 
         return db.update(TABLE_BATTINGSTATS, contentValues, whereClause, whereArgs)
     }
