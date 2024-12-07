@@ -78,8 +78,8 @@ fun ExistingMatchesPage(navController: NavHostController) {
                                 onClick = {
                                     // Define the action when the button is clicked
                                     val matchId = match.matchId
-                                    val teamIdA = 1
-                                    val teamIdB = 2
+                                    val teamIdA = dbHelper.getTeamForPlayer(matchId,match.firstBattingTeamCaptain)
+                                    val teamIdB = dbHelper.getTeamForPlayer(matchId,match.secondBattingTeamCaptain)
                                     navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
                                 },
                                 modifier = Modifier.fillMaxWidth() // Make the button take full width

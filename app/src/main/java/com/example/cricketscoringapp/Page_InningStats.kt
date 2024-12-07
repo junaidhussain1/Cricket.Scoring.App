@@ -44,14 +44,14 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
         ) {
             if (teamIdA != 0) {
                 item {
-                    TeamStatsSection(matchId = matchId, teamId = teamIdA, context = context)
+                    TeamStatsSection(matchId = matchId, pTeamId = teamIdA, context = context)
                     Spacer(modifier = Modifier.height(16.dp)) // Add spacing between sections
                 }
             }
 
             if (teamIdB != 0) {
                 item {
-                    TeamStatsSection(matchId = matchId, teamId = teamIdB, context = context)
+                    TeamStatsSection(matchId = matchId, pTeamId = teamIdB, context = context)
                 }
             }
         }
@@ -59,12 +59,13 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
 }
 
 @Composable
-fun TeamStatsSection (matchId: String, teamId: Int, context: Context) {
+fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
     val dbHelper = CricketDatabaseHelper(context)
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
 
-    val teamCaptain = dbHelper.getBattingTeamCaptain(matchId, teamId)
+    val teamCaptain = dbHelper.getBattingTeamCaptain(matchId, pTeamId)
+    val teamId = dbHelper.getTeamForPlayer(matchId,teamCaptain)
     val battersList = remember { mutableStateListOf<BatsmanStats>() }
     val bowlersList = remember { mutableStateListOf<BowlerStats>() }
     var totalByes = 0
