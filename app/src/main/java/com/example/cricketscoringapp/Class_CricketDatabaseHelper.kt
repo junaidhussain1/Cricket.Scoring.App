@@ -122,17 +122,20 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         END AS is_captain,
         (SELECT COUNT(*) 
             FROM $TABLE_BATTINGSTATS bs 
-            WHERE tm.player_name = bs.wicket_fielder 
-            AND bs.wicket_type = 'caught'
+            WHERE tm.player_name = bs.wicket_fielder
+            AND tm.match_id = bs.match_id
+            AND bs.wicket_type LIKE 'caught%'
         ) AS catches,
         (SELECT COUNT(*) 
             FROM $TABLE_BATTINGSTATS bs 
-            WHERE tm.player_name = bs.wicket_fielder 
+            WHERE tm.player_name = bs.wicket_fielder
+            AND tm.match_id = bs.match_id
             AND bs.wicket_type = 'stumped'
         ) AS stumpings,
         (SELECT COUNT(*) 
             FROM $TABLE_BATTINGSTATS bs 
-            WHERE tm.player_name = bs.wicket_fielder 
+            WHERE tm.player_name = bs.wicket_fielder
+            AND tm.match_id = bs.match_id
             AND bs.wicket_type = 'run out'
         ) AS runOuts,
         inning1.runs AS firstInningsRunsScored,
@@ -203,7 +206,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         AND bowling.team_id = tm.team_id
         AND bowling.player_name = tm.player_name
     GROUP BY 
-        tm.player_name
+        tm.match_id,tm.team_id,tm.player_name
     ORDER BY tm.team_id, tm.is_captain DESC
 """
 

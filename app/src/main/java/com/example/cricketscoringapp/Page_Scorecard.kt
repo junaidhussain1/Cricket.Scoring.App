@@ -108,7 +108,7 @@ fun ScoreCardPage(navController: NavHostController) {
             )
         }
         
-        calcRunsToWin(team1Stats, team2Stats, runsToWin)
+        calcRunsToWin(firstBattingTeamStats, secondBattingTeamStats, runsToWin)
 
         val firstBatsman = dbHelper.getBatsmanByStatus(matchId,"striker")
         val firstBatsmanStats = remember {
