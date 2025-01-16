@@ -596,6 +596,7 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
             "NB+4" -> {
                 updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,5.00 * multiplier,"",context)
                 updateBowler(matchId,undo,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,undo,"fours",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 4 * multiplier,context)
                 updateBatsman(matchId,"fours", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 5.0 * multiplier)
@@ -604,6 +605,7 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
             "NB+6" -> {
                 updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,7.00 * multiplier,"",context)
                 updateBowler(matchId,undo,"noballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,undo,"sixes",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
                 updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, 6 * multiplier,context)
                 updateBatsman(matchId,"sixes", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 7.0 * multiplier)

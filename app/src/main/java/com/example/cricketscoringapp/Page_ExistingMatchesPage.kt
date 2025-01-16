@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.Button
@@ -32,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+
 @Composable
 fun ExistingMatchesPage(navController: NavHostController) {
     val configuration = LocalConfiguration.current
@@ -43,8 +46,7 @@ fun ExistingMatchesPage(navController: NavHostController) {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Existing Matches",
-            fontSize = 22.sp)
+        Text(text = "Existing Matches", fontSize = 22.sp)
 
         Spacer(modifier = Modifier.height(20.dp))
         val context = LocalContext.current
@@ -52,8 +54,11 @@ fun ExistingMatchesPage(navController: NavHostController) {
 
         val matches = dbHelper.getMatches().filter { it.isFinished }
 
-        if (matches.isNotEmpty()) {
-            for (match in matches) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(matches) { match ->
                 val team1Captain = Player(dbHelper.getCaptainForTeam(match.matchId, 1)).name
                 val team2Captain = Player(dbHelper.getCaptainForTeam(match.matchId, 2)).name
                 if (team1Captain.isNotEmpty() && team2Captain.isNotEmpty()) {
@@ -61,7 +66,7 @@ fun ExistingMatchesPage(navController: NavHostController) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp), // Adds some padding between rows
+                            .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(
@@ -69,30 +74,28 @@ fun ExistingMatchesPage(navController: NavHostController) {
                                 .weight(5f)
                                 .padding(start = 30.dp),
                             horizontalAlignment = Alignment.Start
-                        )
-                        {
+                        ) {
                             Button(
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(255, 252, 228) // Set the background color
+                                    containerColor = Color(255, 252, 228)
                                 ),
                                 onClick = {
-                                    // Define the action when the button is clicked
                                     val matchId = match.matchId
-                                    val teamIdA = dbHelper.getTeamForPlayer(matchId,match.firstBattingTeamCaptain)
-                                    val teamIdB = dbHelper.getTeamForPlayer(matchId,match.secondBattingTeamCaptain)
+                                    val teamIdA = dbHelper.getTeamForPlayer(matchId, match.firstBattingTeamCaptain)
+                                    val teamIdB = dbHelper.getTeamForPlayer(matchId, match.secondBattingTeamCaptain)
                                     navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
                                 },
-                                modifier = Modifier.fillMaxWidth() // Make the button take full width
+                                modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(), // Fill the entire width of the button
-                                    horizontalArrangement = Arrangement.Start // Align content to the left
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Start
                                 ) {
                                     Text(
                                         text = when {
                                             match.isStarted -> "$matchDate - $team1Captain vs $team2Captain (In Progress)"
                                             match.isFinished -> "$matchDate - $team1Captain vs $team2Captain"
-                                            else -> "Match not started" // Fallback text when neither isStarted nor isFinished
+                                            else -> "Match not started"
                                         },
                                         style = androidx.compose.ui.text.TextStyle(
                                             textAlign = TextAlign.Start,
@@ -108,38 +111,22 @@ fun ExistingMatchesPage(navController: NavHostController) {
                                 .weight(1f)
                                 .padding(end = 30.dp),
                             horizontalAlignment = Alignment.End
-                        )
-                        {
-                            // Synchronization Icon
+                        ) {
                             IconButton(
                                 enabled = match.isFinished && !match.isSynced,
                                 onClick = {
                                     val googleSheetsService = GoogleSheetsService()
-
                                     CoroutineScope(Dispatchers.Main).launch {
                                         try {
-                                            // Step 1: Read existing data from column A to find the last row
-                                            val existingData = googleSheetsService.readData(context,"Data Raw!A:A")
-                                            val lastRowIndex = existingData.size // This gives the number of existing rows
-
+                                            val existingData = googleSheetsService.readData(context, "Data Raw!A:A")
+                                            val lastRowIndex = existingData.size
                                             val (dataToWrite, matchDataSize) = getMatchDataToUpload(context, match.matchId)
-
                                             val startRow = lastRowIndex + 1
                                             val endRow = lastRowIndex + matchDataSize
-
-                                            // Define the range starting from the next available row in column A
                                             val rangeToWrite = "Data Raw!A${lastRowIndex + 1}:AN${lastRowIndex + matchDataSize}"
-
-                                            // Step 3: Write the new data to the calculated range
                                             val rtnMessage = googleSheetsService.writeData(context, rangeToWrite, startRow, endRow, dataToWrite)
-
-                                            // Switch back to the Main thread to show Toast
                                             withContext(Dispatchers.Main) {
-                                                Toast.makeText(
-                                                    context,
-                                                    rtnMessage,
-                                                    Toast.LENGTH_LONG
-                                                ).show()
+                                                Toast.makeText(context, rtnMessage, Toast.LENGTH_LONG).show()
                                             }
                                         } catch (e: Exception) {
                                             withContext(Dispatchers.Main) {
@@ -153,7 +140,7 @@ fun ExistingMatchesPage(navController: NavHostController) {
                                     imageVector = Icons.Default.Sync,
                                     contentDescription = "Sync Status",
                                     tint = if (match.isSynced) Color.Green else Color.Gray,
-                                    modifier = Modifier.size(if (isTablet) 48.dp else 24.dp) // Size based on isTablet
+                                    modifier = Modifier.size(if (isTablet) 48.dp else 24.dp)
                                 )
                             }
                         }
