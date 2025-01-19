@@ -3,7 +3,7 @@ package com.example.cricketscoringapp
 import android.content.Context
 import android.media.MediaPlayer
 import android.widget.Toast
-import androidx.compose.runtime.MutableState
+import kotlin.math.roundToInt
 
 fun swapBatsmenDB(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats) {
     swapBatsmen(batsman1,batsman2)
@@ -113,6 +113,10 @@ fun updateStats(context: Context,
 
         val lastBall = balls[lastNonEmptyIndex].action
 
+        if (lastBall.contains("WK")) {
+            Toast.makeText(context, "Wicket UNDO is not supported!", Toast.LENGTH_SHORT).show()
+            return
+        }
         // Decrement the bowlerOver by 0.1 only if the last ball was a valid ball value
         var containsExcludedValue = lastBall.split(",").any { it in excludedValuesFromBallsBalled }
         if (!containsExcludedValue) {
@@ -172,10 +176,11 @@ fun updateStats(context: Context,
     }
 }
 
-fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, runsToWinTxt: MutableState<String>) : Int {
+fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats) : String {
     val ballsRemaining: Int
     val oversRemaining: Double
     var runsToWin = 0
+    val runsToWinTxt: String
     var winningTeam = ""
     if (firstTeamStats.active.value) {
         if (secondTeamStats.inningScore.value != 0) {
@@ -197,17 +202,17 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, runsToW
         oversRemaining = calculateOversRemaining(ballsRemaining)
     }
 
-    if (winningTeam.isNotEmpty()) {
-        runsToWinTxt.value = "Team $winningTeam is the winner!"
+    runsToWinTxt = if (winningTeam.isNotEmpty()) {
+        "Team $winningTeam is the winner!"
     } else {
         if (firstTeamStats.overs.value.toInt() == 0  ||  secondTeamStats.overs.value.toInt() == 0) {
-            runsToWinTxt.value = "$oversRemaining overs remaining!"
+            "$oversRemaining overs remaining!"
         } else {
-            runsToWinTxt.value = "$runsToWin runs to win from $ballsRemaining balls!"
+            "$runsToWin runs to win from $ballsRemaining balls!"
         }
     }
 
-    return ballsRemaining
+    return runsToWinTxt
 }
 
 fun calcNoOfWickets(context: Context,matchId: String,firstTeamStats: TeamStats) : Int {
@@ -376,7 +381,7 @@ fun calculateBalls(overs: Double): Int {
     // Get the whole number part of the overs
     val fullOvers = overs.toInt()
     // Get the fractional part of the overs, representing the extra balls
-    val extraBalls = ((overs - fullOvers) * 10).toInt()
+    val extraBalls = ((overs - fullOvers) * 10).roundToInt()
 
     // Total balls = (6 balls per over * number of full overs) + extra balls
     return (fullOvers * 6) + extraBalls
@@ -750,12 +755,12 @@ fun markBatsmanAsOutInDB(context: Context,matchId: String,firstBatsmanStats: Bat
     }
 }
 
-fun handleEndOfMatch(context: Context, matchId: String, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, runsToWin: MutableState<String>) {
+fun handleEndOfMatch(context: Context, matchId: String, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, runsToWin:String) {
     val dbHelper = CricketDatabaseHelper(context)
     dbHelper.updateBowlingStats(matchId,"bowled")
     handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
     dbHelper.updateMatchIsFinished(matchId, "")
-    Toast.makeText(context, "End of Match (${runsToWin.value})!", Toast.LENGTH_LONG)
+    Toast.makeText(context, "End of Match (${runsToWin})!", Toast.LENGTH_LONG)
         .show()
 }
 

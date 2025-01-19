@@ -70,7 +70,7 @@ fun ScoreCardPage(navController: NavHostController) {
     val showFielderDialog = remember { mutableStateOf(false) }
     val selectedFielder = remember { mutableStateOf("") }
     val manualBowlerChange = remember { mutableStateOf(false) }
-    val runsToWin = remember { mutableStateOf("") }
+    //val runsToWin = remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -107,8 +107,11 @@ fun ScoreCardPage(navController: NavHostController) {
                 active = mutableStateOf(team2Stats.active.value)
             )
         }
-        
-        calcRunsToWin(firstBattingTeamStats, secondBattingTeamStats, runsToWin)
+
+        val runsToWinLocal = calcRunsToWin(firstBattingTeamStats, secondBattingTeamStats)
+        val runsToWin = remember(runsToWinLocal) {
+            runsToWinLocal
+        }
 
         val firstBatsman = dbHelper.getBatsmanByStatus(matchId,"striker")
         val firstBatsmanStats = remember {
@@ -287,8 +290,8 @@ fun ScoreCardPage(navController: NavHostController) {
         }
 
         Text(
-            text = runsToWin.value,
-            fontSize = 16.sp
+            text = runsToWin,
+            fontSize = 20.sp
         )
 
         // Batsman Box
@@ -1232,9 +1235,21 @@ fun ScoreCardPage(navController: NavHostController) {
             }
             CircleButton("UNDO", if (isTablet) 26 else 16) {
                 showUndoConfirmationDialog.value = true
+                val lastNonEmptyIndex = balls.indexOfLast { it.action.isNotEmpty() }
+                if (lastNonEmptyIndex != -1) {
+
+                    val lastBall = balls[lastNonEmptyIndex].action
+
+                    if (lastBall.contains("WK")) {
+                        showUndoConfirmationDialog.value = false
+                        Toast.makeText(context, "Wicket UNDO is not supported!", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }
             }
 
             if (showUndoConfirmationDialog.value) {
+
                 ConfirmationDialog(
                     message = "Are you sure you want to UNDO?",
                     onConfirm = {
