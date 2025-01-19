@@ -398,7 +398,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     fun getMatches() : List<Match> {
         val matches = mutableListOf<Match>()
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_MATCHES", null)
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_MATCHES ORDER BY match_date DESC ", null)
         while (cursor.moveToNext()) {
             val matchId = cursor.getStringOrEmpty("match_id")
             val firstBattingTeamCaptain = cursor.getStringOrEmpty("first_batting_team_captain")
