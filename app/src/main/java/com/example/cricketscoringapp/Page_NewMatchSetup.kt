@@ -103,6 +103,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 val currentDate = LocalDate.now()
                 val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy") // Define the format
                 val formattedDate = currentDate.format(formatter)
+                val sqlFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // Define the format
+                val sqlFormattedDate = currentDate.format(sqlFormatter)
+
+                dbHelper.updateMatchDate(matchId,sqlFormattedDate)
                 Text(
                     text = "Match: $formattedDate",
                     style = MaterialTheme.typography.headlineSmall,
@@ -856,7 +860,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             )
                         } else {
                             Text(text = "Continue Match",
-                                fontSize = if (isTablet) 22.sp else 16.sp)
+                                fontSize = if (isTablet) 26.sp else 22.sp)
                         }
                     }
                 }
