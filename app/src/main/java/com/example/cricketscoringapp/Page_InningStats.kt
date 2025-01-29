@@ -207,6 +207,7 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
                 totalFours = "4s",
                 totalSixes = "6s",
                 totalDotBalls = "DB",
+                totalEconomy = "Ec",
                 fontBold1 = FontWeight.Bold,
                 fontColor1 = Color.Gray
             )
@@ -215,6 +216,12 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
 
             // List of bowlers
             bowlersList.forEach { player ->
+                val economy = if (player.over.value == 0.0) {
+                    0.0
+                } else {
+                    player.runs.value / player.over.value
+                }
+
                 totalByes += player.byes.value
                 totalLegByes += player.legbyes.value
                 totalWides += player.wides.value
@@ -265,6 +272,11 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
                         Locale.UK,
                         "%d",
                         player.dotballs.value
+                    ),
+                    totalEconomy = String.format(
+                        Locale.UK,
+                        "%.2f",
+                        economy
                     ),
                     fontBold1 = FontWeight.Normal, // Changed to normal for list items
                     fontColor1 = Color.White

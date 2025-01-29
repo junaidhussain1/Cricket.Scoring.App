@@ -18,6 +18,7 @@ data class BowlerStats(
     var fours: MutableState<Int> = mutableIntStateOf(0),
     var sixes: MutableState<Int> = mutableIntStateOf(0),
     var dotballs: MutableState<Int> = mutableIntStateOf(0),
+    var economy: MutableState<Double> = mutableDoubleStateOf(0.0),
     var keepername: MutableState<String> = mutableStateOf(""),
     var overrecord: MutableState<String> = mutableStateOf("")
 )

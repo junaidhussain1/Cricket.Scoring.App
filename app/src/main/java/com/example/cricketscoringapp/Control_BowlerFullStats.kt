@@ -26,6 +26,7 @@ fun BowlerFullStats(bowler: String,
                     totalFours: String,
                     totalSixes: String,
                     totalDotBalls: String,
+                    totalEconomy: String,
                     fontBold1: FontWeight,
                     fontColor1: Color) {
     val configuration = LocalConfiguration.current
@@ -127,6 +128,16 @@ fun BowlerFullStats(bowler: String,
             )
             Text(
                 text = totalDotBalls,
+                fontWeight = fontBold1,
+                fontSize = fontSize1,
+                color = fontColor1,
+                modifier = Modifier
+                    .weight(1f)
+                    .align(Alignment.CenterVertically)  // Aligns text vertically center
+                    .wrapContentWidth(Alignment.CenterHorizontally) // Centers text horizontally
+            )
+            Text(
+                text = totalEconomy,
                 fontWeight = fontBold1,
                 fontSize = fontSize1,
                 color = fontColor1,
