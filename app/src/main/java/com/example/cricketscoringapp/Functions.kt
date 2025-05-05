@@ -186,7 +186,11 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats) : Strin
     var winningTeam = ""
     if (firstTeamStats.active.value) {
         if (secondTeamStats.inningScore.value != 0) {
-            runsToWin = secondTeamStats.inningScore.value - firstTeamStats.inningScore.value + 1
+            runsToWin = if ((secondTeamStats.inningScore.value - firstTeamStats.inningScore.value) >= 0) {
+                secondTeamStats.inningScore.value - firstTeamStats.inningScore.value + 1
+            } else {
+                secondTeamStats.inningScore.value - firstTeamStats.inningScore.value
+            }
             if (runsToWin <= 0) {
                 winningTeam = firstTeamStats.name.value
             }
@@ -195,7 +199,11 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats) : Strin
         oversRemaining = calculateOversRemaining(ballsRemaining)
     } else {
         if (firstTeamStats.inningScore.value != 0) {
-            runsToWin = firstTeamStats.inningScore.value - secondTeamStats.inningScore.value + 1
+            runsToWin = if ((firstTeamStats.inningScore.value - secondTeamStats.inningScore.value) >= 0) {
+                firstTeamStats.inningScore.value - secondTeamStats.inningScore.value + 1
+            } else {
+                firstTeamStats.inningScore.value - secondTeamStats.inningScore.value
+            }
             if (runsToWin <= 0) {
                 winningTeam = secondTeamStats.name.value
             }
