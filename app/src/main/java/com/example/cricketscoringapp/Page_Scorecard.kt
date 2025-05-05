@@ -81,12 +81,16 @@ fun ScoreCardPage(navController: NavHostController) {
         var team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
         var team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
         val firstBattingTeamCaptain = Player(dbHelper.getBattingTeamCaptain(matchId,1))
+        var team1Id = 1
+        var team2Id = 2
         if (team1Captain != firstBattingTeamCaptain) {
             team2Captain = team1Captain
             team1Captain = firstBattingTeamCaptain
+            team1Id = 2
+            team2Id = 1
         }
 
-        val team1Stats = dbHelper.getTeamStats(matchId,1,team1Captain.name)
+        val team1Stats = dbHelper.getTeamStats(matchId,team1Id,team1Captain.name)
         val firstBattingTeamStats = remember(team1Stats) {
             TeamStats(
                 name = mutableStateOf(team1Stats.name.value),
@@ -97,7 +101,7 @@ fun ScoreCardPage(navController: NavHostController) {
             )
         }
 
-        val team2Stats = dbHelper.getTeamStats(matchId,2,team2Captain.name)
+        val team2Stats = dbHelper.getTeamStats(matchId,team2Id,team2Captain.name)
         val secondBattingTeamStats = remember(team2Stats) {
             TeamStats(
                 name = mutableStateOf(team2Stats.name.value),

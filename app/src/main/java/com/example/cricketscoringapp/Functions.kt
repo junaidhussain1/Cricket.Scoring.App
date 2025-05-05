@@ -3,6 +3,7 @@ package com.example.cricketscoringapp
 import android.content.Context
 import android.media.MediaPlayer
 import android.widget.Toast
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 fun swapBatsmenDB(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats) {
@@ -180,11 +181,16 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats) : Strin
     val ballsRemaining: Int
     val oversRemaining: Double
     var runsToWin = 0
+    var runsToWinAbs = 0
     val runsToWinTxt: String
     var winningTeam = ""
     if (firstTeamStats.active.value) {
         if (secondTeamStats.inningScore.value != 0) {
-            runsToWin = secondTeamStats.inningScore.value - firstTeamStats.inningScore.value + 1
+            runsToWin = if ((secondTeamStats.inningScore.value - firstTeamStats.inningScore.value) >= 0) {
+                secondTeamStats.inningScore.value - firstTeamStats.inningScore.value + 1
+            } else {
+                secondTeamStats.inningScore.value - firstTeamStats.inningScore.value
+            }
             if (runsToWin <= 0) {
                 winningTeam = firstTeamStats.name.value
             }
@@ -193,7 +199,11 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats) : Strin
         oversRemaining = calculateOversRemaining(ballsRemaining)
     } else {
         if (firstTeamStats.inningScore.value != 0) {
-            runsToWin = firstTeamStats.inningScore.value - secondTeamStats.inningScore.value + 1
+            runsToWin = if ((firstTeamStats.inningScore.value - secondTeamStats.inningScore.value) >= 0) {
+                firstTeamStats.inningScore.value - secondTeamStats.inningScore.value + 1
+            } else {
+                firstTeamStats.inningScore.value - secondTeamStats.inningScore.value
+            }
             if (runsToWin <= 0) {
                 winningTeam = secondTeamStats.name.value
             }
@@ -201,9 +211,9 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats) : Strin
         ballsRemaining = calculateBalls(12.00) - calculateBalls(secondTeamStats.overs.value)
         oversRemaining = calculateOversRemaining(ballsRemaining)
     }
-
+    runsToWinAbs = abs(runsToWin)
     runsToWinTxt = if (winningTeam.isNotEmpty()) {
-        "Team $winningTeam is the winner!"
+        "Team $winningTeam is winning by $runsToWinAbs runs!"
     } else {
         if (firstTeamStats.overs.value.toInt() == 0  ||  secondTeamStats.overs.value.toInt() == 0) {
             "$oversRemaining overs remaining!"
