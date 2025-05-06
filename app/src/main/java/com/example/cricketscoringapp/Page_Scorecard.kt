@@ -70,7 +70,6 @@ fun ScoreCardPage(navController: NavHostController) {
     val showFielderDialog = remember { mutableStateOf(false) }
     val selectedFielder = remember { mutableStateOf("") }
     val manualBowlerChange = remember { mutableStateOf(false) }
-    //val runsToWin = remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxSize(),
