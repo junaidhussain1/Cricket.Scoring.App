@@ -64,6 +64,9 @@ fun NewMatchSetupPage(navController: NavHostController) {
     var openingBowler by remember { mutableStateOf<Player?>(null) }
     var openingKeeper by remember { mutableStateOf<Player?>(null) }
 
+    var sideWallRule = dbHelper.getSideWallRule(matchId)
+    var noOfOversAside = dbHelper.getNoOfOversAside(matchId)
+    var noOfPlayersAside = dbHelper.getNoOfPlayersAside(matchId)
     team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
     team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
     battingTeamCaptain = Player((dbHelper.getBattingTeamCaptain(matchId, 1)))
@@ -72,19 +75,21 @@ fun NewMatchSetupPage(navController: NavHostController) {
     openingBowler = Player(dbHelper.getSecondBattingTeamBowler(matchId))
     openingKeeper = Player(dbHelper.getSecondBattingTeamKeeper(matchId))
 
-    var expanded1 by remember { mutableStateOf(false) }
-    var expanded2 by remember { mutableStateOf(false) }
-    var expanded3 by remember { mutableStateOf(false) }
-    var expanded4 by remember { mutableStateOf(false) }
-    var expanded5 by remember { mutableStateOf(false) }
-    var expanded6 by remember { mutableStateOf(false) }
-    var expanded7 by remember { mutableStateOf(false) }
+    var expanded00 by remember { mutableStateOf(false) }
+    var expanded01 by remember { mutableStateOf(false) }
+    var expanded02 by remember { mutableStateOf(false) }
+    var expanded03 by remember { mutableStateOf(false) }
+    var expanded04 by remember { mutableStateOf(false) }
+    var expanded05 by remember { mutableStateOf(false) }
+    var expanded06 by remember { mutableStateOf(false) }
+    var expanded07 by remember { mutableStateOf(false) }
+    var expanded08 by remember { mutableStateOf(false) }
+    var expanded09 by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(10, 18, 32)
     ) {
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -106,7 +111,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 val sqlFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // Define the format
                 val sqlFormattedDate = currentDate.format(sqlFormatter)
 
-                dbHelper.updateMatchDate(matchId,sqlFormattedDate)
+                dbHelper.updateMatchDate(matchId, sqlFormattedDate)
                 Text(
                     text = "Match: $formattedDate",
                     style = MaterialTheme.typography.headlineSmall,
@@ -129,6 +134,177 @@ fun NewMatchSetupPage(navController: NavHostController) {
             }
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Row to hold no of Overs Aside, no of Players Aside & Side Wall Rule
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // No of Overs Aside
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    ExposedDropdownMenuBox(
+                        expanded = expanded00,
+                        onExpandedChange = {
+                            if (!matchStarted) {
+                                expanded00 = !expanded00
+                            }
+                        }
+                    ) {
+                        OutlinedTextField(
+                            enabled = !matchStarted,
+                            readOnly = true,
+                            value = noOfOversAside.toString(),
+                            onValueChange = { },
+                            label = {
+                                Text(
+                                    "Overs aside",
+                                    fontSize = if (isTablet) 22.sp else 14.sp
+                                )
+                            },
+                            textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded00,
+                            onDismissRequest = { expanded00 = false }
+                        ) {
+                            for (i in 1..50)
+                                androidx.compose.material3.DropdownMenuItem(
+                                    enabled = !matchStarted,
+                                    text = {
+                                        Text(
+                                            text = i.toString(),
+                                            fontSize = if (isTablet) 30.sp else 14.sp
+                                        )
+                                    },
+                                    onClick = {
+                                        noOfOversAside = i
+                                        dbHelper.updateOversAside(matchId,noOfOversAside)
+                                        expanded00 = false
+                                    }
+                                )
+                        }
+                    }
+                }
+
+                // No of Players Aside
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp,end = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    ExposedDropdownMenuBox(
+                        expanded = expanded01,
+                        onExpandedChange = {
+                            if (!matchStarted) {
+                                expanded01 = !expanded01
+                            }
+                        }
+                    ) {
+                        OutlinedTextField(
+                            enabled = !matchStarted,
+                            readOnly = true,
+                            value = noOfPlayersAside.toString(),
+                            onValueChange = { },
+                            label = {
+                                Text(
+                                    text = "Players aside",
+                                    fontSize = if (isTablet) 22.sp else 14.sp
+                                )
+                            },
+                            textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded01,
+                            onDismissRequest = { expanded01 = false }
+                        ) {
+                            for (i in 5..12)
+                                androidx.compose.material3.DropdownMenuItem(
+                                    enabled = !matchStarted,
+                                    text = {
+                                        Text(
+                                            text = i.toString(),
+                                            fontSize = if (isTablet) 30.sp else 14.sp
+                                        )
+                                    },
+                                    onClick = {
+                                        noOfPlayersAside = i
+                                        dbHelper.updatePlayersAside(matchId,noOfPlayersAside)
+                                        expanded01 = false
+                                    }
+                                )
+                        }
+                    }
+                }
+
+                // Side Wall Rule
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    ExposedDropdownMenuBox(
+                        expanded = expanded09,
+                        onExpandedChange = {
+                            if (!matchStarted) {
+                                expanded09 = !expanded09
+                            }
+                        }
+                    ) {
+                        OutlinedTextField(
+                            enabled = !matchStarted,
+                            readOnly = true,
+                            value = "+$sideWallRule",
+                            onValueChange = { },
+                            label = {
+                                Text(
+                                    text = "Side wall rule",
+                                    fontSize = if (isTablet) 22.sp else 14.sp
+                                )
+                            },
+                            textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded09,
+                            onDismissRequest = { expanded09 = false }
+                        ) {
+                            for (i in 0..2)
+                                androidx.compose.material3.DropdownMenuItem(
+                                    enabled = !matchStarted,
+                                    text = {
+                                        Text(
+                                            text = i.toString(),
+                                            fontSize = if (isTablet) 30.sp else 14.sp
+                                        )
+                                    },
+                                    onClick = {
+                                        sideWallRule = i
+                                        dbHelper.updateSideWallRule(matchId,sideWallRule)
+                                        expanded09 = false
+                                    }
+                                )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
             // Row to hold both Team 1 Captain and Team 2 Captain dropdowns
             Row(
                 modifier = Modifier
@@ -144,10 +320,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     ExposedDropdownMenuBox(
-                        expanded = expanded1,
+                        expanded = expanded02,
                         onExpandedChange = {
                             if (!matchStarted) {
-                                expanded1 = !expanded1
+                                expanded02 = !expanded02
                             }
                         }
                     ) {
@@ -168,8 +344,8 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 .fillMaxWidth()
                         )
                         ExposedDropdownMenu(
-                            expanded = expanded1,
-                            onDismissRequest = { expanded1 = false }
+                            expanded = expanded02,
+                            onDismissRequest = { expanded02 = false }
                         ) {
                             playersList.forEach { player ->
                                 androidx.compose.material3.DropdownMenuItem(
@@ -191,7 +367,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                 0
                                             )
                                         }
-                                        expanded1 = false
+                                        expanded02 = false
                                     }
                                 )
                             }
@@ -208,10 +384,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     ExposedDropdownMenuBox(
-                        expanded = expanded2,
+                        expanded = expanded03,
                         onExpandedChange = {
                             if (!matchStarted) {
-                                expanded2 = !expanded2
+                                expanded03 = !expanded03
                             }
                         }
                     ) {
@@ -232,8 +408,8 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 .fillMaxWidth()
                         )
                         ExposedDropdownMenu(
-                            expanded = expanded2,
-                            onDismissRequest = { expanded2 = false }
+                            expanded = expanded03,
+                            onDismissRequest = { expanded03 = false }
                         ) {
                             val remainingPlayers = playersList.filter { it != team1Captain }
                             remainingPlayers.forEach { player ->
@@ -248,9 +424,9 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     onClick = {
                                         team2Captain = player
                                         team2Captain?.let {
-                                            dbHelper.addTeamPlayer(matchId, 2, player.name, 1,0)
+                                            dbHelper.addTeamPlayer(matchId, 2, player.name, 1, 0)
                                         }
-                                        expanded2 = false
+                                        expanded03 = false
                                     }
                                 )
                             }
@@ -286,7 +462,11 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(255, 252, 228) // Set the background color
+                                    containerColor = Color(
+                                        255,
+                                        252,
+                                        228
+                                    ) // Set the background color
                                 ),
                                 content = {
                                     Text(
@@ -337,7 +517,11 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(255, 252, 228) // Set the background color
+                                    containerColor = Color(
+                                        255,
+                                        252,
+                                        228
+                                    ) // Set the background color
                                 ),
                                 content = {
                                     Text(
@@ -392,10 +576,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ExposedDropdownMenuBox(
-                            expanded = expanded3,
+                            expanded = expanded04,
                             onExpandedChange = {
                                 if (!matchStarted) {
-                                    expanded3 = !expanded3
+                                    expanded04 = !expanded04
                                 }
                             }
                         ) {
@@ -416,8 +600,8 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     .fillMaxWidth()
                             )
                             ExposedDropdownMenu(
-                                expanded = expanded3,
-                                onDismissRequest = { expanded3 = false }
+                                expanded = expanded04,
+                                onDismissRequest = { expanded04 = false }
                             ) {
                                 androidx.compose.material3.DropdownMenuItem(
                                     enabled = !matchStarted,
@@ -443,7 +627,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                 team2Captain!!.name
                                             )
                                         }
-                                        expanded3 = false
+                                        expanded04 = false
                                         facingBatsman = null
                                         secondBatsman = null
                                     }
@@ -473,7 +657,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                 team1Captain!!.name
                                             )
                                         }
-                                        expanded3 = false
+                                        expanded04 = false
                                         facingBatsman = null
                                         secondBatsman = null
                                     }
@@ -533,10 +717,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ExposedDropdownMenuBox(
-                            expanded = expanded4,
+                            expanded = expanded05,
                             onExpandedChange = {
                                 if (!matchStarted) {
-                                    expanded4 = !expanded4
+                                    expanded05 = !expanded05
                                 }
                             }
                         ) {
@@ -557,8 +741,8 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     .fillMaxWidth()
                             )
                             ExposedDropdownMenu(
-                                expanded = expanded4,
-                                onDismissRequest = { expanded4 = false }
+                                expanded = expanded05,
+                                onDismissRequest = { expanded05 = false }
                             ) {
                                 battingTeamList.forEach { player ->
                                     if (player.name != secondBatsman?.name) {
@@ -589,10 +773,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                                 "striker"
                                                             )
                                                         }
-                                                        dbHelper.updateMatchOpeningStriker(matchId,it)
+                                                        dbHelper.updateMatchOpeningStriker(
+                                                            matchId,
+                                                            it
+                                                        )
                                                     }
                                                 }
-                                                expanded4 = false
+                                                expanded05 = false
                                             }
                                         )
                                     }
@@ -609,10 +796,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ExposedDropdownMenuBox(
-                            expanded = expanded5,
+                            expanded = expanded06,
                             onExpandedChange = {
                                 if (!matchStarted) {
-                                    expanded5 = !expanded5
+                                    expanded06 = !expanded06
                                 }
                             }
                         ) {
@@ -633,8 +820,8 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     .fillMaxWidth()
                             )
                             ExposedDropdownMenu(
-                                expanded = expanded5,
-                                onDismissRequest = { expanded5 = false }
+                                expanded = expanded06,
+                                onDismissRequest = { expanded06 = false }
                             ) {
                                 battingTeamList.forEach { player ->
                                     if (player.name != facingBatsman?.name) {
@@ -665,10 +852,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                                 "non-striker"
                                                             )
                                                         }
-                                                        dbHelper.updateMatchOpeningNonStriker(matchId,it)
+                                                        dbHelper.updateMatchOpeningNonStriker(
+                                                            matchId,
+                                                            it
+                                                        )
                                                     }
                                                 }
-                                                expanded5 = false
+                                                expanded06 = false
                                             }
                                         )
                                     }
@@ -693,10 +883,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ExposedDropdownMenuBox(
-                            expanded = expanded6,
+                            expanded = expanded07,
                             onExpandedChange = {
                                 if (!matchStarted) {
-                                    expanded6 = !expanded6
+                                    expanded07 = !expanded07
                                 }
                             }
                         ) {
@@ -717,8 +907,8 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     .fillMaxWidth()
                             )
                             ExposedDropdownMenu(
-                                expanded = expanded6,
-                                onDismissRequest = { expanded6 = false }
+                                expanded = expanded07,
+                                onDismissRequest = { expanded07 = false }
                             ) {
                                 bowlingTeamList.forEach { player ->
                                     if (player.name != openingKeeper?.name) {
@@ -748,8 +938,11 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                         "bowling"
                                                     )
                                                 }
-                                                dbHelper.updateMatchOpeningBowler(matchId,player.name)
-                                                expanded6 = false
+                                                dbHelper.updateMatchOpeningBowler(
+                                                    matchId,
+                                                    player.name
+                                                )
+                                                expanded07 = false
                                             }
                                         )
                                     }
@@ -766,10 +959,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ExposedDropdownMenuBox(
-                            expanded = expanded7,
+                            expanded = expanded08,
                             onExpandedChange = {
                                 if (!matchStarted) {
-                                    expanded7 = !expanded7
+                                    expanded08 = !expanded08
                                 }
                             }
                         ) {
@@ -790,8 +983,8 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     .fillMaxWidth()
                             )
                             ExposedDropdownMenu(
-                                expanded = expanded7,
-                                onDismissRequest = { expanded7 = false }
+                                expanded = expanded08,
+                                onDismissRequest = { expanded08 = false }
                             ) {
                                 bowlingTeamList.forEach { player ->
                                     if (player.name != openingBowler?.name) {
@@ -819,8 +1012,11 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                         player.name
                                                     )
                                                 }
-                                                dbHelper.updateMatchOpeningKeeper(matchId,player.name)
-                                                expanded7 = false
+                                                dbHelper.updateMatchOpeningKeeper(
+                                                    matchId,
+                                                    player.name
+                                                )
+                                                expanded08 = false
                                             }
                                         )
                                     }
@@ -859,8 +1055,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 fontSize = if (isTablet) 22.sp else 16.sp
                             )
                         } else {
-                            Text(text = "Continue Match",
-                                fontSize = if (isTablet) 26.sp else 22.sp)
+                            Text(
+                                text = "Continue Match",
+                                fontSize = if (isTablet) 26.sp else 22.sp
+                            )
                         }
                     }
                 }

@@ -60,6 +60,8 @@ fun SettingsPage(navController: NavHostController) {
                     .padding(8.dp)
             )
 
+            Spacer(modifier = Modifier.height(30.dp))
+
             Button(
                 onClick = { navController.navigate("googlesheetsettings") },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f), // Adjust button width for tablets
@@ -75,7 +77,6 @@ fun SettingsPage(navController: NavHostController) {
             }
 
             Spacer(modifier = Modifier.height(30.dp))
-
         }
     }
 }
