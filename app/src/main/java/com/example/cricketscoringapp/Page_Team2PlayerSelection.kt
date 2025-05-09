@@ -36,6 +36,7 @@ fun Team2PlayerSelectionPage() {
 
     val matchId = dbHelper.getMatchId()
 
+    val noOfPlayersAside = dbHelper.getNoOfPlayersAside(matchId)
     val team1CaptainName = Player(dbHelper.getCaptainForTeam(matchId,1))
     val team2CaptainName = Player(dbHelper.getCaptainForTeam(matchId,2))
 
@@ -64,8 +65,6 @@ fun Team2PlayerSelectionPage() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //Text(text = "Mid Bowlers",modifier = Modifier.align(Alignment.End))
-
         val filteredPlayers = playersList.filter { it != team1Captain && it !in team1PlayersDB}
 
         // Player Selection for Team 2
@@ -90,13 +89,13 @@ fun Team2PlayerSelectionPage() {
                         checked = isSelected,
                         onCheckedChange = { checked ->
                             if (checked) {
-                                if (selectedPlayers.size < 5) {  // Assuming a limit of 5 players for the team
+                                if (selectedPlayers.size < (noOfPlayersAside - 1)) {  // No of players minus captain
                                     selectedPlayers.add(player)
                                     dbHelper.addTeamPlayer(matchId,2,player.name,0,0)
                                 } else {
                                     Toast.makeText(
                                         context,
-                                        "You can only select 5 players",
+                                        "You can only select "+(noOfPlayersAside - 1)+" players",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
