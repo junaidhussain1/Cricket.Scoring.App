@@ -177,7 +177,7 @@ fun updateStats(context: Context,
     }
 }
 
-fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats) : String {
+fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOversAside: Double) : String {
     val ballsRemaining: Int
     val oversRemaining: Double
     var runsToWin = 0
@@ -195,7 +195,7 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats) : Strin
                 winningTeam = firstTeamStats.name.value
             }
         }
-        ballsRemaining = calculateBalls(12.00) - calculateBalls(firstTeamStats.overs.value)
+        ballsRemaining = calculateBalls(noOfOversAside) - calculateBalls(firstTeamStats.overs.value)
         oversRemaining = calculateOversRemaining(ballsRemaining)
     } else {
         if (firstTeamStats.inningScore.value != 0) {
@@ -208,7 +208,7 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats) : Strin
                 winningTeam = secondTeamStats.name.value
             }
         }
-        ballsRemaining = calculateBalls(12.00) - calculateBalls(secondTeamStats.overs.value)
+        ballsRemaining = calculateBalls(noOfOversAside) - calculateBalls(secondTeamStats.overs.value)
         oversRemaining = calculateOversRemaining(ballsRemaining)
     }
     runsToWinAbs = abs(runsToWin)

@@ -6,6 +6,7 @@ data class Match(val matchId: String,
                  val winningTeamCaptain: String,
                  val noOfOversAside: Int,
                  val noOfPlayersAside: Int,
+                 val sideWallRule: Int,
                  val isStarted: Boolean,
                  val isFinished: Boolean,
                  val isSynced: Boolean)

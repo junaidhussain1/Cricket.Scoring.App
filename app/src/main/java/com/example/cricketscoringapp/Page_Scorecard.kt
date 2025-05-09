@@ -44,6 +44,9 @@ fun ScoreCardPage(navController: NavHostController) {
 
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
+    val noOfOversAside = dbHelper.getNoOfOversAside(matchId).toDouble()
+    val noOfPlayersAside = dbHelper.getNoOfPlayersAside(matchId)
+    val sideWallRule = dbHelper.getSideWallRule(matchId)
     val currentBowler = remember { mutableStateOf(dbHelper.getCurrentBowler(matchId)) }
     val bowlingTeamId = dbHelper.getTeamForPlayer(matchId,currentBowler.value)
     val bowlingTeam = bowlingTeamId.let { dbHelper.getTeamPlayers(matchId, it,1) }
@@ -111,7 +114,7 @@ fun ScoreCardPage(navController: NavHostController) {
             )
         }
 
-        val runsToWinLocal = calcRunsToWin(firstBattingTeamStats, secondBattingTeamStats)
+        val runsToWinLocal = calcRunsToWin(firstBattingTeamStats, secondBattingTeamStats, noOfOversAside)
         val runsToWin = remember(runsToWinLocal) {
             runsToWinLocal
         }
@@ -218,11 +221,11 @@ fun ScoreCardPage(navController: NavHostController) {
                 navController.navigate("homepage")
             } else {
                 if (endOfOverReached(balls)) {
-                    if ((team1OversBowled == 12.0) && (team2OversBowled == 0.0)) {
+                    if ((team1OversBowled == noOfOversAside) && (team2OversBowled == 0.0)) {
                         dbHelper.updateBowlingStats(matchId,"bowled")
                         handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
                         navController.navigate("secondinningssetup")
-                    } else if (team2OversBowled == 12.0) {
+                    } else if (team2OversBowled == noOfOversAside) {
                         handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
                         navController.navigate("homepage")
                     } else {
@@ -701,7 +704,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     text = {
                         // Define the grid using Column and Row
                         Column {
-                            // 3 Rows with 4 Buttons each (12 options)
+                            // 3 Rows with 4 Buttons each (twelve options)
                             for (row in 0..4) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),

@@ -18,7 +18,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 18
+        const val DATABASE_VERSION = 19
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -49,6 +49,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             winning_team_captain TEXT,
             no_of_overs_aside INTEGER,
             no_of_players_aside INTEGER,
+            side_wall_rule INTEGER,
             is_started INTEGER,
             is_finished INTEGER,
             is_synced INTEGER
@@ -408,6 +409,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             val winningTeamCaptain = cursor.getStringOrEmpty("winning_team_captain")
             val noOfOversAside = cursor.getIntOrZero("no_of_overs_aside")
             val noOfPlayersAside = cursor.getIntOrZero("no_of_players_aside")
+            val sideWallRule = cursor.getIntOrZero("side_wall_rule")
             val isStarted = cursor.getIntOrZero("is_started") == 1
             val isFinished = cursor.getIntOrZero("is_finished") == 1
             val isSynced = cursor.getIntOrZero("is_synced") == 1
@@ -417,6 +419,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 winningTeamCaptain,
                 noOfOversAside,
                 noOfPlayersAside,
+                sideWallRule,
                 isStarted,
                 isFinished,
                 isSynced))
@@ -1087,6 +1090,20 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return noOfPlayersAside
     }
 
+    fun getSideWallRule(matchId: String): Int {
+        val db = readableDatabase
+        val query = "SELECT side_wall_rule FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId))
+
+        val sideWallRule = if (cursor.moveToFirst())  {
+            cursor.getIntOrZero("side_wall_rule")
+        } else {
+            0
+        }
+        cursor.close()
+        return sideWallRule
+    }
+
     fun getDBVersion() : Int {
         return DATABASE_VERSION
     }
@@ -1150,6 +1167,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         values.put("winning_team_captain","")
         values.put("no_of_overs_aside",12)
         values.put("no_of_players_aside",6)
+        values.put("side_wall_rule",1)
         values.put("is_started",0)
         values.put("is_finished",0)
         values.put("is_synced",0)
@@ -1205,6 +1223,38 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     }
 
     //UPDATE FUNCTIONS *****************************************************************************
+    fun updateOversAside(matchId: String, oversAside: Int) : Int {
+        val db = writableDatabase
+        val contentValues = ContentValues().apply {
+            put("no_of_overs_aside", oversAside)
+        }
+        val whereClause = "match_id = ?"
+        val whereArgs = arrayOf(matchId)
+
+        return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
+    }
+
+    fun updatePlayersAside(matchId: String, playersAside: Int) : Int {
+        val db = writableDatabase
+        val contentValues = ContentValues().apply {
+            put("no_of_players_aside", playersAside)
+        }
+        val whereClause = "match_id = ?"
+        val whereArgs = arrayOf(matchId)
+
+        return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
+    }
+
+    fun updateSideWallRule(matchId: String, sideWallRule: Int) : Int {
+        val db = writableDatabase
+        val contentValues = ContentValues().apply {
+            put("side_wall_rule", sideWallRule)
+        }
+        val whereClause = "match_id = ?"
+        val whereArgs = arrayOf(matchId)
+
+        return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
+    }
 
     fun updateMatchCaptain(matchId: String, whichTeam: Int, captain: String) : Int {
         val db = writableDatabase

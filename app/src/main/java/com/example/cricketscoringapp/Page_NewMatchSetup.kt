@@ -56,8 +56,6 @@ fun NewMatchSetupPage(navController: NavHostController) {
     playersList.clear()
     playersList.addAll(dbHelper.getAllPlayers())
 
-    var noOfOversAside = 0
-    var noOfPlayersAside = 0
     var team1Captain by remember { mutableStateOf<Player?>(null) }
     var team2Captain by remember { mutableStateOf<Player?>(null) }
     var battingTeamCaptain by remember { mutableStateOf<Player?>(null) }
@@ -66,8 +64,9 @@ fun NewMatchSetupPage(navController: NavHostController) {
     var openingBowler by remember { mutableStateOf<Player?>(null) }
     var openingKeeper by remember { mutableStateOf<Player?>(null) }
 
-    noOfOversAside = dbHelper.getNoOfOversAside(matchId)
-    noOfPlayersAside = dbHelper.getNoOfPlayersAside(matchId)
+    var sideWallRule = dbHelper.getSideWallRule(matchId)
+    var noOfOversAside = dbHelper.getNoOfOversAside(matchId)
+    var noOfPlayersAside = dbHelper.getNoOfPlayersAside(matchId)
     team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
     team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
     battingTeamCaptain = Player((dbHelper.getBattingTeamCaptain(matchId, 1)))
@@ -85,6 +84,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
     var expanded06 by remember { mutableStateOf(false) }
     var expanded07 by remember { mutableStateOf(false) }
     var expanded08 by remember { mutableStateOf(false) }
+    var expanded09 by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -134,7 +134,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Row to hold no of Overs and no of Players Aside
+            // Row to hold no of Overs Aside, no of Players Aside & Side Wall Rule
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -145,7 +145,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(end = 8.dp),
+                        .padding(end = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     ExposedDropdownMenuBox(
@@ -163,7 +163,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             onValueChange = { },
                             label = {
                                 Text(
-                                    "Overs per side",
+                                    "Overs aside",
                                     fontSize = if (isTablet) 22.sp else 14.sp
                                 )
                             },
@@ -187,15 +187,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     },
                                     onClick = {
                                         noOfOversAside = i
-//                                        team1Captain?.let {
-//                                            dbHelper.addTeamPlayer(
-//                                                matchId,
-//                                                1,
-//                                                player.name,
-//                                                1,
-//                                                0
-//                                            )
-//                                        }
+                                        dbHelper.updateOversAside(matchId,noOfOversAside)
                                         expanded00 = false
                                     }
                                 )
@@ -207,7 +199,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(start = 8.dp),
+                        .padding(start = 4.dp,end = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     ExposedDropdownMenuBox(
@@ -225,7 +217,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             onValueChange = { },
                             label = {
                                 Text(
-                                    text = "Players per side",
+                                    text = "Players aside",
                                     fontSize = if (isTablet) 22.sp else 14.sp
                                 )
                             },
@@ -249,10 +241,62 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     },
                                     onClick = {
                                         noOfPlayersAside = i
-//                                        team2Captain?.let {
-//                                            dbHelper.addTeamPlayer(matchId, 2, player.name, 1,0)
-//                                        }
+                                        dbHelper.updatePlayersAside(matchId,noOfPlayersAside)
                                         expanded01 = false
+                                    }
+                                )
+                        }
+                    }
+                }
+
+                // Side Wall Rule
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    ExposedDropdownMenuBox(
+                        expanded = expanded09,
+                        onExpandedChange = {
+                            if (!matchStarted) {
+                                expanded09 = !expanded09
+                            }
+                        }
+                    ) {
+                        OutlinedTextField(
+                            enabled = !matchStarted,
+                            readOnly = true,
+                            value = "+$sideWallRule",
+                            onValueChange = { },
+                            label = {
+                                Text(
+                                    text = "Side wall rule",
+                                    fontSize = if (isTablet) 22.sp else 14.sp
+                                )
+                            },
+                            textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded09,
+                            onDismissRequest = { expanded09 = false }
+                        ) {
+                            for (i in 0..2)
+                                androidx.compose.material3.DropdownMenuItem(
+                                    enabled = !matchStarted,
+                                    text = {
+                                        Text(
+                                            text = i.toString(),
+                                            fontSize = if (isTablet) 30.sp else 14.sp
+                                        )
+                                    },
+                                    onClick = {
+                                        sideWallRule = i
+                                        dbHelper.updateSideWallRule(matchId,sideWallRule)
+                                        expanded09 = false
                                     }
                                 )
                         }
