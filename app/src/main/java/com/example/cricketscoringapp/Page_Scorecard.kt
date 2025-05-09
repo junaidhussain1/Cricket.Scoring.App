@@ -212,11 +212,11 @@ fun ScoreCardPage(navController: NavHostController) {
         val team2OversBowled = dbHelper.getTeamOversBowled(matchId, firstTeamId)
 
         if (dbHelper.getIsMatchStarted(matchId)) {
-            if ((team1wickets == 12) and (team2batters == 0)) {
+            if ((team1wickets == noOfPlayersAside * 2) and (team2batters == 0)) {
                 dbHelper.updateBowlingStats(matchId,"bowled")
                 handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
                 navController.navigate("secondinningssetup")
-            } else if (team2wickets == 12) {
+            } else if (team2wickets == noOfPlayersAside * 2) {
                 handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
                 navController.navigate("homepage")
             } else {
@@ -1148,7 +1148,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     val wicketDescription = getWicketDescription(selectedWicketsOption.value,currentBowler.value,selectedFielder.value)
                     val wicketType = getWicketType(selectedWicketsOption.value)
                     markBatsmanAsOutInDB(context,matchId,firstBatsmanStats,secondBatsmanStats,wicketDescription,wicketType,currentBowler.value,selectedFielder.value,"",false)
-                    if (dbHelper.getTeamWickets(matchId,dbHelper.getTeamForPlayer(matchId,batsmanOut)) < 12) {
+                    if (dbHelper.getTeamWickets(matchId,dbHelper.getTeamForPlayer(matchId,batsmanOut)) < (noOfPlayersAside * 2)) {
                         dbHelper.updateBattingStats(matchId,nonStrikerBatsman,"non-striker","striker")
                     }
                 } else {
