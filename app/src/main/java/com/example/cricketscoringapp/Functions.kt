@@ -27,7 +27,6 @@ fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats) {
 
 fun swapBatsmen(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats, actionForBatsman: String) {
     if (((batsman1.name.value == actionForBatsman) && (!batsman1.active.value)) || ((batsman2.name.value == actionForBatsman) && (!batsman2.active.value))) {
-        //swapBatsmen(batsman1,batsman2)
         swapBatsmenDB(context,matchId,batsman1,batsman2)
     }
 }
@@ -59,6 +58,7 @@ fun updateStats(context: Context,
                 secondTeamStats: TeamStats) {
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
+    val sideWallRule = dbHelper.getSideWallRule(matchId)
     val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3","WKRONB","WKROW","WKSTW")
     val excludedValuesFromBallsFaced1 = setOf("W","W+1","W+2","WKROW","WKSTW")
     val excludedValuesFromBallsFaced2 = setOf("W","W+1","W+2")
@@ -102,7 +102,38 @@ fun updateStats(context: Context,
 
         doUpdateStats(context,matchId,false,newValue,1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
 
-        if ((newValue == "1") || (newValue == "2")) swapBatsmenDB(context,matchId,firstBatsmanStats, secondBatsmanStats)
+        when(sideWallRule) {
+            0 -> {
+                if ((newValue == "1") || (newValue == "3")) {
+                    swapBatsmenDB(
+                        context,
+                        matchId,
+                        firstBatsmanStats,
+                        secondBatsmanStats
+                    )
+                }
+            }
+            1 -> {
+                if ((newValue == "1") || (newValue == "2")) {
+                    swapBatsmenDB(
+                        context,
+                        matchId,
+                        firstBatsmanStats,
+                        secondBatsmanStats
+                    )
+                }
+            }
+            2 -> {
+                if ((newValue == "1") || (newValue == "3")) {
+                    swapBatsmenDB(
+                        context,
+                        matchId,
+                        firstBatsmanStats,
+                        secondBatsmanStats
+                    )
+                }
+            }
+        }
 
         if (balls.size == 6 && balls.take(6).all { it.action == "0" || it.action.contains("WK") }) {
             updateBowler(matchId,false,"maiden",bowlerStats,activeBatsman,1.00,"",context)
@@ -121,8 +152,40 @@ fun updateStats(context: Context,
         // Decrement the bowlerOver by 0.1 only if the last ball was a valid ball value
         var containsExcludedValue = lastBall.split(",").any { it in excludedValuesFromBallsBalled }
         if (!containsExcludedValue) {
-            if ((lastBall == "1") || (lastBall == "2")) {
-                swapBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats,balls[lastNonEmptyIndex].batsman)
+            when(sideWallRule) {
+                0 -> {
+                    if ((lastBall == "1") || (lastBall == "3")) {
+                        swapBatsmen(
+                            context,
+                            matchId,
+                            firstBatsmanStats,
+                            secondBatsmanStats,
+                            balls[lastNonEmptyIndex].batsman
+                        )
+                    }
+                }
+                1 -> {
+                    if ((lastBall == "1") || (lastBall == "2")) {
+                        swapBatsmen(
+                            context,
+                            matchId,
+                            firstBatsmanStats,
+                            secondBatsmanStats,
+                            balls[lastNonEmptyIndex].batsman
+                        )
+                    }
+                }
+                2 -> {
+                    if ((lastBall == "1") || (lastBall == "3")) {
+                        swapBatsmen(
+                            context,
+                            matchId,
+                            firstBatsmanStats,
+                            secondBatsmanStats,
+                            balls[lastNonEmptyIndex].batsman
+                        )
+                    }
+                }
             }
             updateBowler(matchId,true,"over",bowlerStats,activeBatsman,-0.1,"",context)
             updateTeam("overs", firstTeamStats, secondTeamStats, -0.1)
