@@ -28,6 +28,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
+import androidx.compose.ui.viewinterop.AndroidView
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
 
 @Composable
 fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
@@ -52,10 +59,114 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
             if (teamIdB != 0) {
                 item {
                     TeamStatsSection(matchId = matchId, pTeamId = teamIdB, context = context)
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
+            }
+
+            item {
+                Text(
+                    text = "Match Runworm",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color(255, 252, 228),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                val dbHelper = CricketDatabaseHelper(context)
+                val bowlersList1 = remember { mutableStateListOf<BowlerStats>() }
+                var ballNumber = 0
+                var ballValueInt = 0
+                var entries: List<Entry> = emptyList()
+
+                bowlersList1.clear()
+                bowlersList1.addAll(dbHelper.getBowlingStats(matchId, 1))
+                bowlersList1.forEach { player ->
+                    val overBalls = player.overrecord.value
+                    val overBallsValues = overBalls.split("|").toMutableList()
+
+                    entries = overBallsValues.mapIndexed { index, ballValue ->
+                        ballNumber += 1
+                        ballValueInt += getBallValueInt(ballValue)
+                        Entry(ballNumber.toFloat(), ballValueInt.toFloat())
+                    }
+
+                }
+
+                AndroidView(
+                    factory = { context ->
+                        LineChart(context).apply {
+                            val dataSet = LineDataSet(entries, "Run Worm").apply {
+                                color = android.graphics.Color.CYAN
+                                valueTextColor = android.graphics.Color.WHITE
+                                lineWidth = 2f
+                                circleRadius = 4f
+                                setCircleColor(android.graphics.Color.MAGENTA)
+                                setDrawValues(true)
+                            }
+
+                            val lineData = LineData(dataSet)
+                            this.data = lineData
+
+                            xAxis.axisMinimum = 0f
+                            xAxis.granularity = 1f
+                            xAxis.setDrawGridLines(false)
+                            xAxis.setDrawLabels(true)
+//                            xAxis.valueFormatter = object : ValueFormatter() {
+//                                override fun getFormattedValue(value: Float): String {
+//                                    val index = value.toInt()
+//                                    return if (index in labels.indices) labels[index] else ""
+//                                }
+//                            }
+
+
+                            axisLeft.textColor = android.graphics.Color.WHITE
+                            axisRight.isEnabled = false
+                            xAxis.textColor = android.graphics.Color.WHITE
+                            legend.textColor = android.graphics.Color.WHITE
+
+                            description = Description().apply {
+                                text = ""
+                            }
+
+                            setTouchEnabled(true)
+                            setPinchZoom(true)
+                            animateX(1000)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                        .padding(8.dp)
+                )
             }
         }
     }
+}
+
+fun getBallValueInt(ballValue: String): Int {
+    val firstValue = if (ballValue.contains(",")) ballValue.split(",")[0] else ballValue
+    when {
+        firstValue in listOf("0", "1", "2", "3", "4", "5", "6", "7", "8", "9") ->
+            return firstValue.toInt()
+
+        firstValue == "W" -> return 1
+        firstValue == "W+1" -> return 2
+        firstValue == "W+2" -> return 3
+        firstValue == "W+3" -> return 4
+        firstValue == "W+4" -> return 5
+        firstValue == "W+5" -> return 6
+        firstValue == "W+6" -> return 7
+
+        firstValue == "NB" -> return 1
+        firstValue == "NB+1" -> return 2
+        firstValue == "NB+2" -> return 3
+        firstValue == "NB+3" -> return 4
+        firstValue == "NB+4" -> return 5
+        firstValue == "NB+5" -> return 6
+        firstValue == "NB+6" -> return 7
+
+        firstValue.startsWith("WK") -> return -3
+    }
+
+    return 0
 }
 
 @Composable

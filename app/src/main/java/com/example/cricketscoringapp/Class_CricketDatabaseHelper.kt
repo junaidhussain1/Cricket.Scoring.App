@@ -18,7 +18,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 19
+        const val DATABASE_VERSION = 20
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -707,14 +707,18 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return playerName
     }
 
-    fun getBowlingStats(matchId: String, teamId: Int) : List<Bowler> {
-        val bowlers = mutableListOf<Bowler>()
+    fun getBowlingStats(matchId: String, teamId: Int) : List<BowlerStats> {
+        val bowlers = mutableListOf<BowlerStats>()
         val db = readableDatabase
         val cursor = db.rawQuery("SELECT * FROM $TABLE_BOWLINGSTATS where match_id = ? AND team_id = ?", arrayOf(matchId,teamId.toString()))
-        while (cursor.moveToNext()) {
-            val playerName = cursor.getStringOrEmpty("player_name")
-            val overs: String = cursor.getStringOrEmpty("overvalue")
-            bowlers.add(Bowler(playerName,overs.toDouble()))
+        cursor.use {  // Ensure the cursor is properly closed after use
+            while (it.moveToNext()) {  // Iterate through all records in the cursor
+                val bowlerStats = BowlerStats(
+                    name = mutableStateOf(it.getStringOrEmpty("player_name")),
+                    overrecord = mutableStateOf(it.getStringOrEmpty("over_record"))
+                )
+                bowlers.add(bowlerStats) // Add each bowler stats object to the list
+            }
         }
         cursor.close()
         return bowlers
