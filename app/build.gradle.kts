@@ -11,8 +11,8 @@ android {
         applicationId = "com.example.cricketscoringapp"
         minSdk = 26
         targetSdk = 34
-        versionCode = 21
-        versionName = "3.03"
+        versionCode = 22
+        versionName = "3.04"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -90,4 +90,5 @@ dependencies {
     implementation(libs.google.http.client.jackson2)
     implementation(libs.gson)
 
+    implementation(libs.mpandroidchart)
 }

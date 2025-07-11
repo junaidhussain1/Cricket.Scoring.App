@@ -28,6 +28,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
+import androidx.compose.ui.viewinterop.AndroidView
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
 
 @Composable
 fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
@@ -45,17 +51,148 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
             if (teamIdA != 0) {
                 item {
                     TeamStatsSection(matchId = matchId, pTeamId = teamIdA, context = context)
-                    Spacer(modifier = Modifier.height(16.dp)) // Add spacing between sections
+                    Spacer(modifier = Modifier.height(100.dp)) // Add spacing between sections
                 }
             }
 
             if (teamIdB != 0) {
                 item {
                     TeamStatsSection(matchId = matchId, pTeamId = teamIdB, context = context)
+                    Spacer(modifier = Modifier.height(100.dp))
                 }
+            }
+
+            item {
+                Text(
+                    text = "Match Runworm",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color(255, 252, 228),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                val dbHelper = CricketDatabaseHelper(context)
+                val teamCaptain1 = dbHelper.getBattingTeamCaptain(matchId, teamIdA)
+                val teamCaptain2 = dbHelper.getBattingTeamCaptain(matchId, teamIdB)
+                val bowlersList1 = remember { mutableStateListOf<BowlerStats>() }
+                val bowlersList2 = remember { mutableStateListOf<BowlerStats>() }
+                var ballNumber = 0
+                var ballValueInt = 0
+                val entries1: MutableList<Entry> = mutableListOf()
+                val entries2: MutableList<Entry> = mutableListOf()
+
+                bowlersList1.clear()
+                bowlersList1.addAll(dbHelper.getBowlingStats(matchId, teamIdA))
+                bowlersList1.forEach { player ->
+                    val overBalls = player.overrecord.value
+                    val overBallsValues = overBalls.split("|")
+
+                    val newEntries = overBallsValues.map { ballValue ->
+                        ballNumber += 1
+                        ballValueInt += getBallValueInt(ballValue)
+                        Entry(ballNumber.toFloat(), ballValueInt.toFloat())
+                    }
+                    entries1.addAll(newEntries)
+                }
+
+                ballNumber = 0
+                ballValueInt = 0
+                bowlersList2.clear()
+                bowlersList2.addAll(dbHelper.getBowlingStats(matchId, teamIdB))
+                bowlersList2.forEach { player ->
+                    val overBalls = player.overrecord.value
+                    val overBallsValues = overBalls.split("|")
+
+                    val newEntries = overBallsValues.map { ballValue ->
+                        ballNumber += 1
+                        ballValueInt += getBallValueInt(ballValue)
+                        Entry(ballNumber.toFloat(), ballValueInt.toFloat())
+                    }
+                    entries2.addAll(newEntries)
+                }
+
+                AndroidView(
+
+                    factory = { context ->
+                        LineChart(context).apply {
+                            val dataSet1 = LineDataSet(entries1, "Team $teamCaptain1").apply {
+                                color = android.graphics.Color.CYAN
+                                lineWidth = 4f
+                                setDrawValues(false)
+                                setDrawCircles(false)
+                            }
+                            val dataSet2 = LineDataSet(entries2, "Team $teamCaptain2").apply {
+                                color = android.graphics.Color.MAGENTA
+                                lineWidth = 4f
+                                setDrawValues(false)
+                                setDrawCircles(false)
+                            }
+
+                            legend.textSize = 20f
+                            legend.formSize = 16f
+                            legend.xEntrySpace = 16f
+                            legend.yEntrySpace = 5f
+                            legend.textColor = android.graphics.Color.WHITE
+
+                            val lineData = LineData(dataSet1,dataSet2)
+                            this.data = lineData
+
+                            xAxis.axisMinimum = 0f
+                            xAxis.granularity = 1f
+                            xAxis.setDrawGridLines(false)
+                            xAxis.setDrawLabels(true)
+                            xAxis.textColor = android.graphics.Color.WHITE
+                            xAxis.axisLineWidth = 4f
+                            xAxis.textSize = 14f         // X-axis label font size
+
+                            axisLeft.textSize = 14f
+                            axisLeft.textColor = android.graphics.Color.WHITE
+                            axisLeft.axisLineWidth = 4f
+
+                            description = Description().apply {
+                                text = ""
+                            }
+
+                            setTouchEnabled(true)
+                            setPinchZoom(true)
+                            animateX(1000)
+
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(500.dp)
+                        .padding(8.dp)
+                )
             }
         }
     }
+}
+
+fun getBallValueInt(ballValue: String): Int {
+    val firstValue = if (ballValue.contains(",")) ballValue.split(",")[0] else ballValue
+    when {
+        firstValue in listOf("0", "1", "2", "3", "4", "5", "6", "7", "8", "9") ->
+            return firstValue.toInt()
+
+        firstValue == "W" -> return 1
+        firstValue == "W+1" -> return 2
+        firstValue == "W+2" -> return 3
+        firstValue == "W+3" -> return 4
+        firstValue == "W+4" -> return 5
+        firstValue == "W+5" -> return 6
+        firstValue == "W+6" -> return 7
+
+        firstValue == "NB" -> return 1
+        firstValue == "NB+1" -> return 2
+        firstValue == "NB+2" -> return 3
+        firstValue == "NB+3" -> return 4
+        firstValue == "NB+4" -> return 5
+        firstValue == "NB+5" -> return 6
+        firstValue == "NB+6" -> return 7
+
+        firstValue.startsWith("WK") -> return -3
+    }
+
+    return 0
 }
 
 @Composable
