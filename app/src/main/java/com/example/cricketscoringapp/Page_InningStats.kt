@@ -34,7 +34,6 @@ import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.formatter.ValueFormatter
 
 @Composable
 fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
@@ -52,75 +51,101 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
             if (teamIdA != 0) {
                 item {
                     TeamStatsSection(matchId = matchId, pTeamId = teamIdA, context = context)
-                    Spacer(modifier = Modifier.height(16.dp)) // Add spacing between sections
+                    Spacer(modifier = Modifier.height(100.dp)) // Add spacing between sections
                 }
             }
 
             if (teamIdB != 0) {
                 item {
                     TeamStatsSection(matchId = matchId, pTeamId = teamIdB, context = context)
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(100.dp))
                 }
             }
 
             item {
                 Text(
                     text = "Match Runworm",
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.headlineLarge,
                     color = Color(255, 252, 228),
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 val dbHelper = CricketDatabaseHelper(context)
+                val teamCaptain1 = dbHelper.getBattingTeamCaptain(matchId, teamIdA)
+                val teamCaptain2 = dbHelper.getBattingTeamCaptain(matchId, teamIdB)
                 val bowlersList1 = remember { mutableStateListOf<BowlerStats>() }
+                val bowlersList2 = remember { mutableStateListOf<BowlerStats>() }
                 var ballNumber = 0
                 var ballValueInt = 0
-                var entries: List<Entry> = emptyList()
+                val entries1: MutableList<Entry> = mutableListOf()
+                val entries2: MutableList<Entry> = mutableListOf()
 
                 bowlersList1.clear()
-                bowlersList1.addAll(dbHelper.getBowlingStats(matchId, 1))
+                bowlersList1.addAll(dbHelper.getBowlingStats(matchId, teamIdA))
                 bowlersList1.forEach { player ->
                     val overBalls = player.overrecord.value
-                    val overBallsValues = overBalls.split("|").toMutableList()
+                    val overBallsValues = overBalls.split("|")
 
-                    entries = overBallsValues.mapIndexed { index, ballValue ->
+                    val newEntries = overBallsValues.map { ballValue ->
                         ballNumber += 1
                         ballValueInt += getBallValueInt(ballValue)
                         Entry(ballNumber.toFloat(), ballValueInt.toFloat())
                     }
+                    entries1.addAll(newEntries)
+                }
 
+                ballNumber = 0
+                ballValueInt = 0
+                bowlersList2.clear()
+                bowlersList2.addAll(dbHelper.getBowlingStats(matchId, teamIdB))
+                bowlersList2.forEach { player ->
+                    val overBalls = player.overrecord.value
+                    val overBallsValues = overBalls.split("|")
+
+                    val newEntries = overBallsValues.map { ballValue ->
+                        ballNumber += 1
+                        ballValueInt += getBallValueInt(ballValue)
+                        Entry(ballNumber.toFloat(), ballValueInt.toFloat())
+                    }
+                    entries2.addAll(newEntries)
                 }
 
                 AndroidView(
+
                     factory = { context ->
                         LineChart(context).apply {
-                            val dataSet = LineDataSet(entries, "Run Worm").apply {
+                            val dataSet1 = LineDataSet(entries1, "Team $teamCaptain1").apply {
                                 color = android.graphics.Color.CYAN
-                                valueTextColor = android.graphics.Color.WHITE
-                                lineWidth = 2f
-                                circleRadius = 4f
-                                setCircleColor(android.graphics.Color.MAGENTA)
-                                setDrawValues(true)
+                                lineWidth = 4f
+                                setDrawValues(false)
+                                setDrawCircles(false)
+                            }
+                            val dataSet2 = LineDataSet(entries2, "Team $teamCaptain2").apply {
+                                color = android.graphics.Color.MAGENTA
+                                lineWidth = 4f
+                                setDrawValues(false)
+                                setDrawCircles(false)
                             }
 
-                            val lineData = LineData(dataSet)
+                            legend.textSize = 20f
+                            legend.formSize = 16f
+                            legend.xEntrySpace = 16f
+                            legend.yEntrySpace = 5f
+                            legend.textColor = android.graphics.Color.WHITE
+
+                            val lineData = LineData(dataSet1,dataSet2)
                             this.data = lineData
 
                             xAxis.axisMinimum = 0f
                             xAxis.granularity = 1f
                             xAxis.setDrawGridLines(false)
                             xAxis.setDrawLabels(true)
-//                            xAxis.valueFormatter = object : ValueFormatter() {
-//                                override fun getFormattedValue(value: Float): String {
-//                                    val index = value.toInt()
-//                                    return if (index in labels.indices) labels[index] else ""
-//                                }
-//                            }
-
-
-                            axisLeft.textColor = android.graphics.Color.WHITE
-                            axisRight.isEnabled = false
                             xAxis.textColor = android.graphics.Color.WHITE
-                            legend.textColor = android.graphics.Color.WHITE
+                            xAxis.axisLineWidth = 4f
+                            xAxis.textSize = 14f         // X-axis label font size
+
+                            axisLeft.textSize = 14f
+                            axisLeft.textColor = android.graphics.Color.WHITE
+                            axisLeft.axisLineWidth = 4f
 
                             description = Description().apply {
                                 text = ""
@@ -129,11 +154,12 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                             setTouchEnabled(true)
                             setPinchZoom(true)
                             animateX(1000)
+
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(250.dp)
+                        .height(500.dp)
                         .padding(8.dp)
                 )
             }
