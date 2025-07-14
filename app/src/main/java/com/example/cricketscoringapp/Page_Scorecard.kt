@@ -215,7 +215,7 @@ fun ScoreCardPage(navController: NavHostController) {
             if ((team1wickets == noOfPlayersAside * 2) and (team2batters == 0)) {
                 dbHelper.updateBowlingStats(matchId,"bowled")
                 handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
-                navController.navigate("secondinningssetup")
+                navController.navigate("secondinningssetup/${matchId}/${firstTeamId}/${secondTeamId}")
             } else if (team2wickets == noOfPlayersAside * 2) {
                 handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
                 navController.navigate("homepage")
@@ -224,7 +224,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     if ((team1OversBowled == noOfOversAside) && (team2OversBowled == 0.0)) {
                         dbHelper.updateBowlingStats(matchId,"bowled")
                         handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
-                        navController.navigate("secondinningssetup")
+                        navController.navigate("secondinningssetup/${matchId}/${firstTeamId}/${secondTeamId}")
                     } else if (team2OversBowled == noOfOversAside) {
                         handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
                         navController.navigate("homepage")
@@ -911,7 +911,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             //If 1st innings then ask to confirm end of innings and start of second
                             dbHelper.updateBowlingStats(matchId,"bowled")
                             handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
-                            navController.navigate("secondinningssetup")
+                            navController.navigate("secondinningssetup/${matchId}/${firstTeamId}/${secondTeamId}")
                         } else {
                             //If 2nd innings then ask to confirm end of match
                             handleEndOfMatch(

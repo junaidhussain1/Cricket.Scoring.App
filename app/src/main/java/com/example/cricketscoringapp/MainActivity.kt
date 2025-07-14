@@ -59,16 +59,26 @@ fun AppNavHost(navController: NavHostController) {
             composable("team2PlayerSelection") { Team2PlayerSelectionPage()}
             composable("scorecard") { ScoreCardPage(navController = navController) }
             composable("existingmatches") { ExistingMatchesPage(navController = navController) }
-            composable("secondinningssetup") { SecondInningsSetupPage(navController = navController) }
+            composable("secondinningssetup/{matchId}/{battingTeamId}/{bowlingTeamId}") { backStackEntry ->
+                val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
+                val battingTeamId = backStackEntry.arguments?.getString("battingTeamId")?.toIntOrNull() ?: 0
+                val bowlingTeamId = backStackEntry.arguments?.getString("bowlingTeamId")?.toIntOrNull() ?: 0
+
+                SecondInningsSetupPage(
+                    navController = navController,
+                    matchId = matchId,
+                    battingTeamId = battingTeamId,
+                    bowlingTeamId = bowlingTeamId
+                )
+            }
             composable("settings") { SettingsPage(navController = navController) }
             composable("googlesheetsettings") { GoogleSheetSettingsPage() }
             composable("inningstats/{matchId}/{teamIdA}/{teamIdB}") { backStackEntry ->
-            val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
-            val teamIdA = backStackEntry.arguments?.getString("teamIdA")?.toIntOrNull() ?: 0
-            val teamIdB = backStackEntry.arguments?.getString("teamIdB")?.toIntOrNull() ?: 0
+                val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
+                val teamIdA = backStackEntry.arguments?.getString("teamIdA")?.toIntOrNull() ?: 0
+                val teamIdB = backStackEntry.arguments?.getString("teamIdB")?.toIntOrNull() ?: 0
 
-            // Call InningStatsPage with both arguments
-            InningStatsPage(matchId = matchId, teamIdA = teamIdA, teamIdB = teamIdB)
+                InningStatsPage(matchId = matchId, teamIdA = teamIdA, teamIdB = teamIdB)
         }
     }
 }
