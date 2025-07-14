@@ -16,18 +16,16 @@ import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SecondInningsSetupPage(
-    navController: NavHostController,
-    matchId: String,
-    battingTeamId: Int,
-    bowlingTeamId: Int
-) {
+fun SecondInningsSetupPage(navController: NavHostController) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
 
     val dbHelper = CricketDatabaseHelper(context)
-    val firstBattingTeamId = dbHelper.getTeamForPlayer(matchId, dbHelper.getFirstBattingTeamStriker(matchId))
+    val matchId = dbHelper.getMatchId()
+    val firstBattingTeamId = dbHelper.getTeamForPlayer(matchId,dbHelper.getFirstBattingTeamStriker(matchId))
+    val battingTeamId = if (firstBattingTeamId == 1) { 2 } else { 1 }
+    val bowlingTeamId = if (firstBattingTeamId == 1) { 1 } else { 2 }
 
     var facingBatsman by remember { mutableStateOf<Player?>(null) }
     var secondBatsman by remember { mutableStateOf<Player?>(null) }
@@ -56,18 +54,10 @@ fun SecondInningsSetupPage(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            if (battingTeamId != 0) {
-                item {
-                    TeamStatsSection(matchId = matchId, pTeamId = battingTeamId, context = context)
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
-            }
 
-            if (bowlingTeamId != 0) {
-                item {
-                    TeamStatsSection(matchId = matchId, pTeamId = bowlingTeamId, context = context)
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
+            item {
+                TeamStatsSection(matchId = matchId, pTeamId = 1, context = context)
+                Spacer(modifier = Modifier.height(10.dp))
             }
 
             item {
@@ -76,6 +66,7 @@ fun SecondInningsSetupPage(
                 // Row for Facing Batsman and Second Batsman
                 Row(
                     modifier = Modifier
+
                         .fillMaxWidth()
                         .padding(8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween

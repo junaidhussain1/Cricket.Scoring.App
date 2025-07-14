@@ -70,8 +70,10 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 val dbHelper = CricketDatabaseHelper(context)
-                val teamCaptain1 = dbHelper.getBattingTeamCaptain(matchId, teamIdA)
-                val teamCaptain2 = dbHelper.getBattingTeamCaptain(matchId, teamIdB)
+                val teamCaptain1 = dbHelper.getFirstBattingTeamCaptain(matchId)
+                val teamCaptain2 = dbHelper.getSecondBattingTeamCaptain(matchId)
+                val teamIdBB = dbHelper.getTeamForPlayer(matchId,teamCaptain1)
+                val teamIdAA = dbHelper.getTeamForPlayer(matchId,teamCaptain2)
                 val bowlersList1 = remember { mutableStateListOf<BowlerStats>() }
                 val bowlersList2 = remember { mutableStateListOf<BowlerStats>() }
                 var ballNumber = 0
@@ -80,7 +82,8 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                 val entries2: MutableList<Entry> = mutableListOf()
 
                 bowlersList1.clear()
-                bowlersList1.addAll(dbHelper.getBowlingStats(matchId, teamIdA))
+                bowlersList1.addAll(dbHelper.getBowlingStats(matchId, teamIdAA))
+
                 bowlersList1.forEach { player ->
                     val overBalls = player.overrecord.value
                     val overBallsValues = overBalls.split("|")
@@ -96,7 +99,7 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                 ballNumber = 0
                 ballValueInt = 0
                 bowlersList2.clear()
-                bowlersList2.addAll(dbHelper.getBowlingStats(matchId, teamIdB))
+                bowlersList2.addAll(dbHelper.getBowlingStats(matchId, teamIdBB))
                 bowlersList2.forEach { player ->
                     val overBalls = player.overrecord.value
                     val overBallsValues = overBalls.split("|")

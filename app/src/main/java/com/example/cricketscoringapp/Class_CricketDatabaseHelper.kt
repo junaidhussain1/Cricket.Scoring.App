@@ -370,6 +370,34 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return player
     }
 
+    fun getFirstBattingTeamCaptain(matchId: String) : String {
+        val db = readableDatabase
+        val query = "SELECT first_batting_team_captain FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId))
+
+        val player = if (cursor.moveToFirst()) {
+            cursor.getStringOrEmpty("first_batting_team_captain")
+        } else {
+            ""
+        }
+        cursor.close()
+        return player
+    }
+
+    fun getSecondBattingTeamCaptain(matchId: String) : String {
+        val db = readableDatabase
+        val query = "SELECT second_batting_team_captain FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId))
+
+        val player = if (cursor.moveToFirst()) {
+            cursor.getStringOrEmpty("second_batting_team_captain")
+        } else {
+            ""
+        }
+        cursor.close()
+        return player
+    }
+
     fun getSecondBattingTeamBowler(matchId: String) : String {
         val db = readableDatabase
         val query = "SELECT second_batting_team_bowler FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"

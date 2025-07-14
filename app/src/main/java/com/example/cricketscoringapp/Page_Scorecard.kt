@@ -46,7 +46,6 @@ fun ScoreCardPage(navController: NavHostController) {
     val matchId = dbHelper.getMatchId()
     val noOfOversAside = dbHelper.getNoOfOversAside(matchId).toDouble()
     val noOfPlayersAside = dbHelper.getNoOfPlayersAside(matchId)
-    val sideWallRule = dbHelper.getSideWallRule(matchId)
     val currentBowler = remember { mutableStateOf(dbHelper.getCurrentBowler(matchId)) }
     val bowlingTeamId = dbHelper.getTeamForPlayer(matchId,currentBowler.value)
     val bowlingTeam = bowlingTeamId.let { dbHelper.getTeamPlayers(matchId, it,1) }
@@ -215,7 +214,10 @@ fun ScoreCardPage(navController: NavHostController) {
             if ((team1wickets == noOfPlayersAside * 2) and (team2batters == 0)) {
                 dbHelper.updateBowlingStats(matchId,"bowled")
                 handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
-                navController.navigate("secondinningssetup/${matchId}/${firstTeamId}/${secondTeamId}")
+                navController.navigate("secondinningssetup")
+                {
+                    popUpTo("scorecard") { inclusive = true }
+                }
             } else if (team2wickets == noOfPlayersAside * 2) {
                 handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
                 navController.navigate("homepage")
@@ -224,7 +226,10 @@ fun ScoreCardPage(navController: NavHostController) {
                     if ((team1OversBowled == noOfOversAside) && (team2OversBowled == 0.0)) {
                         dbHelper.updateBowlingStats(matchId,"bowled")
                         handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
-                        navController.navigate("secondinningssetup/${matchId}/${firstTeamId}/${secondTeamId}")
+                        navController.navigate("secondinningssetup")
+                        {
+                            popUpTo("scorecard") { inclusive = true }
+                        }
                     } else if (team2OversBowled == noOfOversAside) {
                         handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
                         navController.navigate("homepage")
@@ -911,7 +916,11 @@ fun ScoreCardPage(navController: NavHostController) {
                             //If 1st innings then ask to confirm end of innings and start of second
                             dbHelper.updateBowlingStats(matchId,"bowled")
                             handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
-                            navController.navigate("secondinningssetup/${matchId}/${firstTeamId}/${secondTeamId}")
+                            navController.navigate("secondinningssetup" +
+                                    "")
+                                {
+                                    popUpTo("scorecard") { inclusive = true }
+                                }
                         } else {
                             //If 2nd innings then ask to confirm end of match
                             handleEndOfMatch(
