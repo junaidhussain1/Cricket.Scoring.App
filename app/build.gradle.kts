@@ -9,10 +9,10 @@ android {
 
     defaultConfig {
         applicationId = "com.example.cricketscoringapp"
-        minSdk = 26
+        minSdk = 29
         targetSdk = 34
-        versionCode = 23
-        versionName = "3.10"
+        versionCode = 28
+        versionName = "3.15"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

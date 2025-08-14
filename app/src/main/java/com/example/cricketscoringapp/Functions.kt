@@ -1,8 +1,14 @@
 package com.example.cricketscoringapp
 
+import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.media.MediaPlayer
+import android.os.Environment
+import android.provider.MediaStore
 import android.widget.Toast
+import java.io.IOException
+import java.io.OutputStream
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -933,3 +939,67 @@ fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>
 
     return Pair(transformedData,matchDataSize)
 }
+
+fun OutputStream.writeCsv(listOfData: List<List<Any>>) {
+    val writer = bufferedWriter()
+
+    // Example header — update to match your actual columns
+    writer.write(
+        listOf(
+            "Player", "Captain", "", "", "", "", "Catches", "Stumping", "Run Outs",
+            "1st Innings Runs", "1st Innings Balls", "1st Innings Fours", "1st Innings Sixes",
+            "1st Innings Dot Balls", "1st Innings Batting Status", "1st Innings How Out",
+            "1st Innings Bowler", "1st Innings Caught By", "1st Innings Run Out By",
+            "2nd Innings Runs", "2nd Innings Balls", "2nd Innings Fours", "2nd Innings Sixes",
+            "2nd Innings Dot Balls", "2nd Innings Batting Status", "2nd Innings How Out",
+            "2nd Innings Bowler", "2nd Innings Caught By", "2nd Innings Run Out By",
+            "Bowler", "Overs Bowled", "Runs Conceded", "Wickets", "Maidens", "Sixes Bowled",
+            "Fours Bowled", "Dot Balls Bowled", "Wides", "No Balls", "Result"
+        ).joinToString(",")
+    )
+    writer.newLine()
+
+    // Write each row
+    listOfData.forEach { row ->
+        val csvRow = row.joinToString(",") { field ->
+            // Escape double quotes in fields
+            val str = field.toString().replace("\"", "\"\"")
+            "\"$str\""
+        }
+        writer.write(csvRow)
+        writer.newLine()
+    }
+
+    writer.flush()
+    writer.close()
+}
+
+fun saveAndShareCsv(context: Context, fileName: String, listOfData: List<List<Any>>) {
+    val resolver = context.contentResolver
+
+    val contentValues = ContentValues().apply {
+        put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+        put(MediaStore.Downloads.MIME_TYPE, "text/csv")
+        put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+    }
+
+    val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+
+    if (uri != null) {
+        resolver.openOutputStream(uri)?.use { outputStream ->
+            outputStream.writeCsv(listOfData)
+        }
+
+        // Create share intent
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/csv"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // so other apps can read it
+        }
+
+        context.startActivity(Intent.createChooser(shareIntent, "Share CSV via"))
+    } else {
+        throw IOException("Failed to create file in Downloads")
+    }
+}
+

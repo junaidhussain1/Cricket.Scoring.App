@@ -1,6 +1,5 @@
 package com.example.cricketscoringapp
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,11 +28,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
 
 @Composable
 fun ExistingMatchesPage(navController: NavHostController) {
@@ -115,25 +109,29 @@ fun ExistingMatchesPage(navController: NavHostController) {
                             IconButton(
                                 enabled = match.isFinished && !match.isSynced,
                                 onClick = {
-                                    val googleSheetsService = GoogleSheetsService()
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        try {
-                                            val existingData = googleSheetsService.readData(context, "Data Raw!A:A")
-                                            val lastRowIndex = existingData.size
-                                            val (dataToWrite, matchDataSize) = getMatchDataToUpload(context, match.matchId)
-                                            val startRow = lastRowIndex + 1
-                                            val endRow = lastRowIndex + matchDataSize
-                                            val rangeToWrite = "Data Raw!A${lastRowIndex + 1}:AN${lastRowIndex + matchDataSize}"
-                                            val rtnMessage = googleSheetsService.writeData(context, rangeToWrite, startRow, endRow, dataToWrite)
-                                            withContext(Dispatchers.Main) {
-                                                Toast.makeText(context, rtnMessage, Toast.LENGTH_LONG).show()
-                                            }
-                                        } catch (e: Exception) {
-                                            withContext(Dispatchers.Main) {
-                                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                                            }
-                                        }
-                                    }
+                                    val (dataToWrite, matchDataSize) = getMatchDataToUpload(context, match.matchId)
+                                    saveAndShareCsv(context, "$matchDate - $team1Captain vs $team2Captain.csv", dataToWrite)
+
+//                                    val googleSheetsService = GoogleSheetsService()
+//                                    CoroutineScope(Dispatchers.Main).launch {
+//                                        try {
+//                                            val existingData = googleSheetsService.readData(context, "Data Raw!A:A")
+//                                            val lastRowIndex = existingData.size
+//                                            val (dataToWrite, matchDataSize) = getMatchDataToUpload(context, match.matchId)
+//                                            val startRow = lastRowIndex + 1
+//                                            val endRow = lastRowIndex + matchDataSize
+//                                            val rangeToWrite = "Data Raw!A${lastRowIndex + 1}:AN${lastRowIndex + matchDataSize}"
+//                                            val rtnMessage = googleSheetsService.writeData(context, rangeToWrite, startRow, endRow, dataToWrite)
+//                                            withContext(Dispatchers.Main) {
+//                                                Toast.makeText(context, rtnMessage, Toast.LENGTH_LONG).show()
+//                                            }
+//                                        } catch (e: Exception) {
+//                                            withContext(Dispatchers.Main) {
+//                                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+//                                            }
+//                                        }
+//                                    }
+
                                 }
                             ) {
                                 Icon(
