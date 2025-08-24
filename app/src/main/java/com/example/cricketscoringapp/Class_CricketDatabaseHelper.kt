@@ -18,7 +18,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 21
+        const val DATABASE_VERSION = 24
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -202,7 +202,18 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         SUM(bowling.wides) AS wides,
         SUM(bowling.noballs) AS noballs,
         CASE
-            WHEN teamcaptain = winningcaptain THEN 'Win'
+            WHEN (
+                SELECT player_name 
+                FROM $TABLE_TEAMS tm2 
+                WHERE tm.match_id = tm2.match_id
+                  AND tm.team_id = tm2.team_id
+                  AND tm2.is_captain = 1
+            ) = (
+                SELECT winning_team_captain
+                FROM $TABLE_MATCHES tma
+                WHERE tm.match_id = tma.match_id
+            )
+            THEN 'Win'
             ELSE 'Loss'
         END AS winLossTie
     FROM 

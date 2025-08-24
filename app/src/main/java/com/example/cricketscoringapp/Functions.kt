@@ -954,7 +954,7 @@ fun OutputStream.writeCsv(listOfData: List<List<Any>>) {
             "2nd Innings Dot Balls", "2nd Innings Batting Status", "2nd Innings How Out",
             "2nd Innings Bowler", "2nd Innings Caught By", "2nd Innings Run Out By",
             "Bowler", "Overs", "Runs Conceded", "Wickets", "Maidens", "Sixes Bowled",
-            "Fours Bowled", "Dot Balls Bowled", "Wides", "No Balls", "Result"
+            "Fours Bowled", "Dot Balls Bowled", "Wides", "No Balls", "Win Loss Tie"
         ).joinToString(",")
     )
     writer.newLine()
