@@ -26,7 +26,6 @@ data class UploadRow(
     val secondInningBowler: String,
     val secondInningCaughtBy: String,
     val secondInningRunOutBy: String,
-    val mBowler: String,
     val oversBowled: Double,
     val runsConceded: Int,
     val wickets: Int,

@@ -250,7 +250,6 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOve
     val ballsRemaining: Int
     val oversRemaining: Double
     var runsToWin = 0
-    var runsToWinAbs = 0
     val runsToWinTxt: String
     var winningTeam = ""
     if (firstTeamStats.active.value) {
@@ -280,7 +279,7 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOve
         ballsRemaining = calculateBalls(noOfOversAside) - calculateBalls(secondTeamStats.overs.value)
         oversRemaining = calculateOversRemaining(ballsRemaining)
     }
-    runsToWinAbs = abs(runsToWin)
+    val runsToWinAbs = abs(runsToWin)
     runsToWinTxt = if (winningTeam.isNotEmpty()) {
         "Team $winningTeam is winning by $runsToWinAbs runs!"
     } else {
@@ -294,14 +293,14 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOve
     return Pair(runsToWinTxt,winningTeam)
 }
 
-fun calcNoOfWickets(context: Context,matchId: String,firstTeamStats: TeamStats) : Int {
-    val dbHelper = CricketDatabaseHelper(context)
-    return if (firstTeamStats.active.value) {
-        dbHelper.getTeamWickets(matchId,1)
-    } else {
-        dbHelper.getTeamWickets(matchId,2)
-    }
-}
+//fun calcNoOfWickets(context: Context,matchId: String,firstTeamStats: TeamStats) : Int {
+//    val dbHelper = CricketDatabaseHelper(context)
+//    return if (firstTeamStats.active.value) {
+//        dbHelper.getTeamWickets(matchId,1)
+//    } else {
+//        dbHelper.getTeamWickets(matchId,2)
+//    }
+//}
 
 fun updateBowler(
     matchId: String,
@@ -875,7 +874,6 @@ fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>
                 matchStatsForPlayer.secondInningBowler,
                 matchStatsForPlayer.secondInningCaughtBy,
                 matchStatsForPlayer.secondInningRunOutBy,
-                matchStatsForPlayer.mBowler,
                 matchStatsForPlayer.oversBowled,
                 matchStatsForPlayer.runsConceded,
                 matchStatsForPlayer.wickets,
@@ -921,17 +919,16 @@ fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>
             uploadRow.secondInningBowler,           // Column AA
             uploadRow.secondInningCaughtBy,         // Column AB
             uploadRow.secondInningRunOutBy,         // Column AC
-            uploadRow.mBowler,                      // Column AD
-            uploadRow.oversBowled,                  // Column AE
-            uploadRow.runsConceded,                 // Column AF
-            uploadRow.wickets,                      // Column AG
-            uploadRow.maiden,                       // Column AH
-            uploadRow.sixes,                        // Column AI
-            uploadRow.fours,                        // Column AJ
-            uploadRow.dotBalls,                     // Column AK
-            uploadRow.wides,                        // Column AL
-            uploadRow.noBalls,                      // Column AM
-            uploadRow.winLossTie                    // Column AN
+            uploadRow.oversBowled,                  // Column AD
+            uploadRow.runsConceded,                 // Column AE
+            uploadRow.wickets,                      // Column AF
+            uploadRow.maiden,                       // Column AG
+            uploadRow.sixes,                        // Column AH
+            uploadRow.fours,                        // Column AI
+            uploadRow.dotBalls,                     // Column AJ
+            uploadRow.wides,                        // Column AK
+            uploadRow.noBalls,                      // Column AL
+            uploadRow.winLossTie                    // Column AM
         )
     }
 
@@ -953,7 +950,7 @@ fun OutputStream.writeCsv(listOfData: List<List<Any>>) {
             "2nd Innings Runs", "2nd Innings Balls", "2nd Innings Fours", "2nd Innings Sixes",
             "2nd Innings Dot Balls", "2nd Innings Batting Status", "2nd Innings How Out",
             "2nd Innings Bowler", "2nd Innings Caught By", "2nd Innings Run Out By",
-            "Bowler", "Overs", "Runs Conceded", "Wickets", "Maidens", "Sixes Bowled",
+            "Overs", "Runs Conceded", "Wickets", "Maidens", "Sixes Bowled",
             "Fours Bowled", "Dot Balls Bowled", "Wides", "No Balls", "Win Loss Tie"
         ).joinToString(",")
     )

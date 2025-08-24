@@ -513,7 +513,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                     cursor.getStringOrEmpty("secondInningBowler"),
                     cursor.getStringOrEmpty("secondInningCaughtBy"),
                     cursor.getStringOrEmpty("secondInningRunOutBy"),
-                    cursor.getStringOrEmpty("mBowler"),
                     cursor.getDoubleOrZero("oversBowled"),
                     cursor.getIntOrZero("runsConceded"),
                     cursor.getIntOrZero("wickets"),
@@ -722,17 +721,17 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         }
     }
 
-    fun getLastBowler(matchId: String, teamId: Int) : String {
-        val db = readableDatabase
-        val query = "SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? AND bowling_status = ? ORDER BY bowling_order DESC LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString(),"bowled"))
-        var lastBowler = ""
-        if (cursor.moveToFirst()) {
-            lastBowler = cursor.getStringOrEmpty("player_name")
-        }
-        cursor.close()
-        return lastBowler
-    }
+//    fun getLastBowler(matchId: String, teamId: Int) : String {
+//        val db = readableDatabase
+//        val query = "SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? AND bowling_status = ? ORDER BY bowling_order DESC LIMIT 1"
+//        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString(),"bowled"))
+//        var lastBowler = ""
+//        if (cursor.moveToFirst()) {
+//            lastBowler = cursor.getStringOrEmpty("player_name")
+//        }
+//        cursor.close()
+//        return lastBowler
+//    }
 
     fun getLastKeeper(matchId: String, teamId: Int) : String {
         val db = readableDatabase
@@ -1051,17 +1050,17 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return overs
     }
 
-    fun getBowlersOversBowled(matchId: String, bowlingTeamId: Int, bowlerName: String): String {
-        val db = readableDatabase
-        val query = "SELECT SUM(overvalue) AS overs FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? AND player_name = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,bowlingTeamId.toString(),bowlerName))
-        var oversBowled = ""
-        if (cursor.moveToFirst()) {
-            oversBowled = cursor.getDoubleOrZero("overs").toString()
-        }
-        cursor.close()
-        return oversBowled
-    }
+//    fun getBowlersOversBowled(matchId: String, bowlingTeamId: Int, bowlerName: String): String {
+//        val db = readableDatabase
+//        val query = "SELECT SUM(overvalue) AS overs FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? AND player_name = ? LIMIT 1"
+//        val cursor = db.rawQuery(query, arrayOf(matchId,bowlingTeamId.toString(),bowlerName))
+//        var oversBowled = ""
+//        if (cursor.moveToFirst()) {
+//            oversBowled = cursor.getDoubleOrZero("overs").toString()
+//        }
+//        cursor.close()
+//        return oversBowled
+//    }
 
     fun getStriker(matchId: String) : String {
         val db = readableDatabase
@@ -1397,24 +1396,24 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun updateMatchWinner(matchId: String, winningTeamCaptain: String) : Int {
-        val db = writableDatabase
-        val contentValues = ContentValues().apply {
-            put("winning_team_captain", winningTeamCaptain)
-        }
-        val whereClause = "match_id = ?"
-        val whereArgs = arrayOf(matchId)
-
-        return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
-    }
-
-    fun updateMatch(matchId: String, isSynced: Int) : Int {
-        val db = writableDatabase
-        val contentValues = ContentValues().apply {
-            put("is_synced", isSynced)
-        }
-        return db.update(TABLE_MATCHES, contentValues, "match_id = ?", arrayOf(matchId))
-    }
+//    fun updateMatchWinner(matchId: String, winningTeamCaptain: String) : Int {
+//        val db = writableDatabase
+//        val contentValues = ContentValues().apply {
+//            put("winning_team_captain", winningTeamCaptain)
+//        }
+//        val whereClause = "match_id = ?"
+//        val whereArgs = arrayOf(matchId)
+//
+//        return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
+//    }
+//
+//    fun updateMatch(matchId: String, isSynced: Int) : Int {
+//        val db = writableDatabase
+//        val contentValues = ContentValues().apply {
+//            put("is_synced", isSynced)
+//        }
+//        return db.update(TABLE_MATCHES, contentValues, "match_id = ?", arrayOf(matchId))
+//    }
 
     fun updateMatchDate(matchId: String, matchDate: String) : Int {
         val db = writableDatabase
@@ -1558,15 +1557,15 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return exists
     }
 
-    fun isTeamPlayer(matchId: String, teamId: Int, playerName: String) : Boolean {
-        val db = readableDatabase
-        val query = "SELECT 1 FROM $TABLE_TEAMS WHERE match_id = ? AND team_id =? AND player_name = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString(),playerName))
-
-        val exists = cursor.moveToFirst() // returns true if the query returned a row, false otherwise
-        cursor.close()
-        return exists
-    }
+//    fun isTeamPlayer(matchId: String, teamId: Int, playerName: String) : Boolean {
+//        val db = readableDatabase
+//        val query = "SELECT 1 FROM $TABLE_TEAMS WHERE match_id = ? AND team_id =? AND player_name = ? LIMIT 1"
+//        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString(),playerName))
+//
+//        val exists = cursor.moveToFirst() // returns true if the query returned a row, false otherwise
+//        cursor.close()
+//        return exists
+//    }
 
     // Helper extension functions to simplify cursor operations ************************************
     private fun Cursor.getStringOrEmpty(columnName: String): String {
