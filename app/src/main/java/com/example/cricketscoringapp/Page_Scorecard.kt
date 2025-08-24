@@ -113,7 +113,7 @@ fun ScoreCardPage(navController: NavHostController) {
             )
         }
 
-        val runsToWinLocal = calcRunsToWin(firstBattingTeamStats, secondBattingTeamStats, noOfOversAside)
+        val (runsToWinLocal,winningCaptain) = calcRunsToWin(firstBattingTeamStats, secondBattingTeamStats, noOfOversAside)
         val runsToWin = remember(runsToWinLocal) {
             runsToWinLocal
         }
@@ -219,7 +219,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     popUpTo("scorecard") { inclusive = true }
                 }
             } else if (team2wickets == noOfPlayersAside * 2) {
-                handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
+                handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin, winningCaptain)
                 navController.navigate("homepage")
             } else {
                 if (endOfOverReached(balls)) {
@@ -231,7 +231,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             popUpTo("scorecard") { inclusive = true }
                         }
                     } else if (team2OversBowled == noOfOversAside) {
-                        handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin)
+                        handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin, winningCaptain)
                         navController.navigate("homepage")
                     } else {
                         showBowlerChangeDialog.value = true
@@ -928,7 +928,8 @@ fun ScoreCardPage(navController: NavHostController) {
                                 matchId,
                                 firstBatsmanStats,
                                 secondBatsmanStats,
-                                runsToWin
+                                runsToWin,
+                                winningCaptain
                             )
                             navController.navigate("homepage")
                         }

@@ -246,7 +246,7 @@ fun updateStats(context: Context,
     }
 }
 
-fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOversAside: Double) : String {
+fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOversAside: Double) : Pair<String,String> {
     val ballsRemaining: Int
     val oversRemaining: Double
     var runsToWin = 0
@@ -291,7 +291,7 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOve
         }
     }
 
-    return runsToWinTxt
+    return Pair(runsToWinTxt,winningTeam)
 }
 
 fun calcNoOfWickets(context: Context,matchId: String,firstTeamStats: TeamStats) : Int {
@@ -834,11 +834,11 @@ fun markBatsmanAsOutInDB(context: Context,matchId: String,firstBatsmanStats: Bat
     }
 }
 
-fun handleEndOfMatch(context: Context, matchId: String, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, runsToWin:String) {
+fun handleEndOfMatch(context: Context, matchId: String, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, runsToWin:String, winningCaptain:String) {
     val dbHelper = CricketDatabaseHelper(context)
     dbHelper.updateBowlingStats(matchId,"bowled")
     handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
-    dbHelper.updateMatchIsFinished(matchId, "")
+    dbHelper.updateMatchIsFinished(matchId, winningCaptain)
     Toast.makeText(context, "End of Match (${runsToWin})!", Toast.LENGTH_LONG)
         .show()
 }
@@ -953,7 +953,7 @@ fun OutputStream.writeCsv(listOfData: List<List<Any>>) {
             "2nd Innings Runs", "2nd Innings Balls", "2nd Innings Fours", "2nd Innings Sixes",
             "2nd Innings Dot Balls", "2nd Innings Batting Status", "2nd Innings How Out",
             "2nd Innings Bowler", "2nd Innings Caught By", "2nd Innings Run Out By",
-            "Bowler", "Overs Bowled", "Runs Conceded", "Wickets", "Maidens", "Sixes Bowled",
+            "Bowler", "Overs", "Runs Conceded", "Wickets", "Maidens", "Sixes Bowled",
             "Fours Bowled", "Dot Balls Bowled", "Wides", "No Balls", "Result"
         ).joinToString(",")
     )

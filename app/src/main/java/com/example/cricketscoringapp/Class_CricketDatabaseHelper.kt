@@ -18,7 +18,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 20
+        const val DATABASE_VERSION = 21
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -123,6 +123,16 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             WHEN tm.is_captain = 1 THEN 'YES'  
             ELSE ''                          
         END AS is_captain,
+        (SELECT player_name 
+            FROM $TABLE_TEAMS tm2 
+            WHERE tm.match_id = tm2.match_id
+            AND tm.team_id = tm2.team_id
+            AND tm2.is_captain = 1 
+        ) AS captainname,
+        (SELECT winning_team_captain 
+            FROM $TABLE_MATCHES tma 
+            WHERE tm.match_id = tma.match_id 
+        ) AS winningcaptain,
         (SELECT COUNT(*) 
             FROM $TABLE_BATTINGSTATS bs 
             WHERE tm.player_name = bs.wicket_fielder
@@ -191,7 +201,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         SUM(bowling.dotballs) AS dotballs,
         SUM(bowling.wides) AS wides,
         SUM(bowling.noballs) AS noballs,
-        '' AS winLossTie
+        CASE
+            WHEN teamcaptain = winningcaptain THEN 'Win'
+            ELSE 'Loss'
+        END AS winLossTie
     FROM 
         $TABLE_TEAMS tm
     LEFT JOIN $TABLE_BATTINGSTATS inning1 
@@ -223,15 +236,16 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        db?.execSQL("DROP TABLE IF EXISTS $TABLE_PLAYERS")
-        db?.execSQL("DROP TABLE IF EXISTS $TABLE_MATCHES")
-        db?.execSQL("DROP TABLE IF EXISTS $TABLE_TEAMS")
-        db?.execSQL("DROP TABLE IF EXISTS $TABLE_BATTINGSTATS")
-        db?.execSQL("DROP TABLE IF EXISTS $TABLE_BOWLINGSTATS")
+        //db?.execSQL("DROP TABLE IF EXISTS $TABLE_PLAYERS")
+        //db?.execSQL("DROP TABLE IF EXISTS $TABLE_MATCHES")
+        //db?.execSQL("DROP TABLE IF EXISTS $TABLE_TEAMS")
+        //db?.execSQL("DROP TABLE IF EXISTS $TABLE_BATTINGSTATS")
+        //db?.execSQL("DROP TABLE IF EXISTS $TABLE_BOWLINGSTATS")
 
         db?.execSQL("DROP VIEW IF EXISTS $VIEW_MATCHSTATS")
+        db?.execSQL(createMATCHSTATSVIEW)
 
-        onCreate(db)
+        //onCreate(db)
     }
 
     //GET FUNCTIONS ********************************************************************************
