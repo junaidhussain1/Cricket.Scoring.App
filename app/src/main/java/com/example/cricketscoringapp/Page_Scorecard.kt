@@ -876,6 +876,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                     firstBattingTeamStats,
                                     secondBattingTeamStats
                                 )
+                                showMoreDialog.value = false
                             }) {
                                 Text("LBW (Warning -2)", fontSize = if (isTablet) 30.sp else 20.sp)
                             }

@@ -11,12 +11,13 @@ android {
         applicationId = "com.example.cricketscoringapp"
         minSdk = 29
         targetSdk = 34
-        versionCode = 36
-        versionName = "3.26"
+        versionCode = 37
+        versionName = "3.27"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+
         }
         signingConfig = signingConfigs.getByName("debug")
     }
