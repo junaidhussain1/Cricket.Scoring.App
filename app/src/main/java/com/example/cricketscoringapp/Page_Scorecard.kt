@@ -866,6 +866,22 @@ fun ScoreCardPage(navController: NavHostController) {
                         Column {
                             // List of options to choose from
                             Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                                updateStats(
+                                    context,
+                                    balls,
+                                    "LBW",
+                                    currentOverBowlerStats,
+                                    firstBatsmanStats,
+                                    secondBatsmanStats,
+                                    firstBattingTeamStats,
+                                    secondBattingTeamStats
+                                )
+                            }) {
+                                Text("LBW (Warning -2)", fontSize = if (isTablet) 30.sp else 20.sp)
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
                                 //If active batsman has faced 0 balls
                                 val activeBatsman = getActiveBatsman(firstBatsmanStats,secondBatsmanStats)
                                 val activeBatsmanStats = dbHelper.getBatsmanStats(matchId,activeBatsman)

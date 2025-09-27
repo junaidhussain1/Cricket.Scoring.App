@@ -762,6 +762,15 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
                 updateBowler(matchId,undo,"legbyes",bowlerStats,activeBatsman,3.00 * multiplier,"",context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, 3.0 * multiplier)
             }
+
+            //Warning only. WKLB is for the wicket.
+            "LBW" -> {
+                updateBowler(matchId,undo,"dotballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
+                updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,-2.00 * multiplier,"",context)
+                updateBatsman(matchId,"dotballs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
+                updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, -2 * multiplier,context)
+                updateTeam("inningScore", firstTeamStats, secondTeamStats, -2.0 * multiplier)
+            }
         }
     }
 }
