@@ -252,6 +252,7 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOve
     var runsToWin = 0
     val runsToWinTxt: String
     var winningTeam = ""
+
     if (firstTeamStats.active.value) {
         if (secondTeamStats.inningScore.value != 0) {
             runsToWin = if ((secondTeamStats.inningScore.value - firstTeamStats.inningScore.value) >= 0) {
@@ -279,6 +280,22 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOve
         ballsRemaining = calculateBalls(noOfOversAside) - calculateBalls(secondTeamStats.overs.value)
         oversRemaining = calculateOversRemaining(ballsRemaining)
     }
+
+    if (winningTeam.isEmpty() && runsToWin > 0) {
+        winningTeam =
+            when {
+                firstTeamStats.inningScore.value >
+                        secondTeamStats.inningScore.value ->
+                    firstTeamStats.name.value
+
+                secondTeamStats.inningScore.value >
+                        firstTeamStats.inningScore.value ->
+                    secondTeamStats.name.value
+
+                else -> ""
+            }
+    }
+
     val runsToWinAbs = abs(runsToWin)
     runsToWinTxt = if (winningTeam.isNotEmpty()) {
         "Team $winningTeam is winning by $runsToWinAbs runs!"
