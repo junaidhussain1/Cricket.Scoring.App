@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import java.util.UUID
 
 // SQLite helper class
@@ -1557,15 +1558,73 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return exists
     }
 
-//    fun isTeamPlayer(matchId: String, teamId: Int, playerName: String) : Boolean {
-//        val db = readableDatabase
-//        val query = "SELECT 1 FROM $TABLE_TEAMS WHERE match_id = ? AND team_id =? AND player_name = ? LIMIT 1"
-//        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString(),playerName))
-//
-//        val exists = cursor.moveToFirst() // returns true if the query returned a row, false otherwise
-//        cursor.close()
-//        return exists
-//    }
+    fun getBallByBallHistory(matchId: String): List<BallEvent> {
+        val ballEvents = mutableListOf<BallEvent>()
+        val db = this.readableDatabase
+
+        // Query to get all bowling records for this match, ordered by bowling_order descending (most recent first)
+        val query = """
+        SELECT player_name, overvalue, over_record
+        FROM $TABLE_BOWLINGSTATS 
+        WHERE match_id = ? AND over_record IS NOT NULL AND over_record != ''
+        ORDER BY bowling_order DESC
+    """
+
+        val cursor = db.rawQuery(query, arrayOf(matchId))
+
+        cursor.use {
+            while (it.moveToNext()) {
+                val bowlerName = it.getStringOrEmpty("player_name")
+                val overValue = it.getDoubleOrZero("overvalue")
+                val overRecord = it.getStringOrEmpty("over_record")
+
+                // Parse the over_record string (format: "action,batsman|action,batsman|...")
+                if (overRecord.isNotEmpty()) {
+                    val balls = overRecord.split("|")
+
+                    // Process each ball in the over
+                    balls.forEachIndexed { index, ballString ->
+                        val parts = ballString.split(",")
+                        if (parts.size >= 2) {
+                            val action = parts[0]  // e.g., "0", "1", "4", "W", "WKB", etc.
+                            val batsmanName = parts[1]  // batsman who faced the ball
+
+                            // Calculate ball number within the over (0.1, 0.2, etc.)
+                            val ballNumber = index + 1
+                            val overDisplay = String.format(
+                                Locale.UK,
+                                "%.1f",
+                                overValue - 0.1 * (balls.size - index)
+                            )
+
+                            // Map action to display result
+                            val displayResult = when {
+                                action == "0" -> "•"
+                                action.startsWith("WK") -> "W"
+                                action.startsWith("W+") -> action.replace("W+", "WD+")
+                                action.startsWith("W") -> "WD"
+                                action.startsWith("NB") -> action
+                                action.startsWith("LB") -> action
+                                action.startsWith("B") -> action
+                                else -> action
+                            }
+
+                            ballEvents.add(
+                                BallEvent(
+                                    over = overDisplay,
+                                    bowler = bowlerName,
+                                    batsman = batsmanName,
+                                    result = displayResult
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        return ballEvents
+    }
 
     // Helper extension functions to simplify cursor operations ************************************
     private fun Cursor.getStringOrEmpty(columnName: String): String {
