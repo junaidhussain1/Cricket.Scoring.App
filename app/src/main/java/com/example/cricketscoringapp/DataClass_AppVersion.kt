@@ -6,7 +6,7 @@ import android.os.Build
 import androidx.core.content.pm.PackageInfoCompat
 
 data class AppVersion(
-    val versionName: String,
+    val versionName: String?,
     val versionNumber: Long,
 )
 

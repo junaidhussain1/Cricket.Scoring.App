@@ -1,6 +1,7 @@
 package com.example.cricketscoringapp
 
 import android.content.Context
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,19 +22,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.util.Locale
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.components.Legend
+import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
+import java.util.Locale
 
 @Composable
 fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
@@ -76,97 +80,212 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                 val teamIdAA = dbHelper.getTeamForPlayer(matchId,teamCaptain2)
                 val bowlersList1 = remember { mutableStateListOf<BowlerStats>() }
                 val bowlersList2 = remember { mutableStateListOf<BowlerStats>() }
+
                 var ballNumber = 0
                 var ballValueInt = 0
+                var wicketCount1 = 0
+
                 val entries1: MutableList<Entry> = mutableListOf()
                 val entries2: MutableList<Entry> = mutableListOf()
+                val wicketEntries1 = mutableListOf<Entry>()
+                val wicketEntries2 = mutableListOf<Entry>()
+
 
                 bowlersList1.clear()
                 bowlersList1.addAll(dbHelper.getBowlingStats(matchId, teamIdAA))
 
                 bowlersList1.forEach { player ->
-                    val overBalls = player.overrecord.value
-                    val overBallsValues = overBalls.split("|")
+                    val overBallsValues = player.overrecord.value.split("|")
 
-                    val newEntries = overBallsValues.map { ballValue ->
+                    overBallsValues.forEach { ballValue ->
                         ballNumber += 1
                         ballValueInt += getBallValueInt(ballValue)
-                        Entry(ballNumber.toFloat(), ballValueInt.toFloat())
+
+                        // Runworm entry
+                        entries1.add(
+                            Entry(ballNumber.toFloat(), ballValueInt.toFloat())
+                        )
+
+                        if (ballValue.contains("WK")) {
+                            wicketCount1++
+                            wicketEntries1.add(
+                                Entry(
+                                    ballNumber.toFloat(),
+                                    ballValueInt.toFloat(),
+                                    wicketCount1 // 👈 store wicket number
+                                )
+                            )
+                        }
                     }
-                    entries1.addAll(newEntries)
                 }
 
                 ballNumber = 0
                 ballValueInt = 0
+                var wicketCount2 = 0
                 bowlersList2.clear()
                 bowlersList2.addAll(dbHelper.getBowlingStats(matchId, teamIdBB))
                 bowlersList2.forEach { player ->
-                    val overBalls = player.overrecord.value
-                    val overBallsValues = overBalls.split("|")
+                    val overBallsValues = player.overrecord.value.split("|")
 
-                    val newEntries = overBallsValues.map { ballValue ->
+                    overBallsValues.forEach { ballValue ->
                         ballNumber += 1
                         ballValueInt += getBallValueInt(ballValue)
-                        Entry(ballNumber.toFloat(), ballValueInt.toFloat())
+
+                        entries2.add(
+                            Entry(ballNumber.toFloat(), ballValueInt.toFloat())
+                        )
+
+                        if (ballValue.contains("WK")) {
+                            wicketCount2++
+                            wicketEntries2.add(
+                                Entry(
+                                    ballNumber.toFloat(),
+                                    ballValueInt.toFloat(),
+                                    wicketCount2 // 👈 store wicket number
+                                )
+                            )
+                        }
                     }
-                    entries2.addAll(newEntries)
                 }
 
-                AndroidView(
+                Box {
+                    AndroidView(
+                        factory = { context ->
+                            LineChart(context).apply {
+                                val dataSet1 = LineDataSet(entries1, "Team $teamCaptain1").apply {
+                                    color = android.graphics.Color.CYAN
+                                    lineWidth = 4f
+                                    setDrawValues(false)
+                                    setDrawCircles(false)
+                                }
+                                val dataSet2 = LineDataSet(entries2, "Team $teamCaptain2").apply {
+                                    color = android.graphics.Color.MAGENTA
+                                    lineWidth = 4f
+                                    setDrawValues(false)
+                                    setDrawCircles(false)
+                                }
 
-                    factory = { context ->
-                        LineChart(context).apply {
-                            val dataSet1 = LineDataSet(entries1, "Team $teamCaptain1").apply {
-                                color = android.graphics.Color.CYAN
-                                lineWidth = 4f
-                                setDrawValues(false)
-                                setDrawCircles(false)
+                                setExtraOffsets(36f, 32f, 16f, 64f)
+
+                                legend.textSize = 20f
+                                legend.formSize = 16f
+                                legend.xEntrySpace = 16f
+                                legend.yEntrySpace = 5f
+                                legend.textColor = android.graphics.Color.WHITE
+                                legend.verticalAlignment = Legend.LegendVerticalAlignment.TOP
+                                legend.horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
+                                legend.orientation = Legend.LegendOrientation.HORIZONTAL
+
+                                // -------- WICKET DOTS --------
+                                val wicketSet1 = LineDataSet(wicketEntries1, "").apply {
+                                    setDrawCircles(true)
+                                    setDrawCircleHole(false)
+
+                                    circleRadius = 8f
+                                    setCircleColor(android.graphics.Color.RED)
+
+                                    // Hide line
+                                    color = android.graphics.Color.TRANSPARENT
+                                    lineWidth = 0f
+
+                                    setDrawValues(true)
+                                    valueFormatter = WicketValueFormatter()
+                                    valueTextColor = android.graphics.Color.WHITE
+                                    valueTextSize = 24f
+                                    label = ""
+                                }
+
+
+                                val wicketSet2 = LineDataSet(wicketEntries2, "").apply {
+                                    setDrawCircles(true)
+                                    setDrawCircleHole(false)
+
+                                    circleRadius = 8f
+                                    setCircleColor(android.graphics.Color.RED)
+
+                                    color = android.graphics.Color.TRANSPARENT
+                                    lineWidth = 0f
+
+                                    setDrawValues(true)
+                                    valueFormatter = WicketValueFormatter()
+                                    valueTextColor = android.graphics.Color.WHITE
+                                    valueTextSize = 24f
+                                    label = ""
+                                }
+
+                                val lineData = LineData(
+                                    dataSet1,
+                                    dataSet2,
+                                    wicketSet1,
+                                    wicketSet2
+                                )
+
+                                data = lineData
+
+                                // -------- CHART STYLING --------
+                                description.isEnabled = false
+                                setTouchEnabled(true)
+                                setPinchZoom(true)
+                                animateX(1000)
+
+                                legend.textSize = 16f
+                                legend.textColor = android.graphics.Color.WHITE
+
+                                xAxis.apply {
+                                    xAxis.position = XAxis.XAxisPosition.BOTTOM
+                                    axisMinimum = 0f
+                                    granularity = 1f
+                                    setDrawGridLines(false)
+                                    setDrawLabels(true)
+                                    textColor = android.graphics.Color.WHITE
+                                    axisLineWidth = 4f
+                                    textSize = 14f
+                                }
+
+                                axisRight.isEnabled = false
+
+                                axisLeft.apply {
+                                    isEnabled = true
+                                    setDrawLabels(true)
+                                    setDrawGridLines(false)
+                                    textColor = android.graphics.Color.WHITE
+                                    textSize = 14f
+                                    axisMinimum = -10f
+                                }
                             }
-                            val dataSet2 = LineDataSet(entries2, "Team $teamCaptain2").apply {
-                                color = android.graphics.Color.MAGENTA
-                                lineWidth = 4f
-                                setDrawValues(false)
-                                setDrawCircles(false)
-                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(500.dp)
+                            .padding(8.dp)
+                    )
 
-                            legend.textSize = 20f
-                            legend.formSize = 16f
-                            legend.xEntrySpace = 16f
-                            legend.yEntrySpace = 5f
-                            legend.textColor = android.graphics.Color.WHITE
+                    // Y-axis label
+                    Text(
+                        text = "RUNS",
+                        color = Color.White,
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .rotate(-90f)
+                            .padding(start = 12.dp)
+                    )
 
-                            val lineData = LineData(dataSet1,dataSet2)
-                            this.data = lineData
-
-                            xAxis.axisMinimum = 0f
-                            xAxis.granularity = 1f
-                            xAxis.setDrawGridLines(false)
-                            xAxis.setDrawLabels(true)
-                            xAxis.textColor = android.graphics.Color.WHITE
-                            xAxis.axisLineWidth = 4f
-                            xAxis.textSize = 14f         // X-axis label font size
-
-                            axisLeft.textSize = 14f
-                            axisLeft.textColor = android.graphics.Color.WHITE
-                            axisLeft.axisLineWidth = 4f
-
-                            description = Description().apply {
-                                text = ""
-                            }
-
-                            setTouchEnabled(true)
-                            setPinchZoom(true)
-                            animateX(1000)
-
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(500.dp)
-                        .padding(8.dp)
-                )
+                    // X-axis label
+                    Text(
+                        text = "BALLS",
+                        color = Color.White,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 30.dp)
+                    )
+                }
             }
         }
+    }
+}
+class WicketValueFormatter : ValueFormatter() {
+    override fun getPointLabel(entry: Entry): String {
+        return entry.data?.toString() ?: ""
     }
 }
 
