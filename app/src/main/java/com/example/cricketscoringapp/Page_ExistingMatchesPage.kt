@@ -1,5 +1,6 @@
 package com.example.cricketscoringapp
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -22,8 +24,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -100,6 +104,31 @@ fun ExistingMatchesPage(navController: NavHostController) {
                             }
                         }
 
+                        // Ball by Ball History Icon
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp),
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    val matchId = match.matchId
+                                    val teamIdA = dbHelper.getTeamForPlayer(matchId, match.firstBattingTeamCaptain)
+                                    val teamIdB = dbHelper.getTeamForPlayer(matchId, match.secondBattingTeamCaptain)
+                                    navController.navigate("ballbyball/${matchId}/${teamIdA}/${teamIdB}")
+                                },
+                                modifier = Modifier.size(52.dp) // Set size on IconButton itself
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ball_3),
+                                    contentDescription = "Ball by Ball History",
+                                    modifier = Modifier.fillMaxSize(), // Fill the IconButton
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                        }
+
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -111,33 +140,12 @@ fun ExistingMatchesPage(navController: NavHostController) {
                                 onClick = {
                                     val (dataToWrite, matchDataSize) = getMatchDataToUpload(context, match.matchId)
                                     saveAndShareCsv(context, "$matchDate - $team1Captain vs $team2Captain.csv", dataToWrite)
-
-//                                    val googleSheetsService = GoogleSheetsService()
-//                                    CoroutineScope(Dispatchers.Main).launch {
-//                                        try {
-//                                            val existingData = googleSheetsService.readData(context, "Data Raw!A:A")
-//                                            val lastRowIndex = existingData.size
-//                                            val (dataToWrite, matchDataSize) = getMatchDataToUpload(context, match.matchId)
-//                                            val startRow = lastRowIndex + 1
-//                                            val endRow = lastRowIndex + matchDataSize
-//                                            val rangeToWrite = "Data Raw!A${lastRowIndex + 1}:AN${lastRowIndex + matchDataSize}"
-//                                            val rtnMessage = googleSheetsService.writeData(context, rangeToWrite, startRow, endRow, dataToWrite)
-//                                            withContext(Dispatchers.Main) {
-//                                                Toast.makeText(context, rtnMessage, Toast.LENGTH_LONG).show()
-//                                            }
-//                                        } catch (e: Exception) {
-//                                            withContext(Dispatchers.Main) {
-//                                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-//                                            }
-//                                        }
-//                                    }
-
                                 }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Sync,
-                                    contentDescription = "Sync Status",
-                                    tint = if (match.isSynced) Color.Green else Color.Gray,
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = "Share CSV",
+                                    tint = Color.Green,
                                     modifier = Modifier.size(if (isTablet) 48.dp else 24.dp)
                                 )
                             }

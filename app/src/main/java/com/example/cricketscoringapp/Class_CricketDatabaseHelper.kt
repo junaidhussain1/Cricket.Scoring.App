@@ -5,12 +5,18 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import java.util.UUID
+import kotlin.text.insert
 
 // SQLite helper class
 class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -263,7 +269,8 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     private fun getNextBattingOrderNo(matchId: String): Int {
         val db = readableDatabase
-        val query = "SELECT MAX(batting_order) AS max_batting_order FROM $TABLE_BATTINGSTATS WHERE match_id = ?"
+        val query =
+            "SELECT MAX(batting_order) AS max_batting_order FROM $TABLE_BATTINGSTATS WHERE match_id = ?"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
         cursor.use { // Auto-close the cursor after use
@@ -277,8 +284,9 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     private fun getNextBattingTurnNo(matchId: String, playerName: String): Int {
         val db = readableDatabase
-        val query = "SELECT batting_turn FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND player_name = ?"
-        val cursor = db.rawQuery(query, arrayOf(matchId,playerName))
+        val query =
+            "SELECT batting_turn FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND player_name = ?"
+        val cursor = db.rawQuery(query, arrayOf(matchId, playerName))
 
         cursor.use { // Auto-close the cursor after use
             if (it.moveToFirst()) {
@@ -291,7 +299,8 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     private fun getNextBowlingOrderNo(matchId: String): Int {
         val db = readableDatabase
-        val query = "SELECT MAX(bowling_order) AS max_bowling_order FROM $TABLE_BOWLINGSTATS WHERE match_id = ?"
+        val query =
+            "SELECT MAX(bowling_order) AS max_bowling_order FROM $TABLE_BOWLINGSTATS WHERE match_id = ?"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
         cursor.use { // Auto-close the cursor after use
@@ -305,8 +314,9 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     private fun getNextBowlingTurnNo(matchId: String, playerName: String): Int {
         val db = readableDatabase
-        val query = "SELECT bowling_turn FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND player_name = ?"
-        val cursor = db.rawQuery(query, arrayOf(matchId,playerName))
+        val query =
+            "SELECT bowling_turn FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND player_name = ?"
+        val cursor = db.rawQuery(query, arrayOf(matchId, playerName))
 
         cursor.use { // Auto-close the cursor after use
             if (it.moveToFirst()) {
@@ -331,8 +341,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     fun getMatchId(): String {
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT match_id FROM $TABLE_MATCHES WHERE is_finished = ? LIMIT 1", arrayOf("0"))
-        val matchId:String
+        val cursor = db.rawQuery(
+            "SELECT match_id FROM $TABLE_MATCHES WHERE is_finished = ? LIMIT 1",
+            arrayOf("0")
+        )
+        val matchId: String
 
         if (cursor.moveToFirst()) {
             matchId = cursor.getStringOrEmpty("match_id")
@@ -346,7 +359,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return matchId
     }
 
-    fun getBattingTeamCaptain(matchId: String, whichTeam: Int) : String {
+    fun getBattingTeamCaptain(matchId: String, whichTeam: Int): String {
         val db = readableDatabase
 
         val batsman = if (whichTeam == 1) {
@@ -367,9 +380,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return captainName
     }
 
-    fun getFirstBattingTeamStriker(matchId: String) : String {
+    fun getFirstBattingTeamStriker(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT first_batting_team_striker FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
+        val query =
+            "SELECT first_batting_team_striker FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
         val player = if (cursor.moveToFirst()) {
@@ -381,9 +395,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return player
     }
 
-    fun getFirstBattingTeamNonStriker(matchId: String) : String {
+    fun getFirstBattingTeamNonStriker(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT first_batting_team_nonstriker FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
+        val query =
+            "SELECT first_batting_team_nonstriker FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
         val player = if (cursor.moveToFirst()) {
@@ -395,9 +410,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return player
     }
 
-    fun getFirstBattingTeamCaptain(matchId: String) : String {
+    fun getFirstBattingTeamCaptain(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT first_batting_team_captain FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
+        val query =
+            "SELECT first_batting_team_captain FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
         val player = if (cursor.moveToFirst()) {
@@ -409,9 +425,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return player
     }
 
-    fun getSecondBattingTeamCaptain(matchId: String) : String {
+    fun getSecondBattingTeamCaptain(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT second_batting_team_captain FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
+        val query =
+            "SELECT second_batting_team_captain FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
         val player = if (cursor.moveToFirst()) {
@@ -423,9 +440,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return player
     }
 
-    fun getSecondBattingTeamBowler(matchId: String) : String {
+    fun getSecondBattingTeamBowler(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT second_batting_team_bowler FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
+        val query =
+            "SELECT second_batting_team_bowler FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
         val player = if (cursor.moveToFirst()) {
@@ -437,9 +455,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return player
     }
 
-    fun getSecondBattingTeamKeeper(matchId: String) : String {
+    fun getSecondBattingTeamKeeper(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT second_batting_team_keeper FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
+        val query =
+            "SELECT second_batting_team_keeper FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
         val player = if (cursor.moveToFirst()) {
@@ -451,7 +470,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return player
     }
 
-    fun getMatches() : List<Match> {
+    fun getMatches(): List<Match> {
         val matches = mutableListOf<Match>()
         val db = readableDatabase
         val cursor = db.rawQuery("SELECT * FROM $TABLE_MATCHES ORDER BY match_date DESC ", null)
@@ -466,25 +485,61 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             val isStarted = cursor.getIntOrZero("is_started") == 1
             val isFinished = cursor.getIntOrZero("is_finished") == 1
             val isSynced = cursor.getIntOrZero("is_synced") == 1
-            matches.add(Match(matchId,
-                firstBattingTeamCaptain,
-                secondBattingTeamCaptain,
-                winningTeamCaptain,
-                noOfOversAside,
-                noOfPlayersAside,
-                sideWallRule,
-                isStarted,
-                isFinished,
-                isSynced))
+            matches.add(
+                Match(
+                    matchId,
+                    firstBattingTeamCaptain,
+                    secondBattingTeamCaptain,
+                    winningTeamCaptain,
+                    noOfOversAside,
+                    noOfPlayersAside,
+                    sideWallRule,
+                    isStarted,
+                    isFinished,
+                    isSynced
+                )
+            )
         }
         cursor.close()
         return matches
     }
 
+    fun getMatch(matchId: String): Match? {
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_MATCHES WHERE match_id = ?",
+            arrayOf(matchId)
+        )
+
+        var match: Match? = null
+
+        if (cursor.moveToFirst()) {
+            match = Match(
+                matchId = cursor.getStringOrEmpty("match_id"),
+                firstBattingTeamCaptain = cursor.getStringOrEmpty("first_batting_team_captain"),
+                secondBattingTeamCaptain = cursor.getStringOrEmpty("second_batting_team_captain"),
+                winningTeamCaptain = cursor.getStringOrEmpty("winning_team_captain"),
+                noOfOversAside = cursor.getIntOrZero("no_of_overs_aside"),
+                noOfPlayersAside = cursor.getIntOrZero("no_of_players_aside"),
+                sideWallRule = cursor.getIntOrZero("side_wall_rule"),
+                isStarted = cursor.getIntOrZero("is_started") == 1,
+                isFinished = cursor.getIntOrZero("is_finished") == 1,
+                isSynced = cursor.getIntOrZero("is_synced") == 1
+            )
+        }
+
+        cursor.close()
+        return match
+    }
+
+
     fun getMatchStats(matchId: String): List<UploadRow> {
         val matchStats = mutableListOf<UploadRow>()
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $VIEW_MATCHSTATS WHERE match_id = ? ORDER BY team_id", arrayOf(matchId))
+        val cursor = db.rawQuery(
+            "SELECT * FROM $VIEW_MATCHSTATS WHERE match_id = ? ORDER BY team_id",
+            arrayOf(matchId)
+        )
         while (cursor.moveToNext()) {
             matchStats.add(
                 UploadRow(
@@ -537,7 +592,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         if (includeCaptain == 0) {
             query += "AND is_captain = 0"
         }
-        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString()))
+        val cursor = db.rawQuery(query, arrayOf(matchId, teamId.toString()))
         while (cursor.moveToNext()) {
             val name = cursor.getStringOrEmpty("player_name")
             players.add(Player(name))
@@ -546,10 +601,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return players
     }
 
-    fun getTeamForPlayer(matchId: String,playerName: String) : Int {
+    fun getTeamForPlayer(matchId: String, playerName: String): Int {
         val db = readableDatabase
-        val query = "SELECT team_id FROM $TABLE_TEAMS WHERE match_id = ? AND player_name = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,playerName))
+        val query =
+            "SELECT team_id FROM $TABLE_TEAMS WHERE match_id = ? AND player_name = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, playerName))
         val teamId = if (cursor.moveToFirst()) {
             cursor.getIntOrZero("team_id")
         } else {
@@ -560,10 +616,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return teamId
     }
 
-    fun getTeamSize(matchId: String, teamId: Int) : Int {
+    fun getTeamSize(matchId: String, teamId: Int): Int {
         val db = readableDatabase
         val query = "SELECT COUNT(*) FROM $TABLE_TEAMS WHERE match_id = ? AND team_id =?"
-        val cursor = db.rawQuery(query, arrayOf( matchId,teamId.toString()))
+        val cursor = db.rawQuery(query, arrayOf(matchId, teamId.toString()))
 
         var count = 0
         if (cursor.moveToFirst()) {
@@ -573,10 +629,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return count
     }
 
-    fun getCaptainForTeam(matchId: String, teamId: Int) : String {
+    fun getCaptainForTeam(matchId: String, teamId: Int): String {
         val db = readableDatabase
-        val query = "SELECT player_name FROM $TABLE_TEAMS WHERE match_id = ? AND team_id = ? AND is_captain = 1 LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString()))
+        val query =
+            "SELECT player_name FROM $TABLE_TEAMS WHERE match_id = ? AND team_id = ? AND is_captain = 1 LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, teamId.toString()))
 
         val captainName = if (cursor.moveToFirst()) {
             cursor.getStringOrEmpty("player_name")
@@ -587,7 +644,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return captainName
     }
 
-    fun getBatsmanByStatus(matchId: String, battingStatus: String) : BatsmanStats {
+    fun getBatsmanByStatus(matchId: String, battingStatus: String): BatsmanStats {
         val db = readableDatabase
         // Initialize with default values
         var batsmanStats = BatsmanStats(
@@ -601,8 +658,9 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             active = mutableStateOf(value = false)
         )
 
-        val query = "SELECT * FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND batting_status = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,battingStatus))
+        val query =
+            "SELECT * FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND batting_status = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, battingStatus))
 
         while (cursor.moveToNext()) {
             val playerName: String = cursor.getStringOrEmpty("player_name")
@@ -629,10 +687,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return batsmanStats
     }
 
-    fun getCurrentBowler(matchId: String) : String {
+    fun getCurrentBowler(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT player_name FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,"bowling"))
+        val query =
+            "SELECT player_name FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, "bowling"))
 
         val playerName = if (cursor.moveToFirst()) {
             cursor.getStringOrEmpty("player_name")
@@ -643,9 +702,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return playerName
     }
 
-    fun getCurrentBowlerStats(matchId: String) : BowlerStats {
+    fun getCurrentBowlerStats(matchId: String): BowlerStats {
         val db = readableDatabase
-        val query = "SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
+        val query =
+            "SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId, "bowling"))
 
         return if (cursor.moveToFirst()) {
@@ -672,7 +732,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         }
     }
 
-    fun getConsolidatedBowlerStats(matchId: String,bowlerName: String): BowlerStats {
+    fun getConsolidatedBowlerStats(matchId: String, bowlerName: String): BowlerStats {
         val db = readableDatabase
         val query = """
             SELECT 
@@ -695,7 +755,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             GROUP BY 
                 player_name
             """
-        val cursor = db.rawQuery(query, arrayOf(matchId,bowlerName))
+        val cursor = db.rawQuery(query, arrayOf(matchId, bowlerName))
 
         return if (cursor.moveToFirst()) {
             BowlerStats(
@@ -733,10 +793,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 //        return lastBowler
 //    }
 
-    fun getLastKeeper(matchId: String, teamId: Int) : String {
+    fun getLastKeeper(matchId: String, teamId: Int): String {
         val db = readableDatabase
-        val query = "SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? AND bowling_status = ? ORDER BY bowling_order DESC LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString(),"bowling"))
+        val query =
+            "SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? AND bowling_status = ? ORDER BY bowling_order DESC LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, teamId.toString(), "bowling"))
         var lastKeeper = ""
         if (cursor.moveToFirst()) {
             lastKeeper = cursor.getStringOrEmpty("keeper_name")
@@ -745,10 +806,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return lastKeeper
     }
 
-    fun getCurrentKeeper(matchId: String) : String {
+    fun getCurrentKeeper(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT keeper_name FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,"bowling"))
+        val query =
+            "SELECT keeper_name FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, "bowling"))
 
         val playerName = if (cursor.moveToFirst()) {
             cursor.getStringOrEmpty("keeper_name")
@@ -759,10 +821,13 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return playerName
     }
 
-    fun getBowlingStats(matchId: String, teamId: Int) : List<BowlerStats> {
+    fun getBowlingStats(matchId: String, teamId: Int): List<BowlerStats> {
         val bowlers = mutableListOf<BowlerStats>()
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_BOWLINGSTATS where match_id = ? AND team_id = ?", arrayOf(matchId,teamId.toString()))
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_BOWLINGSTATS where match_id = ? AND team_id = ?",
+            arrayOf(matchId, teamId.toString())
+        )
         cursor.use {  // Ensure the cursor is properly closed after use
             while (it.moveToNext()) {  // Iterate through all records in the cursor
                 val bowlerStats = BowlerStats(
@@ -792,7 +857,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                     fours = mutableIntStateOf(it.getIntOrZero("fours")),
                     sixes = mutableIntStateOf(it.getIntOrZero("sixes")),
                     dotballs = mutableIntStateOf(it.getIntOrZero("dotballs")),
-                    wicketDescription =  mutableStateOf(it.getStringOrEmpty("wicket_description")),
+                    wicketDescription = mutableStateOf(it.getStringOrEmpty("wicket_description")),
                     active = mutableStateOf(it.getStringOrEmpty("batting_status") == "striker")
                 )
             } else {
@@ -864,7 +929,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             GROUP BY 
                 player_name
             """
-        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString()))
+        val cursor = db.rawQuery(query, arrayOf(matchId, teamId.toString()))
 
         cursor.use {  // Ensure the cursor is properly closed after use
             while (it.moveToNext()) {  // Iterate through all records in the cursor
@@ -889,11 +954,12 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return bowlers  // Return the list of BowlerStats
     }
 
-    fun getFullyBattedAlreadyPlayers(matchId: String, teamId: Int) : List<Player> {
+    fun getFullyBattedAlreadyPlayers(matchId: String, teamId: Int): List<Player> {
         val players = mutableListOf<Player>()
         val db = readableDatabase
-        val query = "SELECT player_name FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? AND batting_turn = 2 AND batting_status = 'out'"
-        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString()))
+        val query =
+            "SELECT player_name FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? AND batting_turn = 2 AND batting_status = 'out'"
+        val cursor = db.rawQuery(query, arrayOf(matchId, teamId.toString()))
         while (cursor.moveToNext()) {
             val name = cursor.getStringOrEmpty("player_name")
             players.add(Player(name))
@@ -902,10 +968,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return players
     }
 
-    fun getBattingCount(matchId: String, playerName: String) : Int {
+    fun getBattingCount(matchId: String, playerName: String): Int {
         val db = readableDatabase
-        val query = "SELECT COUNT(*) AS outCount FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND player_name = ? AND batting_status = ?"
-        val cursor = db.rawQuery(query, arrayOf(matchId,playerName,"out"))
+        val query =
+            "SELECT COUNT(*) AS outCount FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND player_name = ? AND batting_status = ?"
+        val cursor = db.rawQuery(query, arrayOf(matchId, playerName, "out"))
 
         val battingCount = if (cursor.moveToFirst()) {
             cursor.getInt(0)
@@ -921,7 +988,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val query = "SELECT is_started FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
-        val isStarted = if (cursor.moveToFirst())  {
+        val isStarted = if (cursor.moveToFirst()) {
             cursor.getIntOrZero("is_started") == 1
         } else {
             false
@@ -935,7 +1002,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val query = "SELECT match_date FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
-        val matchDate = if (cursor.moveToFirst())  {
+        val matchDate = if (cursor.moveToFirst()) {
             cursor.getStringOrEmpty("match_date")
         } else {
             ""
@@ -955,40 +1022,45 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         var wickets = 0
 
         val db = readableDatabase
-        var query = "SELECT SUM(overvalue) AS overs FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
-        var cursor = db.rawQuery(query, arrayOf(matchId,otherTeamId.toString()))
+        var query =
+            "SELECT SUM(overvalue) AS overs FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
+        var cursor = db.rawQuery(query, arrayOf(matchId, otherTeamId.toString()))
 
         if (cursor.moveToNext()) {
             overs = cursor.getDoubleOrZero("overs")
         }
         cursor.close()
 
-        query = "SELECT SUM(byes + legbyes + wides + noballs) AS extras FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
-        cursor = db.rawQuery(query, arrayOf(matchId,otherTeamId.toString()))
+        query =
+            "SELECT SUM(byes + legbyes + wides + noballs) AS extras FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
+        cursor = db.rawQuery(query, arrayOf(matchId, otherTeamId.toString()))
 
         if (cursor.moveToNext()) {
             extras = cursor.getIntOrZero("extras")
         }
         cursor.close()
 
-        query = "SELECT SUM(runs) AS runs FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
-        cursor = db.rawQuery(query, arrayOf(matchId,currentTeamId.toString()))
+        query =
+            "SELECT SUM(runs) AS runs FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
+        cursor = db.rawQuery(query, arrayOf(matchId, currentTeamId.toString()))
 
         if (cursor.moveToNext()) {
             runs = cursor.getIntOrZero("runs")
         }
         cursor.close()
 
-        query = "SELECT COUNT(*) AS wickets FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? AND batting_status = ? LIMIT 1"
-        cursor = db.rawQuery(query, arrayOf(matchId,currentTeamId.toString(),"out"))
+        query =
+            "SELECT COUNT(*) AS wickets FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? AND batting_status = ? LIMIT 1"
+        cursor = db.rawQuery(query, arrayOf(matchId, currentTeamId.toString(), "out"))
 
         if (cursor.moveToNext()) {
             wickets = cursor.getIntOrZero("wickets")
         }
         cursor.close()
 
-        query = "SELECT COUNT(*) AS wickets FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? AND batting_status = ? LIMIT 1"
-        cursor = db.rawQuery(query, arrayOf(matchId,currentTeamId.toString(),"striker"))
+        query =
+            "SELECT COUNT(*) AS wickets FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? AND batting_status = ? LIMIT 1"
+        cursor = db.rawQuery(query, arrayOf(matchId, currentTeamId.toString(), "striker"))
 
         val active = if (cursor.moveToFirst()) {
             cursor.getInt(0) > 0  // Check if the count is greater than 0
@@ -997,7 +1069,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         }
         cursor.close()
 
-        teamStats =  TeamStats(
+        teamStats = TeamStats(
             name = mutableStateOf(captainName),
             overs = mutableDoubleStateOf(overs),
             inningScore = mutableIntStateOf(runs + extras + (-3 * wickets)),
@@ -1008,10 +1080,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     }
 
-    fun getTeamWickets(matchId: String, teamId: Int) : Int {
+    fun getTeamWickets(matchId: String, teamId: Int): Int {
         val db = readableDatabase
-        val query = "SELECT COUNT(*) AS wickets FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? AND batting_status = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString(),"out"))
+        val query =
+            "SELECT COUNT(*) AS wickets FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? AND batting_status = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, teamId.toString(), "out"))
 
         val wickets = if (cursor.moveToFirst()) {
             cursor.getIntOrZero("wickets")
@@ -1022,10 +1095,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return wickets
     }
 
-    fun getTeamBatters(matchId: String, teamId: Int) : Int {
+    fun getTeamBatters(matchId: String, teamId: Int): Int {
         val db = readableDatabase
-        val query = "SELECT COUNT(*) AS batters FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString()))
+        val query =
+            "SELECT COUNT(*) AS batters FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, teamId.toString()))
 
         val wickets = if (cursor.moveToFirst()) {
             cursor.getIntOrZero("batters")
@@ -1038,8 +1112,9 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     fun getTeamOversBowled(matchId: String, teamId: Int): Double {
         val db = readableDatabase
-        val query = "SELECT SUM(overvalue) AS overs FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString()))
+        val query =
+            "SELECT SUM(overvalue) AS overs FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND team_id = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, teamId.toString()))
 
         val overs = if (cursor.moveToFirst()) {
             cursor.getDoubleOrZero("overs")
@@ -1062,10 +1137,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 //        return oversBowled
 //    }
 
-    fun getStriker(matchId: String) : String {
+    fun getStriker(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT player_name FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND batting_status = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,"striker"))
+        val query =
+            "SELECT player_name FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND batting_status = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, "striker"))
 
         val playerName = if (cursor.moveToFirst()) {
             cursor.getStringOrEmpty("player_name")
@@ -1076,10 +1152,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return playerName
     }
 
-    fun getNonStriker(matchId: String) : String {
+    fun getNonStriker(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT player_name FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND batting_status = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,"non-striker"))
+        val query =
+            "SELECT player_name FROM $TABLE_BATTINGSTATS WHERE match_id = ? AND batting_status = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, "non-striker"))
 
         val playerName = if (cursor.moveToFirst()) {
             cursor.getStringOrEmpty("player_name")
@@ -1090,10 +1167,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return playerName
     }
 
-    fun getBowler(matchId: String) : String {
+    fun getBowler(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT player_name FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,"bowling"))
+        val query =
+            "SELECT player_name FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, "bowling"))
 
         val playerName = if (cursor.moveToFirst()) {
             cursor.getStringOrEmpty("player_name")
@@ -1104,10 +1182,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return playerName
     }
 
-    fun getKeeper(matchId: String) : String {
+    fun getKeeper(matchId: String): String {
         val db = readableDatabase
-        val query = "SELECT keeper_name FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
-        val cursor = db.rawQuery(query, arrayOf(matchId,"bowling"))
+        val query =
+            "SELECT keeper_name FROM $TABLE_BOWLINGSTATS WHERE match_id = ? AND bowling_status = ? LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(matchId, "bowling"))
 
         val playerName = if (cursor.moveToFirst()) {
             cursor.getStringOrEmpty("keeper_name")
@@ -1123,7 +1202,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val query = "SELECT no_of_overs_aside FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
-        val noOfOversAside = if (cursor.moveToFirst())  {
+        val noOfOversAside = if (cursor.moveToFirst()) {
             cursor.getIntOrZero("no_of_overs_aside")
         } else {
             0
@@ -1137,7 +1216,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val query = "SELECT no_of_players_aside FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
-        val noOfPlayersAside = if (cursor.moveToFirst())  {
+        val noOfPlayersAside = if (cursor.moveToFirst()) {
             cursor.getIntOrZero("no_of_players_aside")
         } else {
             0
@@ -1151,7 +1230,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val query = "SELECT side_wall_rule FROM $TABLE_MATCHES WHERE match_id = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(matchId))
 
-        val sideWallRule = if (cursor.moveToFirst())  {
+        val sideWallRule = if (cursor.moveToFirst()) {
             cursor.getIntOrZero("side_wall_rule")
         } else {
             0
@@ -1160,7 +1239,146 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return sideWallRule
     }
 
-    fun getDBVersion() : Int {
+    fun getBallByBallHistory(matchId: String, teamId: Int): List<BallEvent> {
+        val ballEvents = mutableListOf<BallEvent>()
+        val db = this.readableDatabase
+
+        val query = """
+            SELECT player_name, overvalue, over_record, 
+                   (COALESCE(noballs, 0) + COALESCE(wides, 0) + COALESCE(byes, 0) + COALESCE(legbyes, 0)) AS extras
+            FROM $TABLE_BOWLINGSTATS 
+            WHERE match_id = ? AND team_id = ? AND over_record IS NOT NULL AND over_record != ''
+            ORDER BY bowling_order
+            """
+
+        val cursor = db.rawQuery(query, arrayOf(matchId,teamId.toString()))
+
+        cursor.use {
+            var cumulativeOvers = 0.0
+            var totalRuns = 0
+            var totalWickets = 0
+
+            while (it.moveToNext()) {
+                val bowlerName = it.getStringOrEmpty("player_name")
+                val overValue = it.getDoubleOrZero("overvalue")
+                val overRecord = it.getStringOrEmpty("over_record")
+                val extras = it.getIntOrZero("extras")
+
+                val baseOverNumber = kotlin.math.ceil(cumulativeOvers).toInt()
+
+                if (overRecord.isNotEmpty()) {
+                    val balls = overRecord.split("|")
+                    var actualBallNumber = 1
+                    var overRuns = 0
+
+                    balls.forEachIndexed { index, ballString ->
+                        val parts = ballString.split(",")
+                        if (parts.size >= 2) {
+                            val action = parts[0]
+                            val batsmanName = parts[1]
+
+                            val isWide = action.startsWith("W") && !action.startsWith("WK")
+
+                            // Calculate runs from this ball
+                            val runsFromBall = when {
+                                action.startsWith("WK") -> {
+                                    totalWickets++
+                                    -3
+                                }
+
+                                action.startsWith("W+") -> {
+                                    val runs = action.removePrefix("W+").toIntOrNull() ?: 0
+                                    1 + runs // Wide + additional runs
+                                }
+
+                                action.startsWith("W") -> 1 // Just a wide
+                                action.startsWith("NB+") -> {
+                                    val runs = action.removePrefix("NB+").toIntOrNull() ?: 0
+                                    1 + runs // No ball + additional runs
+                                }
+
+                                action.startsWith("NB") -> 1 // Just a no ball
+                                action.startsWith("LBW") -> -2 //-2 for a LBW warning
+                                action.startsWith("LB") -> action.removePrefix("LB").toIntOrNull()
+                                    ?: 0
+
+                                action.startsWith("B") -> action.removePrefix("B").toIntOrNull()
+                                    ?: 0
+
+                                else -> action.toIntOrNull() ?: 0
+                            }
+
+                            overRuns += runsFromBall
+                            totalRuns += runsFromBall
+
+                            val overDisplay = String.format(
+                                Locale.UK,
+                                "%d.%d",
+                                baseOverNumber,
+                                actualBallNumber
+                            )
+
+                            val displayResult = when {
+                                action == "0" -> "•"
+                                action.startsWith("WK") -> getWicketDescription(
+                                    action,
+                                    bowlerName,
+                                    "unknown"
+                                )
+
+                                action == "W" -> "Wide"
+                                action.startsWith("W+") -> action.replace("W+", "Wide + ")
+                                action == "NB" -> "No-ball"
+                                action.startsWith("NB+") -> action.replace("NB+", "No-ball + ")
+                                action == "LB" -> "Leg-bye"
+                                action.startsWith("LB+") -> action.replace("LB+", "Leg-bye + ")
+                                action == "B" -> "Bye"
+                                action.startsWith("B+") -> action.replace("B+", "Bye + ")
+                                else -> action
+                            }
+
+                            ballEvents.add(
+                                BallEvent(
+                                    over = overDisplay,
+                                    bowler = bowlerName,
+                                    batsman = batsmanName,
+                                    result = action,
+                                    resultText = displayResult
+                                )
+                            )
+
+                            if (!isWide) {
+                                actualBallNumber++
+                            }
+                        }
+                    }
+
+                    // Add over summary if it's a complete over
+                    if (overValue >= 1.0) {
+                        ballEvents.add(
+                            BallEvent(
+                                over = (baseOverNumber + 1).toString(),
+                                bowler = "",
+                                batsman = "",
+                                result = "",
+                                resultText = "",
+                                isOverSummary = true,
+                                overRuns = overRuns,
+                                overExtras = extras,
+                                totalScore = "$totalRuns/$totalWickets"
+                            )
+                        )
+                    }
+                }
+
+                cumulativeOvers += overValue
+            }
+        }
+
+        return ballEvents
+    }
+
+    fun getDBVersion(): Int {
         return DATABASE_VERSION
     }
 
@@ -1191,21 +1409,33 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             cursor.close()
 
             val dbWrite = writableDatabase
-            return dbWrite.delete(TABLE_BATTINGSTATS, "match_id = ? AND player_name = ? AND batting_order = ?", arrayOf(matchId,playerName,battingOrder.toString()))
+            return dbWrite.delete(
+                TABLE_BATTINGSTATS,
+                "match_id = ? AND player_name = ? AND batting_order = ?",
+                arrayOf(matchId, playerName, battingOrder.toString())
+            )
         }
 
         return 0
     }
 
-    fun deleteCurrentBowler(matchId: String) : Int {
+    fun deleteCurrentBowler(matchId: String): Int {
         val currentBowler = getCurrentBowler(matchId)
         val db = writableDatabase
-        return db.delete(TABLE_BOWLINGSTATS, "player_name = ? AND bowling_status = ?", arrayOf(currentBowler,"bowling"))
+        return db.delete(
+            TABLE_BOWLINGSTATS,
+            "player_name = ? AND bowling_status = ?",
+            arrayOf(currentBowler, "bowling")
+        )
     }
 
     fun deleteTeamPlayer(matchId: String, teamId: Int, playerName: String): Int {
         val db = writableDatabase
-        return db.delete(TABLE_TEAMS, "match_id = ? AND team_id = ? AND player_name = ?", arrayOf(matchId,teamId.toString(),playerName))
+        return db.delete(
+            TABLE_TEAMS,
+            "match_id = ? AND team_id = ? AND player_name = ?",
+            arrayOf(matchId, teamId.toString(), playerName)
+        )
     }
 
     //ADD FUNCTIONS ********************************************************************************
@@ -1217,16 +1447,16 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // Define the format
         val formattedDate = currentDate.format(formatter)
         values.put("match_id", matchId)
-        values.put("match_date",formattedDate)
-        values.put("first_batting_team_captain","")
-        values.put("second_batting_team_captain","")
-        values.put("winning_team_captain","")
-        values.put("no_of_overs_aside",12)
-        values.put("no_of_players_aside",6)
-        values.put("side_wall_rule",1)
-        values.put("is_started",0)
-        values.put("is_finished",0)
-        values.put("is_synced",0)
+        values.put("match_date", formattedDate)
+        values.put("first_batting_team_captain", "")
+        values.put("second_batting_team_captain", "")
+        values.put("winning_team_captain", "")
+        values.put("no_of_overs_aside", 12)
+        values.put("no_of_players_aside", 6)
+        values.put("side_wall_rule", 1)
+        values.put("is_started", 0)
+        values.put("is_finished", 0)
+        values.put("is_synced", 0)
         db.insert(TABLE_MATCHES, null, values)
         db.close()
     }
@@ -1239,14 +1469,20 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db.close()
     }
 
-    fun addTeamPlayer(matchId: String, teamId: Int, playerName: String, isCaptain: Int, isMidBowler: Int) {
+    fun addTeamPlayer(
+        matchId: String,
+        teamId: Int,
+        playerName: String,
+        isCaptain: Int,
+        isMidBowler: Int
+    ) {
         val db = this.writableDatabase
         val values = ContentValues()
         values.put("match_id", matchId)
         values.put("team_id", teamId)
         values.put("player_name", playerName)
-        values.put("is_captain",isCaptain)
-        values.put("is_midbowler",isMidBowler)
+        values.put("is_captain", isCaptain)
+        values.put("is_midbowler", isMidBowler)
         db.insert(TABLE_TEAMS, null, values)
         db.close()
     }
@@ -1256,30 +1492,36 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val values = ContentValues()
         values.put("match_id", matchId)
         values.put("team_id", teamId)
-        values.put("batting_order",getNextBattingOrderNo(matchId))
+        values.put("batting_order", getNextBattingOrderNo(matchId))
         values.put("player_name", playerName)
-        values.put("batting_turn", getNextBattingTurnNo(matchId,playerName))
+        values.put("batting_turn", getNextBattingTurnNo(matchId, playerName))
         values.put("batting_status", battingStatus)
-        db.insert(TABLE_BATTINGSTATS,null,values)
+        db.insert(TABLE_BATTINGSTATS, null, values)
         db.close()
     }
 
-    fun addBowlingStats(matchId: String, teamId: Int, bowlerName: String, keeperName: String, bowlingStatus: String) {
+    fun addBowlingStats(
+        matchId: String,
+        teamId: Int,
+        bowlerName: String,
+        keeperName: String,
+        bowlingStatus: String
+    ) {
         val db = writableDatabase
         val values = ContentValues()
         values.put("match_id", matchId)
         values.put("team_id", teamId)
-        values.put("bowling_order",getNextBowlingOrderNo(matchId))
+        values.put("bowling_order", getNextBowlingOrderNo(matchId))
         values.put("player_name", bowlerName)
-        values.put("bowling_turn", getNextBowlingTurnNo(matchId,bowlerName))
+        values.put("bowling_turn", getNextBowlingTurnNo(matchId, bowlerName))
         values.put("bowling_status", bowlingStatus)
-        values.put("keeper_name",keeperName)
-        db.insert(TABLE_BOWLINGSTATS,null,values)
+        values.put("keeper_name", keeperName)
+        db.insert(TABLE_BOWLINGSTATS, null, values)
         db.close()
     }
 
     //UPDATE FUNCTIONS *****************************************************************************
-    fun updateOversAside(matchId: String, oversAside: Int) : Int {
+    fun updateOversAside(matchId: String, oversAside: Int): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("no_of_overs_aside", oversAside)
@@ -1290,7 +1532,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun updatePlayersAside(matchId: String, playersAside: Int) : Int {
+    fun updatePlayersAside(matchId: String, playersAside: Int): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("no_of_players_aside", playersAside)
@@ -1301,7 +1543,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun updateSideWallRule(matchId: String, sideWallRule: Int) : Int {
+    fun updateSideWallRule(matchId: String, sideWallRule: Int): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("side_wall_rule", sideWallRule)
@@ -1312,7 +1554,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun updateMatchCaptain(matchId: String, whichTeam: Int, captain: String) : Int {
+    fun updateMatchCaptain(matchId: String, whichTeam: Int, captain: String): Int {
         val db = writableDatabase
         val batsman = if (whichTeam == 2) {
             "second_batting_team_captain"
@@ -1328,7 +1570,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun updateMatchIsStarted(matchId: String) : Int {
+    fun updateMatchIsStarted(matchId: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("is_started", 1)
@@ -1339,7 +1581,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun updateMatchIsFinished(matchId: String, winningTeamCaptain: String) : Int {
+    fun updateMatchIsFinished(matchId: String, winningTeamCaptain: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("is_started", 0)
@@ -1352,7 +1594,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun updateMatchOpeningStriker(matchId: String, player: String) : Int {
+    fun updateMatchOpeningStriker(matchId: String, player: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("first_batting_team_striker", player)
@@ -1363,7 +1605,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun updateMatchOpeningNonStriker(matchId: String, player: String) : Int {
+    fun updateMatchOpeningNonStriker(matchId: String, player: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("first_batting_team_nonstriker", player)
@@ -1374,7 +1616,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun updateMatchOpeningBowler(matchId: String, player: String) : Int {
+    fun updateMatchOpeningBowler(matchId: String, player: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("second_batting_team_bowler", player)
@@ -1385,7 +1627,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun updateMatchOpeningKeeper(matchId: String, player: String) : Int {
+    fun updateMatchOpeningKeeper(matchId: String, player: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("second_batting_team_keeper", player)
@@ -1415,7 +1657,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 //        return db.update(TABLE_MATCHES, contentValues, "match_id = ?", arrayOf(matchId))
 //    }
 
-    fun updateMatchDate(matchId: String, matchDate: String) : Int {
+    fun updateMatchDate(matchId: String, matchDate: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("match_date", matchDate)
@@ -1426,7 +1668,12 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
-    fun updateBattingStats(matchId: String, playerName: String, existingBattingStatus: String, newBattingStatus: String) : Int {
+    fun updateBattingStats(
+        matchId: String,
+        playerName: String,
+        existingBattingStatus: String,
+        newBattingStatus: String
+    ): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("batting_status", newBattingStatus)
@@ -1437,7 +1684,15 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_BATTINGSTATS, contentValues, whereClause, whereArgs)
     }
 
-    fun updateBattingStats(matchId: String, newBattingStatus: String, batsmanStats: BatsmanStats, wicketDescription: String, wicketType: String, wicketBowler: String, wicketFielder: String) : Int {
+    fun updateBattingStats(
+        matchId: String,
+        newBattingStatus: String,
+        batsmanStats: BatsmanStats,
+        wicketDescription: String,
+        wicketType: String,
+        wicketBowler: String,
+        wicketFielder: String
+    ): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("batting_status", newBattingStatus)
@@ -1445,11 +1700,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             put("balls", batsmanStats.balls.value)
             put("fours", batsmanStats.fours.value)
             put("sixes", batsmanStats.sixes.value)
-            put("dotballs",batsmanStats.dotballs.value)
-            put("wicket_description",wicketDescription)
-            put("wicket_type",wicketType)
-            put("wicket_bowler",wicketBowler)
-            put("wicket_fielder",wicketFielder)
+            put("dotballs", batsmanStats.dotballs.value)
+            put("wicket_description", wicketDescription)
+            put("wicket_type", wicketType)
+            put("wicket_bowler", wicketBowler)
+            put("wicket_fielder", wicketFielder)
         }
         val whereClause = "match_id = ? AND batting_status = ?"
         val whereArgs = arrayOf(matchId, "striker")
@@ -1457,7 +1712,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_BATTINGSTATS, contentValues, whereClause, whereArgs)
     }
 
-    fun updateBowlingStats(matchId: String, bowlingStatus: String) : Int {
+    fun updateBowlingStats(matchId: String, bowlingStatus: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("bowling_status", bowlingStatus)
@@ -1468,7 +1723,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_BOWLINGSTATS, contentValues, whereClause, whereArgs)
     }
 
-    fun updateBowlingStatsKeeper(matchId: String, teamId: Int, keeperName: String) : Int {
+    fun updateBowlingStatsKeeper(matchId: String, teamId: Int, keeperName: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("keeper_name", keeperName)
@@ -1479,7 +1734,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_BOWLINGSTATS, contentValues, whereClause, whereArgs)
     }
 
-    fun updateBowlingStats(matchId: String, bowlerStats: BowlerStats) : Int {
+    fun updateBowlingStats(matchId: String, bowlerStats: BowlerStats): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("overvalue", bowlerStats.over.value)
@@ -1487,13 +1742,13 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             put("runs", bowlerStats.runs.value)
             put("wickets", bowlerStats.wickets.value)
             put("noballs", bowlerStats.noballs.value)
-            put("wides",bowlerStats.wides.value)
-            put("byes",bowlerStats.byes.value)
-            put("legbyes",bowlerStats.legbyes.value)
-            put("fours",bowlerStats.fours.value)
-            put("sixes",bowlerStats.sixes.value)
-            put("dotballs",bowlerStats.dotballs.value)
-            put("over_record",bowlerStats.overrecord.value)
+            put("wides", bowlerStats.wides.value)
+            put("byes", bowlerStats.byes.value)
+            put("legbyes", bowlerStats.legbyes.value)
+            put("fours", bowlerStats.fours.value)
+            put("sixes", bowlerStats.sixes.value)
+            put("dotballs", bowlerStats.dotballs.value)
+            put("over_record", bowlerStats.overrecord.value)
         }
         val whereClause = "match_id = ? AND bowling_status = ?"
         val whereArgs = arrayOf(matchId, "bowling")
@@ -1501,7 +1756,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_BOWLINGSTATS, contentValues, whereClause, whereArgs)
     }
 
-    fun updateStriker(matchId: String,playerName: String) : Int {
+    fun updateStriker(matchId: String, playerName: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("player_name", playerName)
@@ -1512,7 +1767,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_BATTINGSTATS, contentValues, whereClause, whereArgs)
     }
 
-    fun updateNonStriker(matchId: String,playerName: String) : Int {
+    fun updateNonStriker(matchId: String, playerName: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("player_name", playerName)
@@ -1523,7 +1778,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_BATTINGSTATS, contentValues, whereClause, whereArgs)
     }
 
-    fun updateBowler(matchId: String, playerName: String) : Int {
+    fun updateBowler(matchId: String, playerName: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("player_name", playerName)
@@ -1534,7 +1789,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_BOWLINGSTATS, contentValues, whereClause, whereArgs)
     }
 
-    fun updateKeeper(matchId: String, playerName: String) : Int {
+    fun updateKeeper(matchId: String, playerName: String): Int {
         val db = writableDatabase
         val contentValues = ContentValues().apply {
             put("keeper_name", playerName)
@@ -1552,7 +1807,8 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val query = "SELECT 1 FROM $TABLE_PLAYERS WHERE name = ? LIMIT 1"
         val cursor = db.rawQuery(query, arrayOf(playerName))
 
-        val exists = cursor.moveToFirst() // returns true if the query returned a row, false otherwise
+        val exists =
+            cursor.moveToFirst() // returns true if the query returned a row, false otherwise
         cursor.close()
         return exists
     }
@@ -1579,4 +1835,175 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     private fun Cursor.getDoubleOrZero(columnName: String): Double {
         return getDouble(getColumnIndexOrThrow(columnName))
     }
+
+    fun importCSVToDatabase(uri: Uri, context: Context, importType: String) {
+        try {
+            val inputStream = context.contentResolver.openInputStream(uri)
+
+            if (inputStream == null) {
+                Toast.makeText(context, "Cannot open file", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            val reader = BufferedReader(InputStreamReader(inputStream))
+
+            val db = this.writableDatabase
+
+            db.beginTransaction() // For better performance
+            try {
+                // Read and skip header line
+                //reader.readLine()
+
+                // Process each line
+                reader.forEachLine { line ->
+                    if (line.isNotBlank()) {
+                        val columns = parseCSVLine(line)
+
+                        when (importType) {
+                            "players" -> importPlayerData(columns,db, TABLE_PLAYERS)
+                            "matches" -> importMatchData(columns, db,TABLE_MATCHES)
+                            "teams" -> importTeamData(columns, db,TABLE_TEAMS)
+                            "bowling" -> importBowlingData(columns, db,TABLE_BOWLINGSTATS)
+                            "batting" -> importBattingData(columns, db,TABLE_BATTINGSTATS)
+                            else -> {
+                                Toast.makeText(context, "Unknown import type", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                    }
+                }
+
+                db.setTransactionSuccessful()
+                Toast.makeText(context, "CSV imported successfully!", Toast.LENGTH_SHORT).show()
+
+            } finally {
+                db.endTransaction()
+            }
+
+            reader.close()
+            inputStream.close()
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(context, "Import failed: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+}
+
+
+
+// Helper functions for different import types
+private fun importPlayerData(columns: List<String>, db: SQLiteDatabase, tableName: String) {
+    val values = ContentValues().apply {
+        put("player_id", columns.getOrNull(0)?.trim() ?: "")
+        put("player_name", columns.getOrNull(1)?.trim() ?: "")
+        put("team_id", columns.getOrNull(2)?.trim() ?: "")
+        // ... other player columns
+    }
+    db.insert(tableName, null, values)
+}
+private fun importTeamData(columns: List<String>, db: SQLiteDatabase, tableName: String) {
+    val values = ContentValues().apply {
+        put("match_id", columns.getOrNull(0)?.trim() ?: "")
+        put("team_id", columns.getOrNull(1)?.trim() ?: "")
+        put("player_name", columns.getOrNull(2)?.trim() ?: "")
+        put("is_captain", columns.getOrNull(3)?.trim()?.toIntOrNull() ?: 0)  // Changed to 0
+        put("is_midbowler", columns.getOrNull(4)?.trim()?.toIntOrNull() ?: 0)  // Changed to 0
+    }
+    db.insert(tableName, null, values)
+}
+
+private fun importMatchData(columns: List<String>, db: SQLiteDatabase, tableName: String) {
+    val values = ContentValues().apply {
+        put("match_id", columns.getOrNull(0)?.trim() ?: "")
+        put("match_date", columns.getOrNull(1)?.trim() ?: "")
+        put("first_batting_team_captain", columns.getOrNull(2)?.trim() ?: "")
+        put("first_batting_team_striker", columns.getOrNull(3)?.trim() ?: "")
+        put("first_batting_team_nonstriker", columns.getOrNull(4)?.trim() ?: "")
+        put("second_batting_team_captain", columns.getOrNull(5)?.trim() ?: "")
+        put("second_batting_team_bowler", columns.getOrNull(6)?.trim() ?: "")
+        put("second_batting_team_keeper", columns.getOrNull(7)?.trim() ?: "")
+        put("winning_team_captain", columns.getOrNull(8)?.trim() ?: "")
+        put("no_of_overs_aside", columns.getOrNull(9)?.trim()?.toIntOrNull() ?: 0)  // Changed to 0
+        put("no_of_players_aside", columns.getOrNull(10)?.trim()?.toIntOrNull() ?: 0)  // Changed to 0
+        put("side_wall_rule", columns.getOrNull(11)?.trim()?.toIntOrNull() ?: 0)  // Changed to 0
+        put("is_started", columns.getOrNull(12)?.trim()?.toIntOrNull() ?: 0)  // Changed to 0
+        put("is_finished", columns.getOrNull(13)?.trim()?.toIntOrNull() ?: 0)  // Changed to 0
+        put("is_synced", columns.getOrNull(14)?.trim()?.toIntOrNull() ?: 0)  // Changed to 0
+    }
+    db.insert(tableName, null, values)
+}
+
+private fun importBowlingData(columns: List<String>, db: SQLiteDatabase, tableName: String) {
+    val values = ContentValues().apply {
+        put("match_id", columns.getOrNull(0)?.trim() ?: "")
+        put("team_id", columns.getOrNull(1)?.trim() ?: "")
+        put("bowling_order", columns.getOrNull(2)?.trim()?.toIntOrNull() ?: 0)
+        put("player_name", columns.getOrNull(3)?.trim() ?: "")
+        put("bowling_turn", columns.getOrNull(4)?.trim()?.toIntOrNull() ?: 0)
+        put("bowling_status", columns.getOrNull(5)?.trim() ?: "")
+        put("keeper_name", columns.getOrNull(6)?.trim() ?: "")
+        put("overvalue", columns.getOrNull(7)?.trim()?.toDoubleOrNull() ?: 0.0)
+        put("maiden", columns.getOrNull(8)?.trim()?.toIntOrNull() ?: 0)
+        put("runs", columns.getOrNull(9)?.trim()?.toIntOrNull() ?: 0)
+        put("wickets", columns.getOrNull(10)?.trim()?.toIntOrNull() ?: 0)
+        put("noballs", columns.getOrNull(11)?.trim()?.toIntOrNull() ?: 0)
+        put("wides", columns.getOrNull(12)?.trim()?.toIntOrNull() ?: 0)
+        put("byes", columns.getOrNull(13)?.trim()?.toIntOrNull() ?: 0)
+        put("legbyes", columns.getOrNull(14)?.trim()?.toIntOrNull() ?: 0)
+        put("fours", columns.getOrNull(15)?.trim()?.toIntOrNull() ?: 0)
+        put("sixes", columns.getOrNull(16)?.trim()?.toIntOrNull() ?: 0)
+        put("dotballs", columns.getOrNull(17)?.trim()?.toIntOrNull() ?: 0)
+        put("over_record", columns.getOrNull(18)?.trim() ?: "")
+    }
+    db.insert(tableName, null, values)
+}
+
+private fun importBattingData(columns: List<String>, db: SQLiteDatabase, tableName: String) {
+    val values = ContentValues().apply {
+        put("match_id", columns.getOrNull(0)?.trim() ?: "")
+        put("team_id", columns.getOrNull(1)?.trim() ?: "")
+        put("batting_order", columns.getOrNull(2)?.trim()?.toIntOrNull() ?: 0)
+        put("player_name", columns.getOrNull(3)?.trim() ?: "")
+        put("batting_turn", columns.getOrNull(4)?.trim()?.toIntOrNull() ?: 0)
+        put("batting_status", columns.getOrNull(5)?.trim() ?: "")
+        put("runs", columns.getOrNull(6)?.trim()?.toIntOrNull() ?: 0)
+        put("balls", columns.getOrNull(7)?.trim()?.toIntOrNull() ?: 0)
+        put("fours", columns.getOrNull(8)?.trim()?.toIntOrNull() ?: 0)
+        put("sixes", columns.getOrNull(9)?.trim()?.toIntOrNull() ?: 0)
+        put("dotballs", columns.getOrNull(10)?.trim()?.toIntOrNull() ?: 0)
+        put("wicket_description", columns.getOrNull(11)?.trim() ?: "")
+        put("wicket_type", columns.getOrNull(12)?.trim() ?: "")
+        put("wicket_bowler", columns.getOrNull(13)?.trim() ?: "")
+        put("wicket_fielder", columns.getOrNull(14)?.trim() ?: "")
+    }
+    db.insert(tableName, null, values)
+}
+
+private fun parseCSVLine(line: String): List<String> {
+    val result = mutableListOf<String>()
+    var current = StringBuilder()
+    var inQuotes = false
+
+    for (i in line.indices) {
+        val char = line[i]
+        when {
+            char == '"' -> {
+                // Toggle quotes state
+                inQuotes = !inQuotes
+            }
+            char == ',' && !inQuotes -> {
+                // Only split on commas outside quotes
+                result.add(current.toString())
+                current = StringBuilder()
+            }
+            else -> {
+                current.append(char)
+            }
+        }
+    }
+    // Add the last field
+    result.add(current.toString())
+
+    return result
 }
