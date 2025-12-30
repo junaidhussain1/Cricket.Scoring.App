@@ -6,15 +6,19 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -75,7 +79,6 @@ fun ScoreCardPage(navController: NavHostController) {
 
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Retrieve the captain names from the view model
@@ -240,6 +243,47 @@ fun ScoreCardPage(navController: NavHostController) {
             }
         }
 
+        //Score card, Ball By Ball History
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.Center, // 🔹 center buttons
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ActionSquareButton(
+                text = "Full Scorecard",
+                isTablet = isTablet
+            ) {
+                val match = dbHelper.getMatch(matchId)
+                val teamIdA = dbHelper.getTeamForPlayer(matchId,
+                    match!!.firstBattingTeamCaptain
+                )
+                val teamIdB = dbHelper.getTeamForPlayer(matchId,
+                    match.secondBattingTeamCaptain
+                )
+                navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            ActionSquareButton(
+                text = "Ball by Ball",
+                isTablet = isTablet
+            ) {
+                val match = dbHelper.getMatch(matchId)
+                val teamIdA = dbHelper.getTeamForPlayer(matchId,
+                    match!!.firstBattingTeamCaptain
+                )
+                val teamIdB = dbHelper.getTeamForPlayer(matchId,
+                    match.secondBattingTeamCaptain
+                )
+
+                val teamId = if (firstBattingTeamStats.active.value) teamIdB else teamIdA
+
+                navController.navigate("ballbyball/${matchId}/${teamId}/${0}")
+            }
+        }
 
         // Innings Score Box
         Box(
@@ -250,8 +294,15 @@ fun ScoreCardPage(navController: NavHostController) {
                 )
                 .fillMaxWidth()
         ) {
-            Column {
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
                 TeamScoreBox(
+                    modifier = Modifier.weight(1f),
                     name1 = firstBattingTeamStats.name.value,
                     overs1 = String.format(
                         Locale.UK,
@@ -270,11 +321,12 @@ fun ScoreCardPage(navController: NavHostController) {
                             ),
                     color1 = if (firstBattingTeamStats.active.value) Color(19, 207, 69) else Color.Black
                 ) {
-                    val teamIdA = 1
-                    val teamIdB = 0
-                    navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
+                    //val teamIdA = 1
+                    //val teamIdB = 0
+                    //navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
                 }
                 TeamScoreBox(
+                    modifier = Modifier.weight(1f),
                     name1 = secondBattingTeamStats.name.value,
                     overs1 = String.format(
                         Locale.UK,
@@ -293,9 +345,9 @@ fun ScoreCardPage(navController: NavHostController) {
                             ),
                     color1 = if (firstBattingTeamStats.active.value) Color.Black else Color(19, 207, 69)
                 ) {
-                    val teamIdA = 2
-                    val teamIdB = 0
-                    navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
+                    //val teamIdA = 2
+                    //val teamIdB = 0
+                    //navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
                 }
             }
         }
@@ -1308,3 +1360,29 @@ fun ScoreCardPage(navController: NavHostController) {
     }
 }
 
+@Composable
+fun ActionSquareButton(
+    text: String,
+    isTablet: Boolean,
+    onClick: () -> Unit
+) {
+    val size = if (isTablet) 80.dp else 50.dp
+
+    Button(
+        onClick = onClick,
+        //modifier = Modifier.size(size),
+        shape = RoundedCornerShape(0.dp), // 🔹 square
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary, // 🔹 light blue
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    ) {
+        Text(
+            text = text,
+            fontSize = if (isTablet) 16.sp else 12.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(4.dp)
+        )
+    }
+}

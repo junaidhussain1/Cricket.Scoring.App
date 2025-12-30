@@ -58,9 +58,17 @@ fun AppNavHost(navController: NavHostController) {
             composable("team1PlayerSelection") { Team1PlayerSelectionPage()}
             composable("team2PlayerSelection") { Team2PlayerSelectionPage()}
             composable("scorecard") { ScoreCardPage(navController = navController) }
+            composable("ballbyball/{matchId}/{teamIdA}/{teamIdB}") { backStackEntry ->
+                val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
+                val teamIdA = backStackEntry.arguments?.getString("teamIdA")?.toIntOrNull() ?: 0
+                val teamIdB = backStackEntry.arguments?.getString("teamIdB")?.toIntOrNull() ?: 0
+
+                BallByBallHistoryPage(matchId, teamIdA, teamIdB)
+            }
             composable("existingmatches") { ExistingMatchesPage(navController = navController) }
             composable("secondinningssetup") { SecondInningsSetupPage(navController = navController) }
             composable("settings") { SettingsPage(navController = navController) }
+            composable("importdata") { ImportDataPage() }
             composable("googlesheetsettings") { GoogleSheetSettingsPage() }
             composable("inningstats/{matchId}/{teamIdA}/{teamIdB}") { backStackEntry ->
                 val matchId = backStackEntry.arguments?.getString("matchId") ?: ""

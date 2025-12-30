@@ -1,6 +1,9 @@
 package com.example.cricketscoringapp
 
 import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +38,7 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.model.ValueRange
+import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 
@@ -124,7 +128,6 @@ fun HomePage(navController: NavHostController) {
 
             Button(
                 onClick = { navController.navigate("settings") },
-                    //Toast.makeText(context, getDataFromSheet(context), Toast.LENGTH_SHORT).show()
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(255, 252, 228) // Set the background color
@@ -136,6 +139,24 @@ fun HomePage(navController: NavHostController) {
                     color = Color(10, 18, 32)
                 )
             }
+
+            Spacer(modifier = Modifier.height(30.dp))
+            //ImportButton(context)
+
+            Button(
+                onClick = { navController.navigate("importdata") },
+                modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(255, 252, 228) // Set the background color
+                )
+            ) {
+                Text(
+                    text = "Import Data",
+                    fontSize = if (isTablet) 26.sp else 22.sp,
+                    color = Color(10, 18, 32)
+                )
+            }
+
 
             Spacer(modifier = Modifier.height(30.dp))
 
@@ -253,4 +274,7 @@ fun loadClientSecrets(context: Context): GoogleClientSecrets {
     val inputStream = context.resources.openRawResource(R.raw.clientsecret) // Replace with the correct file name
     return GoogleClientSecrets.load(jsonFactory, InputStreamReader(inputStream))
 }
+
+
+
 
