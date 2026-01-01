@@ -108,37 +108,14 @@ fun updateStats(context: Context,
 
         doUpdateStats(context,matchId,false,newValue,1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
 
-        when(sideWallRule) {
-            0 -> {
-                if ((newValue == "1") || (newValue == "3")) {
-                    swapBatsmenDB(
-                        context,
-                        matchId,
-                        firstBatsmanStats,
-                        secondBatsmanStats
-                    )
-                }
-            }
-            1 -> {
-                if ((newValue == "1") || (newValue == "2")) {
-                    swapBatsmenDB(
-                        context,
-                        matchId,
-                        firstBatsmanStats,
-                        secondBatsmanStats
-                    )
-                }
-            }
-            2 -> {
-                if ((newValue == "1") || (newValue == "3")) {
-                    swapBatsmenDB(
-                        context,
-                        matchId,
-                        firstBatsmanStats,
-                        secondBatsmanStats
-                    )
-                }
-            }
+        val shouldSwap = when(sideWallRule) {
+            0, 2 -> newValue == "1" || newValue == "3"
+            1 -> newValue == "1" || newValue == "2" || newValue == "NB+1" || newValue == "NB+2" || newValue == "NB+3" || newValue == "B1" || newValue == "B2" || newValue == "B3" || newValue == "LB1" || newValue == "LB2" || newValue == "LB3"
+            else -> false
+        }
+
+        if (shouldSwap) {
+            swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats)
         }
 
         if (balls.size == 6 && balls.take(6).all { it.action == "0" || it.action.contains("WK") }) {
@@ -254,12 +231,11 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOve
     var winningTeam = ""
 
     if (firstTeamStats.active.value) {
+        // First team is batting (second innings)
         if (secondTeamStats.inningScore.value != 0) {
-            runsToWin = if ((secondTeamStats.inningScore.value - firstTeamStats.inningScore.value) >= 0) {
-                secondTeamStats.inningScore.value - firstTeamStats.inningScore.value + 1
-            } else {
-                secondTeamStats.inningScore.value - firstTeamStats.inningScore.value
-            }
+            runsToWin = secondTeamStats.inningScore.value - firstTeamStats.inningScore.value + 1
+
+            // Only declare winner if they've already won (negative runsToWin means they passed the target)
             if (runsToWin <= 0) {
                 winningTeam = firstTeamStats.name.value
             }
@@ -267,12 +243,11 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOve
         ballsRemaining = calculateBalls(noOfOversAside) - calculateBalls(firstTeamStats.overs.value)
         oversRemaining = calculateOversRemaining(ballsRemaining)
     } else {
+        // Second team is batting (second innings)
         if (firstTeamStats.inningScore.value != 0) {
-            runsToWin = if ((firstTeamStats.inningScore.value - secondTeamStats.inningScore.value) >= 0) {
-                firstTeamStats.inningScore.value - secondTeamStats.inningScore.value + 1
-            } else {
-                firstTeamStats.inningScore.value - secondTeamStats.inningScore.value
-            }
+            runsToWin = firstTeamStats.inningScore.value - secondTeamStats.inningScore.value + 1
+
+            // Only declare winner if they've already won (negative runsToWin means they passed the target)
             if (runsToWin <= 0) {
                 winningTeam = secondTeamStats.name.value
             }
@@ -281,33 +256,33 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOve
         oversRemaining = calculateOversRemaining(ballsRemaining)
     }
 
-    if (winningTeam.isEmpty() && runsToWin > 0) {
-        winningTeam =
-            when {
-                firstTeamStats.inningScore.value >
-                        secondTeamStats.inningScore.value ->
-                    firstTeamStats.name.value
-
-                secondTeamStats.inningScore.value >
-                        firstTeamStats.inningScore.value ->
-                    secondTeamStats.name.value
-
-                else -> ""
-            }
+    // REMOVED the problematic section that was setting winningTeam based on current scores
+    // Only set winningTeam if all overs are complete and no winner has been determined yet
+    if (winningTeam.isEmpty() && ballsRemaining == 0) {
+        winningTeam = when {
+            firstTeamStats.inningScore.value > secondTeamStats.inningScore.value ->
+                firstTeamStats.name.value
+            secondTeamStats.inningScore.value > firstTeamStats.inningScore.value ->
+                secondTeamStats.name.value
+            else -> "Draw" // Match tied
+        }
     }
 
     val runsToWinAbs = abs(runsToWin)
-    runsToWinTxt = if (winningTeam.isNotEmpty()) {
+    runsToWinTxt = if (winningTeam.isNotEmpty() && winningTeam != "Draw") {
         "Team $winningTeam is winning by $runsToWinAbs runs!"
+    } else if (winningTeam == "Draw") {
+        "Match is a draw!"
     } else {
-        if (firstTeamStats.overs.value.toInt() == 0  ||  secondTeamStats.overs.value.toInt() == 0) {
+        // Check if BOTH teams have completed at least one over (first innings not started yet)
+        if (firstTeamStats.overs.value == 0.0 && secondTeamStats.overs.value == 0.0) {
             "$oversRemaining overs remaining!"
         } else {
             "$runsToWin runs to win from $ballsRemaining balls!"
         }
     }
 
-    return Pair(runsToWinTxt,winningTeam)
+    return Pair(runsToWinTxt, winningTeam)
 }
 
 //fun calcNoOfWickets(context: Context,matchId: String,firstTeamStats: TeamStats) : Int {

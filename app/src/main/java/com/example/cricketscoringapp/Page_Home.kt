@@ -141,24 +141,6 @@ fun HomePage(navController: NavHostController) {
             }
 
             Spacer(modifier = Modifier.height(30.dp))
-            //ImportButton(context)
-
-            Button(
-                onClick = { navController.navigate("importdata") },
-                modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(255, 252, 228) // Set the background color
-                )
-            ) {
-                Text(
-                    text = "Import Data",
-                    fontSize = if (isTablet) 26.sp else 22.sp,
-                    color = Color(10, 18, 32)
-                )
-            }
-
-
-            Spacer(modifier = Modifier.height(30.dp))
 
             val versionName = getAppVersion(context)?.versionName
 

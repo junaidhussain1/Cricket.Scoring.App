@@ -108,7 +108,7 @@ fun ImportDataPage() {
                 onClick = { playersLauncher.launch("*/*") },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(200, 230, 201)
+                    containerColor = Color(255, 252, 228)
                 )
             ) {
                 Text(
@@ -142,7 +142,7 @@ fun ImportDataPage() {
                 onClick = { teamsLauncher.launch("*/*") },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(179, 229, 252)
+                    containerColor = Color(255, 252, 228)
                 )
             ) {
                 Text(
@@ -159,7 +159,7 @@ fun ImportDataPage() {
                 onClick = { bowlingLauncher.launch("*/*") },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(255, 224, 178)
+                    containerColor = Color(255, 252, 228)
                 )
             ) {
                 Text(
@@ -176,7 +176,7 @@ fun ImportDataPage() {
                 onClick = { battingLauncher.launch("*/*") },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(255, 224, 178)
+                    containerColor = Color(255, 252, 228)
                 )
             ) {
                 Text(
