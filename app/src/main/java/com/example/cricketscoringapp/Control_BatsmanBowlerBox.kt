@@ -34,7 +34,7 @@ fun BatsmanBowlerKeeperBox(col1: String,
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
 
-    Surface(color = Color.White, modifier = Modifier.fillMaxWidth()) {
+    Surface(color = Color(255, 252, 228), modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -56,7 +56,7 @@ fun BatsmanBowlerKeeperBox(col1: String,
                     Text(
                         text = col1,
                         fontSize = if (isTablet) 24.sp else 16.sp,
-                        color = Color.White,
+                        color = Color(255, 252, 228),
                         modifier = Modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically)  // Aligns text vertically center

@@ -39,9 +39,9 @@ fun TeamScoreBox(
                 .padding(12.dp)  // Optional padding
         ) {
             Text(
-                text = "Team $name1!",
+                text = "Team $name1",
                 fontSize = if (isTablet) 18.sp else 18.sp,  // Increase the font size here
-                color =  Color.White,
+                color =  Color(255, 252, 228),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .weight(2f)// This pushes the next Text to the right
@@ -50,7 +50,7 @@ fun TeamScoreBox(
             Text(
                 text = overs1,
                 fontSize = if (isTablet) 18.sp else 24.sp,  // Increase the font size here
-                color =  Color.White,
+                color =  Color(255, 252, 228),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .weight(1f)  // Occupies space proportionally
@@ -59,7 +59,7 @@ fun TeamScoreBox(
             Text(
                 text = score1,
                 fontSize = if (isTablet) 18.sp else 24.sp,  // Increase the font size here
-                color =  Color.White,
+                color =  Color(255, 252, 228),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .weight(1f)

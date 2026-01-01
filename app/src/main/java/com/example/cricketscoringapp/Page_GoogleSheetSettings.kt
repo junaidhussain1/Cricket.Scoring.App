@@ -63,7 +63,7 @@ fun GoogleSheetSettingsPage() {
             )
 
             Image(
-                painter = painterResource(id = R.drawable.updatedimage), // Replace with your app icon resource
+                painter = painterResource(id = R.drawable.designer2), // Replace with your app icon resource
                 contentDescription = "App Icon",
                 modifier = Modifier
                     .size(if (isTablet) 400.dp else 300.dp) // Larger image size for tablets

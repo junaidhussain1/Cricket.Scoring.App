@@ -1273,8 +1273,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                     balls.forEachIndexed { index, ballString ->
                         val parts = ballString.split(",")
                         if (parts.size >= 2) {
-                            val action = parts[0]
-                            val batsmanName = parts[1]
+                            val action = parts.getOrElse(0) { "" }
+                            val batsmanName = parts.getOrElse(1) { "" }
+                            val newBatsmanName = parts.getOrElse(2) { "" }
+                            val fielderName = parts.getOrElse(3) { "unknown" }
 
                             val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3","WKRONB","WKROW","WKSTW")
                             val isInvalidBall = action in excludedValuesFromBallsBalled
@@ -1323,7 +1325,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                                 action.startsWith("WK") -> getWicketDescription(
                                     action,
                                     bowlerName,
-                                    "unknown"
+                                    fielderName
                                 )
 
                                 action == "W" -> "Wide"
@@ -1890,8 +1892,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         }
     }
 }
-
-
 
 // Helper functions for different import types
 private fun importPlayerData(columns: List<String>, db: SQLiteDatabase, tableName: String) {

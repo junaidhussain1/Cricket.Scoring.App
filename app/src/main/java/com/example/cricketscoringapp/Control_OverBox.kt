@@ -1,6 +1,7 @@
 package com.example.cricketscoringapp
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Surface
@@ -8,8 +9,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
@@ -27,8 +31,12 @@ fun OverBox(
 
     Surface(color = backcolor1, modifier = Modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier
-                .padding(8.dp)
+            modifier = Modifier.padding(
+                start = 0.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp
+            )
         ) {
             Row(
                 modifier = Modifier
@@ -38,7 +46,7 @@ fun OverBox(
             ) {
                 Text(
                     text = heading1,
-                    fontSize = if (isTablet) 30.sp else 20.sp,
+                    fontSize = if (isTablet) 26.sp else 18.sp,
                     fontWeight = headingFontBold1,
                     color = Color.Gray,
                     modifier = Modifier
@@ -59,19 +67,23 @@ fun OverBox(
                         ) {
                             // Check if action is "WK"
                             if (balls[index].action.startsWith("WK")) {
-                                // Draw a red circle if the action is "WK"
-                                Canvas(
+                                Image(
+                                    painter = painterResource(id = R.drawable.out_image2),
                                     modifier = Modifier
-                                        .size(24.dp)
-                                        .align(Alignment.CenterVertically)
-                                        .offset(y = 5.dp) // Slight offset to adjust vertical alignment
-                                ) {
-                                    drawCircle(
-                                        color = Color.Red,
-                                        radius = size.minDimension / 2
-                                    )
-                                }
-                            } else {
+                                        .fillMaxSize(), // Fill the IconButton
+                                    contentDescription = "Out Image",
+                                    contentScale = ContentScale.Fit
+                                )
+                            } else if (balls[index].action == "0") {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ball_4),
+                                    modifier = Modifier
+                                        .fillMaxSize(), // Fill the IconButton
+                                    contentDescription = "Ball Image",
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                            else {
                                 // Display the action value as a Text
                                 Text(
                                     text = balls[index].action,

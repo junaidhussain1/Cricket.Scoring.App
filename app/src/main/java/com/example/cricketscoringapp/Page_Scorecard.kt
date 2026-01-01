@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -270,6 +269,11 @@ fun ScoreCardPage(navController: NavHostController) {
             horizontalArrangement = Arrangement.Center, // 🔹 center buttons
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Text(
+                text = runsToWin,
+                fontSize = 20.sp
+            )
+
             ActionSquareButton(
                 text = "Full Scorecard",
                 isTablet = isTablet
@@ -292,15 +296,15 @@ fun ScoreCardPage(navController: NavHostController) {
             modifier = Modifier
                 .padding(8.dp)
                 .border(
-                    BorderStroke(2.dp, Color.White),
+                    BorderStroke(2.dp, Color(255, 252, 228)),
                 )
                 .fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    //.padding(horizontal = 8.dp),
+                //horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
                 TeamScoreBox(
@@ -362,17 +366,12 @@ fun ScoreCardPage(navController: NavHostController) {
             }
         }
 
-        Text(
-            text = runsToWin,
-            fontSize = 20.sp
-        )
-
         // Batsman Box
         Box(
             modifier = Modifier
                 .padding(8.dp)
                 .border(
-                    BorderStroke(2.dp, Color.White),
+                    BorderStroke(2.dp, Color(255, 252, 228)),
                 )
                 .fillMaxWidth()
         ) {
@@ -437,7 +436,7 @@ fun ScoreCardPage(navController: NavHostController) {
             modifier = Modifier
                 .padding(8.dp)
                 .border(
-                    BorderStroke(2.dp, Color.White),
+                    BorderStroke(2.dp, Color(255, 252, 228)),
                 )
                 .fillMaxWidth()
         ) {
@@ -551,7 +550,7 @@ fun ScoreCardPage(navController: NavHostController) {
             modifier = Modifier
                 .padding(8.dp)
                 .border(
-                    BorderStroke(2.dp, Color.White),
+                    BorderStroke(2.dp, Color(255, 252, 228)),
                 )
                 .fillMaxWidth()
         ) {
@@ -623,7 +622,7 @@ fun ScoreCardPage(navController: NavHostController) {
             modifier = Modifier
                 .padding(8.dp)
                 .border(
-                    BorderStroke(2.dp, Color.White),
+                    BorderStroke(2.dp, Color(255, 252, 228)),
                 )
                 .fillMaxWidth()
         ) {
@@ -631,12 +630,14 @@ fun ScoreCardPage(navController: NavHostController) {
                 OverBox(
                     heading1 = "This Over:",
                     balls = balls,
-                    headingFontBold1 = FontWeight.Normal,
+                    headingFontBold1 = FontWeight.Bold,
                     ballsFontBold1 = FontWeight.Bold,
-                    backcolor1 = Color.White
+                    backcolor1 = Color(255, 252, 228)
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         // 1st Row with 4 circle buttons
         Row(
@@ -1421,7 +1422,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                 secondBatsmanStats
                                             )
 
-                                            selectedWicketsOption.value += ",$batsmanOut,$newBatsman"
+                                            selectedWicketsOption.value += ",$batsmanOut,$newBatsman,${selectedFielder.value}"
                                             updateStats(
                                                 context,
                                                 balls,
