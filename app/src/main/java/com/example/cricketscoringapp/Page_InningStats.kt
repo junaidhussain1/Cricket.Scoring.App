@@ -11,17 +11,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -29,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -40,11 +46,6 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import java.util.Locale
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
@@ -56,13 +57,23 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var teamACaptain by remember { mutableStateOf("") }
     var teamBCaptain by remember { mutableStateOf("") }
+    var teamAScore by remember { mutableStateOf("") }
+    var teamBScore by remember { mutableStateOf("") }
+
 
     LaunchedEffect(matchId, teamIdA, teamIdB) {
         if (teamIdA != 0) {
             teamACaptain = dbHelper.getBattingTeamCaptain(matchId, teamIdA)
+
+            val teamStatsA = dbHelper.getTeamStats(matchId, teamIdA, teamACaptain)
+            teamAScore = "${teamStatsA.inningScore.value}/${teamStatsA.inningWickets.value}"
         }
+
         if (teamIdB != 0) {
             teamBCaptain = dbHelper.getBattingTeamCaptain(matchId, teamIdB)
+
+            val teamStatsB = dbHelper.getTeamStats(matchId, teamIdB, teamBCaptain)
+            teamBScore = "${teamStatsB.inningScore.value}/${teamStatsB.inningWickets.value}"
         }
     }
 
@@ -76,7 +87,16 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Innings Statistics",
+                text = buildString {
+                    append("Team $teamACaptain")
+                    if (teamAScore.isNotEmpty()) {
+                        append(" ($teamAScore)")
+                    }
+                    append(" vs Team $teamBCaptain")
+                    if (teamBScore.isNotEmpty()) {
+                        append(" ($teamBScore)")
+                    }
+                },
                 fontSize = 22.sp,
                 color = Color(255, 252, 228),
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -94,14 +114,17 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                         onClick = { selectedTabIndex = 0 },
                         modifier = Modifier.weight(1f).padding(end = 8.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (selectedTabIndex == 0) Color(0xFF00E676) else Color(0xFF424242)
+                            containerColor = if (selectedTabIndex == 0) Color(0xFF00E676) else Color(
+                                0xFF424242
+                            )
                         )
                     ) {
                         Text(
-                            text = if (teamACaptain.isNotEmpty()) "Team $teamACaptain" else "Team A",
-                            fontSize = if (isTablet) 16.sp else 12.sp,
+                            text = if (teamACaptain.isNotEmpty()) "Team $teamACaptain Score" else "Team A Score",
+                            fontSize = if (isTablet) 14.sp else 12.sp,
                             textAlign = TextAlign.Center,
-                            color = if (selectedTabIndex == 0) Color.Black else Color.White
+                            color = if (selectedTabIndex == 0) Color.Black else Color.White,
+                            maxLines = 1
                         )
                     }
                 }
@@ -111,14 +134,17 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                         onClick = { selectedTabIndex = 1 },
                         modifier = Modifier.weight(1f).padding(start = 8.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (selectedTabIndex == 1) Color(0xFF00E676) else Color(0xFF424242)
+                            containerColor = if (selectedTabIndex == 1) Color(0xFF00E676) else Color(
+                                0xFF424242
+                            )
                         )
                     ) {
                         Text(
-                            text = if (teamBCaptain.isNotEmpty()) "Team $teamBCaptain" else "Team B",
-                            fontSize = if (isTablet) 16.sp else 12.sp,
+                            text = if (teamBCaptain.isNotEmpty()) "Team $teamBCaptain Score" else "Team B Score",
+                            fontSize = if (isTablet) 14.sp else 12.sp,
                             textAlign = TextAlign.Center,
-                            color = if (selectedTabIndex == 1) Color.Black else Color.White
+                            color = if (selectedTabIndex == 1) Color.Black else Color.White,
+                            maxLines = 1
                         )
                     }
                 }
@@ -128,44 +154,83 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                     onClick = { selectedTabIndex = 2 },
                     modifier = Modifier.weight(1f).padding(start = 8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedTabIndex == 2) Color(0xFF00E676) else Color(0xFF424242)
+                        containerColor = if (selectedTabIndex == 2) Color(0xFF00E676) else Color(
+                            0xFF424242
+                        )
                     )
                 ) {
                     Text(
                         text = "Match Runworm",
-                        fontSize = if (isTablet) 16.sp else 12.sp,
+                        fontSize = if (isTablet) 14.sp else 12.sp,
                         textAlign = TextAlign.Center,
-                        color = if (selectedTabIndex == 2) Color.Black else Color.White
+                        color = if (selectedTabIndex == 2) Color.Black else Color.White,
+                        maxLines = 1
                     )
                 }
             }
 
-            // Display content based on selected tab
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                when (selectedTabIndex) {
-                    0 -> {
-                        if (teamIdA != 0) {
-                            item {
-                                TeamStatsSection(matchId = matchId, pTeamId = teamIdA, context = context)
-                            }
-                        }
-                    }
-                    1 -> {
-                        if (teamIdB != 0) {
-                            item {
-                                TeamStatsSection(matchId = matchId, pTeamId = teamIdB, context = context)
-                            }
-                        }
-                    }
-                    2 -> {
-                        item {
-                            MatchRunwormSection(matchId = matchId, context = context)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            )
+            {
+                // Ball by Ball history
+                Button(
+                    onClick = { selectedTabIndex = 3 },
+                    modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedTabIndex == 3) Color(0xFF00E676) else Color(0xFF424242)
+                    )
+                ) {
+                    Text(
+                        text = "Ball by Ball History" ,
+                        fontSize = if (isTablet) 14.sp else 12.sp,
+                        textAlign = TextAlign.Center,
+                        color = if (selectedTabIndex == 3) Color.Black else Color.White
+                    )
+                }
+            }
+
+            when (selectedTabIndex) {
+                0 -> {
+                    if (teamIdA != 0) {
+                        // Wrap TeamStatsSection in a scrollable Column
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            TeamStatsSection(matchId = matchId, pTeamId = teamIdA, context = context)
                         }
                     }
                 }
+                1 -> {
+                    if (teamIdB != 0) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            TeamStatsSection(matchId = matchId, pTeamId = teamIdB, context = context)
+                        }
+                    }
+                }
+                2 -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        MatchRunwormSection(matchId = matchId, context = context)
+                    }
+                }
+                3 -> {
+                        BallByBallHistoryPage(matchId = matchId, teamIdA = teamIdA, teamIdB = teamIdB)
+                }
             }
+
         }
     }
 }

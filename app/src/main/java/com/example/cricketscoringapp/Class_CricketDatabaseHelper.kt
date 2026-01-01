@@ -16,7 +16,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
-import kotlin.text.insert
 
 // SQLite helper class
 class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -1277,7 +1276,8 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                             val action = parts[0]
                             val batsmanName = parts[1]
 
-                            val isWide = action.startsWith("W") && !action.startsWith("WK")
+                            val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3","WKRONB","WKROW","WKSTW")
+                            val isInvalidBall = action in excludedValuesFromBallsBalled
 
                             // Calculate runs from this ball
                             val runsFromBall = when {
@@ -1330,10 +1330,11 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                                 action.startsWith("W+") -> action.replace("W+", "Wide + ")
                                 action == "NB" -> "No-ball"
                                 action.startsWith("NB+") -> action.replace("NB+", "No-ball + ")
+                                action == "LBW" -> "LBW (-2 Runs)"
                                 action == "LB" -> "Leg-bye"
-                                action.startsWith("LB+") -> action.replace("LB+", "Leg-bye + ")
+                                action.startsWith("LB") -> action.replace("LB", "Leg-byes = ")
                                 action == "B" -> "Bye"
-                                action.startsWith("B+") -> action.replace("B+", "Bye + ")
+                                action.startsWith("B") -> action.replace("B", "Byes =  ")
                                 else -> action
                             }
 
@@ -1347,7 +1348,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                                 )
                             )
 
-                            if (!isWide) {
+                            if (!isInvalidBall) {
                                 actualBallNumber++
                             }
                         }

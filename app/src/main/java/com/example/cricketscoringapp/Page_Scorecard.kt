@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -51,9 +50,10 @@ fun ScoreCardPage(navController: NavHostController) {
     val noOfOversAside = dbHelper.getNoOfOversAside(matchId).toDouble()
     val noOfPlayersAside = dbHelper.getNoOfPlayersAside(matchId)
     val currentBowler = remember { mutableStateOf(dbHelper.getCurrentBowler(matchId)) }
-    val bowlingTeamId = dbHelper.getTeamForPlayer(matchId,currentBowler.value)
-    val bowlingTeam = bowlingTeamId.let { dbHelper.getTeamPlayers(matchId, it,1) }
-    val firstTeamId = dbHelper.getTeamForPlayer(matchId,dbHelper.getFirstBattingTeamStriker(matchId))
+    val bowlingTeamId = dbHelper.getTeamForPlayer(matchId, currentBowler.value)
+    val bowlingTeam = bowlingTeamId.let { dbHelper.getTeamPlayers(matchId, it, 1) }
+    val firstTeamId =
+        dbHelper.getTeamForPlayer(matchId, dbHelper.getFirstBattingTeamStriker(matchId))
     val secondTeamId = if (firstTeamId == 1) 2 else 1
 
     val showWidesDialog = remember { mutableStateOf(false) }
@@ -84,7 +84,7 @@ fun ScoreCardPage(navController: NavHostController) {
         // Retrieve the captain names from the view model
         var team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
         var team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
-        val firstBattingTeamCaptain = Player(dbHelper.getBattingTeamCaptain(matchId,1))
+        val firstBattingTeamCaptain = Player(dbHelper.getBattingTeamCaptain(matchId, 1))
         var team1Id = 1
         var team2Id = 2
         if (team1Captain != firstBattingTeamCaptain) {
@@ -94,7 +94,7 @@ fun ScoreCardPage(navController: NavHostController) {
             team2Id = 1
         }
 
-        val team1Stats = dbHelper.getTeamStats(matchId,team1Id,team1Captain.name)
+        val team1Stats = dbHelper.getTeamStats(matchId, team1Id, team1Captain.name)
         val firstBattingTeamStats = remember(team1Stats) {
             TeamStats(
                 name = mutableStateOf(team1Stats.name.value),
@@ -105,7 +105,7 @@ fun ScoreCardPage(navController: NavHostController) {
             )
         }
 
-        val team2Stats = dbHelper.getTeamStats(matchId,team2Id,team2Captain.name)
+        val team2Stats = dbHelper.getTeamStats(matchId, team2Id, team2Captain.name)
         val secondBattingTeamStats = remember(team2Stats) {
             TeamStats(
                 name = mutableStateOf(team2Stats.name.value),
@@ -116,12 +116,16 @@ fun ScoreCardPage(navController: NavHostController) {
             )
         }
 
-        val (runsToWinLocal,winningCaptain) = calcRunsToWin(firstBattingTeamStats, secondBattingTeamStats, noOfOversAside)
+        val (runsToWinLocal, winningCaptain) = calcRunsToWin(
+            firstBattingTeamStats,
+            secondBattingTeamStats,
+            noOfOversAside
+        )
         val runsToWin = remember(runsToWinLocal) {
             runsToWinLocal
         }
 
-        val firstBatsman = dbHelper.getBatsmanByStatus(matchId,"striker")
+        val firstBatsman = dbHelper.getBatsmanByStatus(matchId, "striker")
         val firstBatsmanStats = remember {
             BatsmanStats(
                 name = mutableStateOf(value = firstBatsman.name.value),
@@ -135,7 +139,7 @@ fun ScoreCardPage(navController: NavHostController) {
             )
         }
 
-        val secondBatsman = dbHelper.getBatsmanByStatus(matchId,"non-striker")
+        val secondBatsman = dbHelper.getBatsmanByStatus(matchId, "non-striker")
         val secondBatsmanStats = remember {
             BatsmanStats(
                 name = mutableStateOf(value = secondBatsman.name.value),
@@ -169,7 +173,8 @@ fun ScoreCardPage(navController: NavHostController) {
             )
         }
 
-        val consolidatedBowler = dbHelper.getConsolidatedBowlerStats(matchId,currentOverBowler.name.value)
+        val consolidatedBowler =
+            dbHelper.getConsolidatedBowlerStats(matchId, currentOverBowler.name.value)
         val consolidatedBowlerStats = remember(consolidatedBowler) {
             BowlerStats(
                 name = mutableStateOf(consolidatedBowler.name.value),
@@ -207,34 +212,48 @@ fun ScoreCardPage(navController: NavHostController) {
         }
 
         //Automatically handle: End of Over, End of Innings, End of Match
-        val team1wickets = dbHelper.getTeamWickets(matchId,firstTeamId)
-        val team2wickets = dbHelper.getTeamWickets(matchId,secondTeamId)
-        val team2batters = dbHelper.getTeamBatters(matchId,secondTeamId)
+        val team1wickets = dbHelper.getTeamWickets(matchId, firstTeamId)
+        val team2wickets = dbHelper.getTeamWickets(matchId, secondTeamId)
+        val team2batters = dbHelper.getTeamBatters(matchId, secondTeamId)
         val team1OversBowled = dbHelper.getTeamOversBowled(matchId, secondTeamId)
         val team2OversBowled = dbHelper.getTeamOversBowled(matchId, firstTeamId)
 
         if (dbHelper.getIsMatchStarted(matchId)) {
             if ((team1wickets == noOfPlayersAside * 2) and (team2batters == 0)) {
-                dbHelper.updateBowlingStats(matchId,"bowled")
-                handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
+                dbHelper.updateBowlingStats(matchId, "bowled")
+                handleLastBatsmen(context, matchId, firstBatsmanStats, secondBatsmanStats)
                 navController.navigate("secondinningssetup")
                 {
                     popUpTo("scorecard") { inclusive = true }
                 }
             } else if (team2wickets == noOfPlayersAside * 2) {
-                handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin, winningCaptain)
+                handleEndOfMatch(
+                    context,
+                    matchId,
+                    firstBatsmanStats,
+                    secondBatsmanStats,
+                    runsToWin,
+                    winningCaptain
+                )
                 navController.navigate("homepage")
             } else {
                 if (endOfOverReached(balls)) {
                     if ((team1OversBowled == noOfOversAside) && (team2OversBowled == 0.0)) {
-                        dbHelper.updateBowlingStats(matchId,"bowled")
-                        handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
+                        dbHelper.updateBowlingStats(matchId, "bowled")
+                        handleLastBatsmen(context, matchId, firstBatsmanStats, secondBatsmanStats)
                         navController.navigate("secondinningssetup")
                         {
                             popUpTo("scorecard") { inclusive = true }
                         }
                     } else if (team2OversBowled == noOfOversAside) {
-                        handleEndOfMatch(context,matchId,firstBatsmanStats, secondBatsmanStats, runsToWin, winningCaptain)
+                        handleEndOfMatch(
+                            context,
+                            matchId,
+                            firstBatsmanStats,
+                            secondBatsmanStats,
+                            runsToWin,
+                            winningCaptain
+                        )
                         navController.navigate("homepage")
                     } else {
                         showBowlerChangeDialog.value = true
@@ -243,8 +262,8 @@ fun ScoreCardPage(navController: NavHostController) {
             }
         }
 
-        //Score card, Ball By Ball History
-        Row (
+        //Full Score Card button
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
@@ -256,32 +275,15 @@ fun ScoreCardPage(navController: NavHostController) {
                 isTablet = isTablet
             ) {
                 val match = dbHelper.getMatch(matchId)
-                val teamIdA = dbHelper.getTeamForPlayer(matchId,
+                val teamIdA = dbHelper.getTeamForPlayer(
+                    matchId,
                     match!!.firstBattingTeamCaptain
                 )
-                val teamIdB = dbHelper.getTeamForPlayer(matchId,
+                val teamIdB = dbHelper.getTeamForPlayer(
+                    matchId,
                     match.secondBattingTeamCaptain
                 )
                 navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            ActionSquareButton(
-                text = "Ball by Ball",
-                isTablet = isTablet
-            ) {
-                val match = dbHelper.getMatch(matchId)
-                val teamIdA = dbHelper.getTeamForPlayer(matchId,
-                    match!!.firstBattingTeamCaptain
-                )
-                val teamIdB = dbHelper.getTeamForPlayer(matchId,
-                    match.secondBattingTeamCaptain
-                )
-
-                val teamId = if (firstBattingTeamStats.active.value) teamIdB else teamIdA
-
-                navController.navigate("ballbyball/${matchId}/${teamId}/${0}")
             }
         }
 
@@ -294,12 +296,12 @@ fun ScoreCardPage(navController: NavHostController) {
                 )
                 .fillMaxWidth()
         ) {
-            Row (
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+            ) {
 
                 TeamScoreBox(
                     modifier = Modifier.weight(1f),
@@ -319,7 +321,11 @@ fun ScoreCardPage(navController: NavHostController) {
                                 "%d",
                                 firstBattingTeamStats.inningWickets.value
                             ),
-                    color1 = if (firstBattingTeamStats.active.value) Color(19, 207, 69) else Color.Black
+                    color1 = if (firstBattingTeamStats.active.value) Color(
+                        19,
+                        207,
+                        69
+                    ) else Color.Black
                 ) {
                     //val teamIdA = 1
                     //val teamIdB = 0
@@ -343,7 +349,11 @@ fun ScoreCardPage(navController: NavHostController) {
                                 "%d",
                                 secondBattingTeamStats.inningWickets.value
                             ),
-                    color1 = if (firstBattingTeamStats.active.value) Color.Black else Color(19, 207, 69)
+                    color1 = if (firstBattingTeamStats.active.value) Color.Black else Color(
+                        19,
+                        207,
+                        69
+                    )
                 ) {
                     //val teamIdA = 2
                     //val teamIdB = 0
@@ -404,7 +414,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     fontColor1 = fontColor2,
                     makePlayerTouchable = true
                 ) {
-                    swapBatsmenDB(context,matchId,firstBatsmanStats, secondBatsmanStats)
+                    swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats)
                 }
 
                 BatsmanBowlerKeeperBox(
@@ -417,7 +427,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     fontColor1 = fontColor3,
                     makePlayerTouchable = true
                 ) {
-                    swapBatsmenDB(context,matchId,firstBatsmanStats, secondBatsmanStats)
+                    swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats)
                 }
             }
         }
@@ -463,7 +473,8 @@ fun ScoreCardPage(navController: NavHostController) {
                         onDismissRequest = { showBowlerChangeDialog.value = false },
                         confirmButton = {
                             Button(onClick = {
-                                showBowlerChangeDialog.value = false }) {
+                                showBowlerChangeDialog.value = false
+                            }) {
                                 Text("Cancel")
                             }
                         },
@@ -472,7 +483,10 @@ fun ScoreCardPage(navController: NavHostController) {
                             Column {
                                 bowlingTeam.forEach { player ->
                                     if (currentOverBowlerStats.name.value != player.name) {
-                                        val consStats = dbHelper.getConsolidatedBowlerStats(matchId,player.name)
+                                        val consStats = dbHelper.getConsolidatedBowlerStats(
+                                            matchId,
+                                            player.name
+                                        )
                                         Button(
                                             onClick = {
                                                 val existingKeeper =
@@ -486,7 +500,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                     dbHelper.deleteCurrentBowler(matchId)
                                                     manualBowlerChange.value = false
                                                 } else {
-                                                    dbHelper.updateBowlingStats(matchId,"bowled")
+                                                    dbHelper.updateBowlingStats(matchId, "bowled")
                                                 }
                                                 dbHelper.addBowlingStats(
                                                     matchId,
@@ -501,7 +515,12 @@ fun ScoreCardPage(navController: NavHostController) {
                                                     player.name,
                                                     existingKeeper
                                                 )
-                                                swapBatsmenDB(context,matchId,firstBatsmanStats, secondBatsmanStats)
+                                                swapBatsmenDB(
+                                                    context,
+                                                    matchId,
+                                                    firstBatsmanStats,
+                                                    secondBatsmanStats
+                                                )
                                                 balls.clear()
                                             },
                                             modifier = Modifier.fillMaxWidth()
@@ -717,26 +736,53 @@ fun ScoreCardPage(navController: NavHostController) {
                     text = {
                         Column {
                             // List of options to choose from
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W"
                                 showWidesDialog.value = false
-                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                updateStats(
+                                    context,
+                                    balls,
+                                    selectedWidesOption.value,
+                                    currentOverBowlerStats,
+                                    firstBatsmanStats,
+                                    secondBatsmanStats,
+                                    firstBattingTeamStats,
+                                    secondBattingTeamStats
+                                )
                             }) {
                                 Text("WIDE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W+1"
                                 showWidesDialog.value = false
-                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                updateStats(
+                                    context,
+                                    balls,
+                                    selectedWidesOption.value,
+                                    currentOverBowlerStats,
+                                    firstBatsmanStats,
+                                    secondBatsmanStats,
+                                    firstBattingTeamStats,
+                                    secondBattingTeamStats
+                                )
                             }) {
                                 Text("WIDE + 1", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWidesOption.value = "W+2"
                                 showWidesDialog.value = false
-                                updateStats(context,balls,selectedWidesOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                updateStats(
+                                    context,
+                                    balls,
+                                    selectedWidesOption.value,
+                                    currentOverBowlerStats,
+                                    firstBatsmanStats,
+                                    secondBatsmanStats,
+                                    firstBattingTeamStats,
+                                    secondBattingTeamStats
+                                )
                             }) {
                                 Text("WIDE + 2", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -815,8 +861,10 @@ fun ScoreCardPage(navController: NavHostController) {
                                                     .padding(0.dp)
                                                     .weight(1f) // Ensures equal space distribution for buttons
                                             ) {
-                                                Text(optionText,
-                                                    fontSize = if (isTablet) 26.sp else 16.sp)
+                                                Text(
+                                                    optionText,
+                                                    fontSize = if (isTablet) 26.sp else 16.sp
+                                                )
                                             }
                                         }
                                     }
@@ -851,50 +899,104 @@ fun ScoreCardPage(navController: NavHostController) {
                     text = {
                         Column {
                             // List of options to choose from
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedExtrasOption.value = "B1"
                                 showExtrasDialog.value = false
-                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                updateStats(
+                                    context,
+                                    balls,
+                                    selectedExtrasOption.value,
+                                    currentOverBowlerStats,
+                                    firstBatsmanStats,
+                                    secondBatsmanStats,
+                                    firstBattingTeamStats,
+                                    secondBattingTeamStats
+                                )
                             }) {
                                 Text("1 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedExtrasOption.value = "B2"
                                 showExtrasDialog.value = false
-                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                updateStats(
+                                    context,
+                                    balls,
+                                    selectedExtrasOption.value,
+                                    currentOverBowlerStats,
+                                    firstBatsmanStats,
+                                    secondBatsmanStats,
+                                    firstBattingTeamStats,
+                                    secondBattingTeamStats
+                                )
                             }) {
                                 Text("2 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedExtrasOption.value = "B3"
                                 showExtrasDialog.value = false
-                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                updateStats(
+                                    context,
+                                    balls,
+                                    selectedExtrasOption.value,
+                                    currentOverBowlerStats,
+                                    firstBatsmanStats,
+                                    secondBatsmanStats,
+                                    firstBattingTeamStats,
+                                    secondBattingTeamStats
+                                )
                             }) {
                                 Text("3 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(32.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedExtrasOption.value = "LB1"
                                 showExtrasDialog.value = false
-                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                updateStats(
+                                    context,
+                                    balls,
+                                    selectedExtrasOption.value,
+                                    currentOverBowlerStats,
+                                    firstBatsmanStats,
+                                    secondBatsmanStats,
+                                    firstBattingTeamStats,
+                                    secondBattingTeamStats
+                                )
                             }) {
                                 Text("1 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedExtrasOption.value = "LB2"
                                 showExtrasDialog.value = false
-                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                updateStats(
+                                    context,
+                                    balls,
+                                    selectedExtrasOption.value,
+                                    currentOverBowlerStats,
+                                    firstBatsmanStats,
+                                    secondBatsmanStats,
+                                    firstBattingTeamStats,
+                                    secondBattingTeamStats
+                                )
                             }) {
                                 Text("2 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedExtrasOption.value = "LB3"
                                 showExtrasDialog.value = false
-                                updateStats(context,balls,selectedExtrasOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                                updateStats(
+                                    context,
+                                    balls,
+                                    selectedExtrasOption.value,
+                                    currentOverBowlerStats,
+                                    firstBatsmanStats,
+                                    secondBatsmanStats,
+                                    firstBattingTeamStats,
+                                    secondBattingTeamStats
+                                )
                             }) {
                                 Text("3 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -917,7 +1019,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     text = {
                         Column {
                             // List of options to choose from
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 updateStats(
                                     context,
                                     balls,
@@ -934,31 +1036,38 @@ fun ScoreCardPage(navController: NavHostController) {
                             }
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 //If active batsman has faced 0 balls
-                                val activeBatsman = getActiveBatsman(firstBatsmanStats,secondBatsmanStats)
-                                val activeBatsmanStats = dbHelper.getBatsmanStats(matchId,activeBatsman)
+                                val activeBatsman =
+                                    getActiveBatsman(firstBatsmanStats, secondBatsmanStats)
+                                val activeBatsmanStats =
+                                    dbHelper.getBatsmanStats(matchId, activeBatsman)
                                 if (activeBatsmanStats.balls.value == 0) {
                                     //Then show next batsman change dialog
                                     batsmanOverride.value = true
                                     showNextBatsmanDialog.value = true
                                     showMoreDialog.value = false
                                 } else {
-                                    Toast.makeText(context, "You can only change Batsman who has faced 0 balls!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "You can only change Batsman who has faced 0 balls!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }) {
                                 Text("Change Batsman", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
-                                Toast.makeText(context, "Not working yet!", Toast.LENGTH_SHORT).show()
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
+                                Toast.makeText(context, "Not working yet!", Toast.LENGTH_SHORT)
+                                    .show()
                             }) {
                                 Text("Retire Batsman", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 showMoreDialog.value = false
                                 showInningsConfirmationDialog.value = true
                             }) {
@@ -983,13 +1092,20 @@ fun ScoreCardPage(navController: NavHostController) {
                         showMoreDialog.value = false
                         if (endOf1stInning) {
                             //If 1st innings then ask to confirm end of innings and start of second
-                            dbHelper.updateBowlingStats(matchId,"bowled")
-                            handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
-                            navController.navigate("secondinningssetup" +
-                                    "")
-                                {
-                                    popUpTo("scorecard") { inclusive = true }
-                                }
+                            dbHelper.updateBowlingStats(matchId, "bowled")
+                            handleLastBatsmen(
+                                context,
+                                matchId,
+                                firstBatsmanStats,
+                                secondBatsmanStats
+                            )
+                            navController.navigate(
+                                "secondinningssetup" +
+                                        ""
+                            )
+                            {
+                                popUpTo("scorecard") { inclusive = true }
+                            }
                         } else {
                             //If 2nd innings then ask to confirm end of match
                             handleEndOfMatch(
@@ -1012,7 +1128,7 @@ fun ScoreCardPage(navController: NavHostController) {
 
             CircleButton("WICKET", if (isTablet) 26 else 16) {
                 showWicketsDialog.value = true
-                checkAndPlayDuckSound(firstBatsmanStats,secondBatsmanStats,context)
+                checkAndPlayDuckSound(firstBatsmanStats, secondBatsmanStats, context)
             }
             if (showWicketsDialog.value) {
                 selectedFielder.value = ""
@@ -1022,7 +1138,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     text = {
                         Column {
                             // List of options to choose from
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKB"
                                 showNextBatsmanDialog.value = true
                                 showWicketsDialog.value = false
@@ -1030,7 +1146,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                 Text("Bowled", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKCB"
                                 selectedFielder.value = dbHelper.getCurrentKeeper(matchId)
                                 showNextBatsmanDialog.value = true
@@ -1039,7 +1155,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                 Text("Caught Behind", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKC"
                                 showFielderDialog.value = true
                                 showWicketsDialog.value = false
@@ -1047,7 +1163,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                 Text("Caught", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKRO"
                                 showBatsmanRunOutSelectionDialog.value = true
                                 showWicketsDialog.value = false
@@ -1055,7 +1171,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                 Text("Run Out", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKRONB"
                                 showBatsmanRunOutSelectionDialog.value = true
                                 showWicketsDialog.value = false
@@ -1063,7 +1179,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                 Text("Run Out NB", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKROW"
                                 showBatsmanRunOutSelectionDialog.value = true
                                 showWicketsDialog.value = false
@@ -1071,7 +1187,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                 Text("Run Out Wide", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKST"
                                 selectedFielder.value = dbHelper.getCurrentKeeper(matchId)
                                 showNextBatsmanDialog.value = true
@@ -1080,7 +1196,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                 Text("Stumped", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKSTW"
                                 selectedFielder.value = dbHelper.getCurrentKeeper(matchId)
                                 showNextBatsmanDialog.value = true
@@ -1089,7 +1205,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                 Text("Stumped Wide", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKHW"
                                 showNextBatsmanDialog.value = true
                                 showWicketsDialog.value = false
@@ -1097,7 +1213,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                 Text("Hit Wicket", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 selectedWicketsOption.value = "WKLB"
                                 showNextBatsmanDialog.value = true
                                 showWicketsDialog.value = false
@@ -1123,26 +1239,42 @@ fun ScoreCardPage(navController: NavHostController) {
                     title = { Text("Select runout batsman?") },
                     text = {
                         Column {
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 if (!firstBatsmanStats.active.value) {
-                                    swapBatsmenDB(context,matchId,firstBatsmanStats,secondBatsmanStats)
+                                    swapBatsmenDB(
+                                        context,
+                                        matchId,
+                                        firstBatsmanStats,
+                                        secondBatsmanStats
+                                    )
                                 }
                                 showBatsmanRunOutSelectionDialog.value = false
                                 showFielderDialog.value = true
                             }) {
-                                Text(firstBatsmanStats.name.value, fontSize = if (isTablet) 30.sp else 20.sp)
+                                Text(
+                                    firstBatsmanStats.name.value,
+                                    fontSize = if (isTablet) 30.sp else 20.sp
+                                )
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 if (!secondBatsmanStats.active.value) {
-                                    swapBatsmenDB(context,matchId,firstBatsmanStats,secondBatsmanStats)
+                                    swapBatsmenDB(
+                                        context,
+                                        matchId,
+                                        firstBatsmanStats,
+                                        secondBatsmanStats
+                                    )
                                 }
                                 showBatsmanRunOutSelectionDialog.value = false
                                 showFielderDialog.value = true
                             }) {
-                                Text(secondBatsmanStats.name.value, fontSize = if (isTablet) 30.sp else 20.sp)
+                                Text(
+                                    secondBatsmanStats.name.value,
+                                    fontSize = if (isTablet) 30.sp else 20.sp
+                                )
                             }
                         }
                     },
@@ -1169,7 +1301,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         Column {
                             bowlingTeam.forEach { player ->
                                 // List of options to choose from
-                                Button( modifier = Modifier.fillMaxWidth(), onClick = {
+                                Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                     selectedFielder.value = player.name
                                     showFielderDialog.value = false
                                     showNextBatsmanDialog.value = true
@@ -1194,8 +1326,8 @@ fun ScoreCardPage(navController: NavHostController) {
             if (showNextBatsmanDialog.value) {
 
                 //Get List of Team Players
-                val strikerBatsman = getActiveBatsman(firstBatsmanStats,secondBatsmanStats)
-                val nonStrikerBatsman = getInactiveBatsman(firstBatsmanStats,secondBatsmanStats)
+                val strikerBatsman = getActiveBatsman(firstBatsmanStats, secondBatsmanStats)
+                val nonStrikerBatsman = getInactiveBatsman(firstBatsmanStats, secondBatsmanStats)
                 var excludeBatsman = ""
 
                 val teamId = if (firstBatsmanStats.name.value != "") {
@@ -1203,32 +1335,67 @@ fun ScoreCardPage(navController: NavHostController) {
                 } else {
                     dbHelper.getTeamForPlayer(matchId, secondBatsmanStats.name.value)
                 }
-                val players = dbHelper.getTeamPlayers(matchId, teamId,1)
+                val players = dbHelper.getTeamPlayers(matchId, teamId, 1)
 
                 //Remove Players who have batted/got out twice already
                 val battedFullyAlreadyPlayers =
                     teamId.let { dbHelper.getFullyBattedAlreadyPlayers(matchId, it) }
 
-                val previousBattingCount = dbHelper.getBattingCount(matchId,strikerBatsman)
+                val previousBattingCount = dbHelper.getBattingCount(matchId, strikerBatsman)
                 if (previousBattingCount > 0) {
                     excludeBatsman = strikerBatsman
                 }
 
                 val availablePlayers = players.filter { player ->
-                    !battedFullyAlreadyPlayers.contains(player) && player != Player(nonStrikerBatsman) && player != Player(excludeBatsman)
+                    !battedFullyAlreadyPlayers.contains(player) && player != Player(
+                        nonStrikerBatsman
+                    ) && player != Player(excludeBatsman)
                 }
 
                 if (availablePlayers.isEmpty()) {
                     showNextBatsmanDialog.value = false
                     val batsmanOut = getActiveBatsman(firstBatsmanStats, secondBatsmanStats)
                     selectedWicketsOption.value += ",$batsmanOut"
-                    updateStats(context,balls,selectedWicketsOption.value,currentOverBowlerStats,firstBatsmanStats,secondBatsmanStats,firstBattingTeamStats,secondBattingTeamStats)
+                    updateStats(
+                        context,
+                        balls,
+                        selectedWicketsOption.value,
+                        currentOverBowlerStats,
+                        firstBatsmanStats,
+                        secondBatsmanStats,
+                        firstBattingTeamStats,
+                        secondBattingTeamStats
+                    )
                     currentBowler.value = dbHelper.getCurrentBowler(matchId)
-                    val wicketDescription = getWicketDescription(selectedWicketsOption.value,currentBowler.value,selectedFielder.value)
+                    val wicketDescription = getWicketDescription(
+                        selectedWicketsOption.value,
+                        currentBowler.value,
+                        selectedFielder.value
+                    )
                     val wicketType = getWicketType(selectedWicketsOption.value)
-                    markBatsmanAsOutInDB(context,matchId,firstBatsmanStats,secondBatsmanStats,wicketDescription,wicketType,currentBowler.value,selectedFielder.value,"",false)
-                    if (dbHelper.getTeamWickets(matchId,dbHelper.getTeamForPlayer(matchId,batsmanOut)) < (noOfPlayersAside * 2)) {
-                        dbHelper.updateBattingStats(matchId,nonStrikerBatsman,"non-striker","striker")
+                    markBatsmanAsOutInDB(
+                        context,
+                        matchId,
+                        firstBatsmanStats,
+                        secondBatsmanStats,
+                        wicketDescription,
+                        wicketType,
+                        currentBowler.value,
+                        selectedFielder.value,
+                        "",
+                        false
+                    )
+                    if (dbHelper.getTeamWickets(
+                            matchId,
+                            dbHelper.getTeamForPlayer(matchId, batsmanOut)
+                        ) < (noOfPlayersAside * 2)
+                    ) {
+                        dbHelper.updateBattingStats(
+                            matchId,
+                            nonStrikerBatsman,
+                            "non-striker",
+                            "striker"
+                        )
                     }
                 } else {
 
@@ -1296,7 +1463,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                 "striker"
                                             )
                                         } else {
-                                            dbHelper.updateStriker(matchId,newBatsman)
+                                            dbHelper.updateStriker(matchId, newBatsman)
                                             firstBatsmanStats.name.value = newBatsman
                                             batsmanOverride.value = false
                                         }
@@ -1366,23 +1533,27 @@ fun ActionSquareButton(
     isTablet: Boolean,
     onClick: () -> Unit
 ) {
-    val size = if (isTablet) 80.dp else 50.dp
+    if (isTablet) 80.dp else 50.dp
 
-    Button(
-        onClick = onClick,
-        //modifier = Modifier.size(size),
-        shape = RoundedCornerShape(0.dp), // 🔹 square
-        contentPadding = PaddingValues(0.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary, // 🔹 light blue
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        )
-    ) {
-        Text(
-            text = text,
-            fontSize = if (isTablet) 16.sp else 12.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(4.dp)
-        )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+    )
+    {
+        Button(
+            onClick = onClick,
+            shape = RoundedCornerShape(8.dp), // 🔹 square
+            contentPadding = PaddingValues(0.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(255, 252, 228)
+            )
+        ) {
+            Text(
+                text = text,
+                fontSize = if (isTablet) 16.sp else 12.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(4.dp)
+            )
+        }
     }
 }

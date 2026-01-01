@@ -82,7 +82,7 @@ fun BallByBallHistoryPage(matchId: String, teamIdA: Int, teamIdB: Int) {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        //Spacer(modifier = Modifier.height(20.dp))
 
         // Custom Tab Buttons
         Row(
@@ -141,7 +141,6 @@ fun BallByBallHistoryPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                     if (teamIdA != 0) {
                         ModernBallByBallHistory(
                             ballHistory = ballHistoryA,
-                            whichTeam = teamACaptain,
                             listState = historyListStateA
                         )
                     }
@@ -150,7 +149,6 @@ fun BallByBallHistoryPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                     if (teamIdB != 0) {
                         ModernBallByBallHistory(
                             ballHistory = ballHistoryB,
-                            whichTeam = teamBCaptain,
                             listState = historyListStateB
                         )
                     }
@@ -163,17 +161,9 @@ fun BallByBallHistoryPage(matchId: String, teamIdA: Int, teamIdB: Int) {
 @Composable
 fun ModernBallByBallHistory(
     ballHistory: List<BallEvent>,
-    whichTeam: String,
     listState: androidx.compose.foundation.lazy.LazyListState
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-//        Text(
-//            text = "📊 Team $whichTeam",
-//            color = Color(0xFF00E676),
-//            fontSize = 18.sp,
-//            fontWeight = FontWeight.Bold,
-//            modifier = Modifier.padding(8.dp)
-//        )
 
         LazyColumn(
             state = listState,
@@ -198,7 +188,6 @@ fun ModernBallHistoryItem(ball: BallEvent) {
     val resultColor = when {
         ball.result == "•" || ball.result == "0" -> Color(0xFF757575)
         ball.result.startsWith("WK") -> Color(0xFFFF1744)
-        //ball.result in listOf("4", "6") -> Color(0xFF66BB6A)
         ball.result.startsWith("W") || ball.result.startsWith("NB") -> Color(0xFFFFA726)
         else -> Color(0xFF42A5F5)
     }
@@ -206,21 +195,21 @@ fun ModernBallHistoryItem(ball: BallEvent) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 2.dp),
+            .padding(vertical = 1.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = "${ball.over}     ${ball.bowler} to ${ball.batsman}",
             color = Color(0xFFE0E0E0),
-            fontSize = 24.sp,
+            fontSize = 16.sp,
             modifier = Modifier.weight(1f)
         )
 
         Text(
             text = ball.resultText,
             color = resultColor,
-            fontSize = 24.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = 4.dp)
         )
