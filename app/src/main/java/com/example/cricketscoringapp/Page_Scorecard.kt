@@ -73,6 +73,7 @@ fun ScoreCardPage(navController: NavHostController) {
     val showBowlerChangeDialog = remember { mutableStateOf(false) }
     val showKeeperChangeDialog = remember { mutableStateOf(false) }
     val showFielderDialog = remember { mutableStateOf(false) }
+    val showActiveBatsmanSelectionDialog = remember { mutableStateOf(false) }
     val selectedFielder = remember { mutableStateOf("") }
     val manualBowlerChange = remember { mutableStateOf(false) }
 
@@ -1463,6 +1464,13 @@ fun ScoreCardPage(navController: NavHostController) {
                                                 newBatsman,
                                                 "striker"
                                             )
+
+                                            // Check if it's a runout wicket - if so, ask which batsman should be on strike
+                                            val isRunOut = selectedWicketsOption.value.startsWith("WKRO")
+                                            if (isRunOut) {
+                                                showActiveBatsmanSelectionDialog.value = true
+                                            }
+
                                         } else {
                                             dbHelper.updateStriker(matchId, newBatsman)
                                             firstBatsmanStats.name.value = newBatsman
@@ -1486,6 +1494,43 @@ fun ScoreCardPage(navController: NavHostController) {
                     )
                 }
             }
+
+            if (showActiveBatsmanSelectionDialog.value) {
+                AlertDialog(
+                    onDismissRequest = { showActiveBatsmanSelectionDialog.value = false },
+                    title = { Text("Select Facing Batsman") },
+                    text = {
+                        Column {
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
+                                // Keep current striker (new batsman) as active
+                                showActiveBatsmanSelectionDialog.value = false
+                            }) {
+                                Text(
+                                    firstBatsmanStats.name.value,
+                                    fontSize = if (isTablet) 30.sp else 20.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
+                                // Swap to make non-striker active
+                                swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats)
+                                showActiveBatsmanSelectionDialog.value = false
+                            }) {
+                                Text(
+                                    secondBatsmanStats.name.value,
+                                    fontSize = if (isTablet) 30.sp else 20.sp
+                                )
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showActiveBatsmanSelectionDialog.value = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+
             CircleButton("UNDO", if (isTablet) 26 else 16) {
                 showUndoConfirmationDialog.value = true
                 val lastNonEmptyIndex = balls.indexOfLast { it.action.isNotEmpty() }
