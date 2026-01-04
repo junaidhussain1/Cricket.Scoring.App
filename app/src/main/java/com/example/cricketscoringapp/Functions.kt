@@ -274,25 +274,18 @@ fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOve
     } else if (winningTeam == "Draw") {
         "Match is a draw!"
     } else {
-        // Check if BOTH teams have completed at least one over (first innings not started yet)
-        if (firstTeamStats.overs.value == 0.0 && secondTeamStats.overs.value == 0.0) {
-            "$oversRemaining overs remaining!"
-        } else {
+        // Check if second innings has started (second team has bowled at least one ball)
+        if (!firstTeamStats.active.value) {
+            // Second innings - second team is batting
             "$runsToWin runs to win from $ballsRemaining balls!"
+        } else {
+            // First innings - first team is batting
+            "$oversRemaining overs remaining!"
         }
     }
 
     return Pair(runsToWinTxt, winningTeam)
 }
-
-//fun calcNoOfWickets(context: Context,matchId: String,firstTeamStats: TeamStats) : Int {
-//    val dbHelper = CricketDatabaseHelper(context)
-//    return if (firstTeamStats.active.value) {
-//        dbHelper.getTeamWickets(matchId,1)
-//    } else {
-//        dbHelper.getTeamWickets(matchId,2)
-//    }
-//}
 
 fun updateBowler(
     matchId: String,

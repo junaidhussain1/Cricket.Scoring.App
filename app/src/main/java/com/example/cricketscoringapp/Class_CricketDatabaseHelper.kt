@@ -1896,10 +1896,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 // Helper functions for different import types
 private fun importPlayerData(columns: List<String>, db: SQLiteDatabase, tableName: String) {
     val values = ContentValues().apply {
-        put("player_id", columns.getOrNull(0)?.trim() ?: "")
-        put("player_name", columns.getOrNull(1)?.trim() ?: "")
-        put("team_id", columns.getOrNull(2)?.trim() ?: "")
-        // ... other player columns
+        put("name", columns.getOrNull(0)?.trim() ?: "")
     }
     db.insert(tableName, null, values)
 }
