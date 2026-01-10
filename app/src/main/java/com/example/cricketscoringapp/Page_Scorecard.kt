@@ -304,8 +304,6 @@ fun ScoreCardPage(navController: NavHostController) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    //.padding(horizontal = 8.dp),
-                //horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
                 TeamScoreBox(
@@ -332,9 +330,6 @@ fun ScoreCardPage(navController: NavHostController) {
                         69
                     ) else Color.Black
                 ) {
-                    //val teamIdA = 1
-                    //val teamIdB = 0
-                    //navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
                 }
                 TeamScoreBox(
                     modifier = Modifier.weight(1f),
@@ -360,9 +355,6 @@ fun ScoreCardPage(navController: NavHostController) {
                         69
                     )
                 ) {
-                    //val teamIdA = 2
-                    //val teamIdB = 0
-                    //navController.navigate("inningstats/${matchId}/${teamIdA}/${teamIdB}")
                 }
             }
         }

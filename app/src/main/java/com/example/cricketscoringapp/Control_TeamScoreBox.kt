@@ -1,10 +1,11 @@
 package com.example.cricketscoringapp
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,57 +14,49 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
 fun TeamScoreBox(
-                modifier: Modifier = Modifier,
-                name1: String,
-                overs1: String,
-                score1: String,
-                color1: Color,
-                onClick: () -> Unit  // Add an onClick lambda to trigger actions
+    modifier: Modifier = Modifier,
+    name1: String,
+    overs1: String,
+    score1: String,
+    color1: Color,
+    onClick: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
 
-    // Make the entire Surface clickable by passing onClick
     Surface(
         color = color1,
         modifier = modifier
-            .clickable { onClick() }  // Make the Surface clickable
+            .clickable { onClick() }
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .padding(12.dp)  // Optional padding
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally  // Center everything
         ) {
             Text(
-                text = "Team $name1",
-                fontSize = if (isTablet) 18.sp else 18.sp,  // Increase the font size here
-                color =  Color(255, 252, 228),
+                text = "Team $name1",  // Or "Team\n$name1" if you want it on 2 lines
+                fontSize = if (isTablet) 24.sp else 18.sp,
+                color = Color(255, 252, 228),
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .weight(2f)// This pushes the next Text to the right
-                    .align(Alignment.CenterVertically)
+                textAlign = TextAlign.Center
             )
+
+            Spacer(modifier = Modifier.height(4.dp))  // Optional spacing between rows
+
             Text(
-                text = overs1,
-                fontSize = if (isTablet) 18.sp else 24.sp,  // Increase the font size here
-                color =  Color(255, 252, 228),
+                text = "$score1 ($overs1)",
+                fontSize = if (isTablet) 24.sp else 18.sp,
+                color = Color(255, 252, 228),
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .weight(1f)  // Occupies space proportionally
-                    .align(Alignment.CenterVertically) // Aligns text vertically center
-            )
-            Text(
-                text = score1,
-                fontSize = if (isTablet) 18.sp else 24.sp,  // Increase the font size here
-                color =  Color(255, 252, 228),
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .weight(1f)
-                    .align(Alignment.CenterVertically)  // Aligns text vertically center
+                textAlign = TextAlign.Center
             )
         }
     }
