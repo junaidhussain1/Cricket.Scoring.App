@@ -46,22 +46,26 @@ fun BallByBallHistoryPage(matchId: String, teamIdA: Int, teamIdB: Int) {
     val historyListStateB = rememberLazyListState()
     var teamACaptain by remember { mutableStateOf("") }
     var teamBCaptain by remember { mutableStateOf("") }
+    val teamOne = 1
+    val teamTwo = 2
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(matchId, teamIdA, teamIdB) {
         if (teamIdA != 0) {
             // Load ball history from database
-            teamACaptain = dbHelper.getBattingTeamCaptain(matchId, if (teamIdA == 1) 2 else 1)
-            val history = dbHelper.getBallByBallHistory(matchId, teamIdA)
+            teamACaptain = dbHelper.getBattingTeamCaptain(matchId, teamIdA)
+            val teamId = dbHelper.getTeamForPlayer(matchId, teamACaptain)
+            val history = dbHelper.getBallByBallHistory(matchId, if (teamId == 1) 2 else 1)
             ballHistoryA.clear()
             ballHistoryA.addAll(history)
         }
 
         if (teamIdB != 0) {
             // Load ball history from database
-            teamBCaptain = dbHelper.getBattingTeamCaptain(matchId, if (teamIdB == 1) 2 else 1)
-            val history = dbHelper.getBallByBallHistory(matchId, teamIdB)
+            teamBCaptain = dbHelper.getBattingTeamCaptain(matchId, teamIdB)
+            val teamId = dbHelper.getTeamForPlayer(matchId, teamBCaptain)
+            val history = dbHelper.getBallByBallHistory(matchId, if (teamId == 1) 2 else 1)
             ballHistoryB.clear()
             ballHistoryB.addAll(history)
         }

@@ -59,18 +59,20 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
     var teamBCaptain by remember { mutableStateOf("") }
     var teamAScore by remember { mutableStateOf("") }
     var teamBScore by remember { mutableStateOf("") }
-
+    val teamOne = 1
+    val teamTwo = 2
 
     LaunchedEffect(matchId, teamIdA, teamIdB) {
+
         if (teamIdA != 0) {
-            teamACaptain = dbHelper.getBattingTeamCaptain(matchId, teamIdA)
+            teamACaptain = dbHelper.getBattingTeamCaptain(matchId, teamOne)
 
             val teamStatsA = dbHelper.getTeamStats(matchId, teamIdA, teamACaptain)
             teamAScore = "${teamStatsA.inningScore.value}/${teamStatsA.inningWickets.value}"
         }
 
         if (teamIdB != 0) {
-            teamBCaptain = dbHelper.getBattingTeamCaptain(matchId, teamIdB)
+            teamBCaptain = dbHelper.getBattingTeamCaptain(matchId, teamTwo)
 
             val teamStatsB = dbHelper.getTeamStats(matchId, teamIdB, teamBCaptain)
             teamBScore = "${teamStatsB.inningScore.value}/${teamStatsB.inningWickets.value}"
@@ -202,7 +204,7 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            TeamStatsSection(matchId = matchId, pTeamId = teamIdA, context = context)
+                            TeamStatsSection(matchId = matchId, pTeamId = teamOne, context = context)
                         }
                     }
                 }
@@ -213,7 +215,7 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            TeamStatsSection(matchId = matchId, pTeamId = teamIdB, context = context)
+                            TeamStatsSection(matchId = matchId, pTeamId = teamTwo, context = context)
                         }
                     }
                 }
@@ -227,7 +229,7 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                     }
                 }
                 3 -> {
-                        BallByBallHistoryPage(matchId = matchId, teamIdA = teamIdA, teamIdB = teamIdB)
+                        BallByBallHistoryPage(matchId = matchId, teamIdA = teamOne, teamIdB = teamTwo)
                 }
             }
 

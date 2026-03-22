@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
@@ -69,7 +69,10 @@ fun Team1PlayerSelectionPage() {
 
         // Player Selection for Team 1
         LazyColumn(
-            modifier = Modifier.fillMaxHeight(0.8f)
+            modifier = Modifier
+                .fillMaxSize()  // Changed from fillMaxHeight(0.8f)
+                .weight(1f),    // Takes all remaining space after the Text and Spacer
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             items(filteredPlayers.size) { index ->
                 val player = filteredPlayers[index]
@@ -78,18 +81,20 @@ fun Team1PlayerSelectionPage() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(vertical = 0.dp, horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(
-                        modifier = Modifier.padding(start = 2.dp),
+                        modifier = Modifier
+                            .padding(0.dp)  // Removed padding
+                            .size(24.dp),   // Optionally make checkbox smaller
                         colors = CheckboxDefaults.colors(
-                            Color(255, 252, 228) // Set the background color
+                            Color(255, 252, 228)
                         ),
                         checked = isSelected,
                         onCheckedChange = { checked ->
                             if (checked) {
-                                if (selectedPlayers.size < (noOfPlayersAside - 1)) {  // no of players minus captain
+                                if (selectedPlayers.size < (noOfPlayersAside - 1)) {
                                     selectedPlayers.add(player)
                                     dbHelper.addTeamPlayer(matchId,1,player.name,0,0)
                                 } else {
@@ -108,10 +113,8 @@ fun Team1PlayerSelectionPage() {
 
                     Text(player.name,
                         fontSize = if (isTablet) 32.sp else 20.sp,
-                        modifier = Modifier.padding(start = 8.dp),
+                        modifier = Modifier.padding(start = 4.dp),
                         color = Color(255, 252, 228))
-
-                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
