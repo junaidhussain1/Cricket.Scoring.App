@@ -47,34 +47,27 @@ fun NewMatchSetupPage(navController: NavHostController) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
 
-    val dbHelper = CricketDatabaseHelper(context)
-    val matchId = dbHelper.getMatchId()
-    val matchStarted = dbHelper.getIsMatchStarted(matchId)
-    val playersList = remember { mutableStateListOf<Player>() }
+    val dbHelper = remember { CricketDatabaseHelper(context) }
+    val matchId = remember { dbHelper.getMatchId() }
+    val matchStarted by remember { mutableStateOf(dbHelper.getIsMatchStarted(matchId)) }
+
+    val playersList = remember { mutableStateListOf<Player>().also { it.addAll(dbHelper.getAllPlayers()) } }
     val battingTeamList = remember { mutableStateListOf<Player>() }
     val bowlingTeamList = remember { mutableStateListOf<Player>() }
 
-    playersList.clear()
-    playersList.addAll(dbHelper.getAllPlayers())
+    var refreshKey1 by remember { mutableStateOf(0) }
+    var refreshKey2 by remember { mutableStateOf(0) }
+    var team1Captain by remember(refreshKey1) { mutableStateOf<Player?>(Player(dbHelper.getCaptainForTeam(matchId, 1))) }
+    var team2Captain by remember(refreshKey2) { mutableStateOf<Player?>(Player(dbHelper.getCaptainForTeam(matchId, 2))) }
+    var battingTeamCaptain by remember { mutableStateOf<Player?>(Player(dbHelper.getBattingTeamCaptain(matchId, 1))) }
+    var facingBatsman by remember { mutableStateOf<Player?>(Player(dbHelper.getFirstBattingTeamStriker(matchId))) }
+    var secondBatsman by remember { mutableStateOf<Player?>(Player(dbHelper.getFirstBattingTeamNonStriker(matchId))) }
+    var openingBowler by remember { mutableStateOf<Player?>(Player(dbHelper.getSecondBattingTeamBowler(matchId))) }
+    var openingKeeper by remember { mutableStateOf<Player?>(Player(dbHelper.getSecondBattingTeamKeeper(matchId))) }
 
-    var team1Captain by remember { mutableStateOf<Player?>(null) }
-    var team2Captain by remember { mutableStateOf<Player?>(null) }
-    var battingTeamCaptain by remember { mutableStateOf<Player?>(null) }
-    var facingBatsman by remember { mutableStateOf<Player?>(null) }
-    var secondBatsman by remember { mutableStateOf<Player?>(null) }
-    var openingBowler by remember { mutableStateOf<Player?>(null) }
-    var openingKeeper by remember { mutableStateOf<Player?>(null) }
-
-    var sideWallRule = dbHelper.getSideWallRule(matchId)
-    var noOfOversAside = dbHelper.getNoOfOversAside(matchId)
-    var noOfPlayersAside = dbHelper.getNoOfPlayersAside(matchId)
-    team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
-    team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
-    battingTeamCaptain = Player((dbHelper.getBattingTeamCaptain(matchId, 1)))
-    facingBatsman = Player(dbHelper.getFirstBattingTeamStriker(matchId))
-    secondBatsman = Player(dbHelper.getFirstBattingTeamNonStriker(matchId))
-    openingBowler = Player(dbHelper.getSecondBattingTeamBowler(matchId))
-    openingKeeper = Player(dbHelper.getSecondBattingTeamKeeper(matchId))
+    var sideWallRule by remember { mutableStateOf(dbHelper.getSideWallRule(matchId)) }
+    var noOfOversAside by remember { mutableStateOf(dbHelper.getNoOfOversAside(matchId)) }
+    var noOfPlayersAside by remember { mutableStateOf(dbHelper.getNoOfPlayersAside(matchId)) }
 
     var expanded00 by remember { mutableStateOf(false) }
     var expanded01 by remember { mutableStateOf(false) }
@@ -154,14 +147,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                         ExposedDropdownMenuBox(
                             expanded = expanded00,
                             onExpandedChange = {
-                                if (!matchStarted) {
+                                if (!matchStarted && team1Captain?.name.orEmpty().isEmpty() && team2Captain?.name.orEmpty().isEmpty()) {
                                     expanded00 = !expanded00
                                 }
                             }
                         ) {
                             OutlinedTextField(
-                                enabled = !matchStarted,
                                 readOnly = true,
+                                enabled = true,
                                 value = noOfOversAside.toString(),
                                 onValueChange = { },
                                 label = {
@@ -181,7 +174,6 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             ) {
                                 for (i in 1..50)
                                     androidx.compose.material3.DropdownMenuItem(
-                                        enabled = !matchStarted,
                                         text = {
                                             Text(
                                                 text = i.toString(),
@@ -208,14 +200,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                         ExposedDropdownMenuBox(
                             expanded = expanded01,
                             onExpandedChange = {
-                                if (!matchStarted) {
+                                if (!matchStarted && team1Captain?.name.orEmpty().isEmpty() && team2Captain?.name.orEmpty().isEmpty()) {
                                     expanded01 = !expanded01
                                 }
                             }
                         ) {
                             OutlinedTextField(
-                                enabled = !matchStarted,
                                 readOnly = true,
+                                enabled = true,
                                 value = noOfPlayersAside.toString(),
                                 onValueChange = { },
                                 label = {
@@ -235,7 +227,6 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             ) {
                                 for (i in 5..12)
                                     androidx.compose.material3.DropdownMenuItem(
-                                        enabled = !matchStarted,
                                         text = {
                                             Text(
                                                 text = i.toString(),
@@ -262,14 +253,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                         ExposedDropdownMenuBox(
                             expanded = expanded09,
                             onExpandedChange = {
-                                if (!matchStarted) {
+                                if (!matchStarted && team1Captain?.name.orEmpty().isEmpty() && team2Captain?.name.orEmpty().isEmpty()) {
                                     expanded09 = !expanded09
                                 }
                             }
                         ) {
                             OutlinedTextField(
-                                enabled = !matchStarted,
                                 readOnly = true,
+                                enabled = true,
                                 value = "+$sideWallRule",
                                 onValueChange = { },
                                 label = {
@@ -289,7 +280,6 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             ) {
                                 for (i in 0..2)
                                     androidx.compose.material3.DropdownMenuItem(
-                                        enabled = !matchStarted,
                                         text = {
                                             Text(
                                                 text = i.toString(),
@@ -489,13 +479,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                Text(
-                                    text = team1Captain!!.name,
-                                    color = textColor,
-                                    fontSize = if (isTablet) 30.sp else 16.sp
-                                )
-
-                                val team1Players = dbHelper.getTeamPlayers(matchId, 1, 0)
+                                val team1Players = dbHelper.getTeamPlayers(matchId, 1, 1)
 
                                 for (player in team1Players) {
                                     Spacer(modifier = Modifier.height(8.dp))
@@ -544,13 +528,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                Text(
-                                    text = team2Captain!!.name,
-                                    color = textColor,
-                                    fontSize = if (isTablet) 30.sp else 16.sp
-                                )
-
-                                val team2Players = dbHelper.getTeamPlayers(matchId, 2, 0)
+                                val team2Players = dbHelper.getTeamPlayers(matchId, 2, 1)
 
                                 for (player in team2Players) {
                                     Spacer(modifier = Modifier.height(8.dp))
@@ -567,10 +545,8 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                if ((dbHelper.getTeamSize(matchId, 1) == noOfPlayersAside) && (dbHelper.getTeamSize(
-                        matchId,
-                        2
-                    ) == noOfPlayersAside)
+                if ((dbHelper.getTeamSize(matchId, 1) == noOfPlayersAside)
+                    && (dbHelper.getTeamSize(matchId, 2) == noOfPlayersAside)
                 ) {
                     // Select Batting Team Captain
                     Row(
@@ -635,6 +611,15 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                     2,
                                                     team2Captain!!.name
                                                 )
+                                                val teamA = dbHelper.getTeamForPlayer(matchId,captain.name)
+                                                if (teamA == 2) {
+                                                    dbHelper.updateTeamID(matchId,1,3)
+                                                    dbHelper.updateTeamID(matchId,2,1)
+                                                    dbHelper.updateTeamID(matchId,3,2)
+                                                }
+                                                refreshKey1++
+                                                refreshKey2++
+
                                             }
                                             expanded04 = false
                                             facingBatsman = null
@@ -665,6 +650,14 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                     2,
                                                     team1Captain!!.name
                                                 )
+                                                val teamA = dbHelper.getTeamForPlayer(matchId,captain.name)
+                                                if (teamA == 2) {
+                                                    dbHelper.updateTeamID(matchId,1,3)
+                                                    dbHelper.updateTeamID(matchId,2,1)
+                                                    dbHelper.updateTeamID(matchId,3,2)
+                                                }
+                                                refreshKey1++
+                                                refreshKey2++
                                             }
                                             expanded04 = false
                                             facingBatsman = null

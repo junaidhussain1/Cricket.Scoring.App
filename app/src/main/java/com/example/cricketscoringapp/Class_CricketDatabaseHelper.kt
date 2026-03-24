@@ -1557,6 +1557,17 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         return db.update(TABLE_MATCHES, contentValues, whereClause, whereArgs)
     }
 
+    fun updateTeamID(matchId: String, fromTeamId: Int, toTeamId: Int): Int {
+        val db = writableDatabase
+        val contentValues = ContentValues().apply {
+            put("team_id", toTeamId)
+        }
+        val whereClause = "match_id = ? AND team_id = ?"
+        val whereArgs = arrayOf(matchId,fromTeamId.toString())
+
+        return db.update(TABLE_TEAMS, contentValues, whereClause, whereArgs)
+    }
+
     fun updateMatchCaptain(matchId: String, whichTeam: Int, captain: String): Int {
         val db = writableDatabase
         val batsman = if (whichTeam == 2) {
