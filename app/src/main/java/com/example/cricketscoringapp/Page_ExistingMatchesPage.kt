@@ -104,31 +104,6 @@ fun ExistingMatchesPage(navController: NavHostController) {
                             }
                         }
 
-                        // Ball by Ball History Icon
-//                        Column(
-//                            modifier = Modifier
-//                                .weight(1f)
-//                                .padding(horizontal = 8.dp),
-//                            horizontalAlignment = Alignment.End
-//                        ) {
-//                            IconButton(
-//                                onClick = {
-//                                    val matchId = match.matchId
-//                                    val teamIdA = dbHelper.getTeamForPlayer(matchId, match.firstBattingTeamCaptain)
-//                                    val teamIdB = dbHelper.getTeamForPlayer(matchId, match.secondBattingTeamCaptain)
-//                                    navController.navigate("ballbyball/${matchId}/${teamIdA}/${teamIdB}")
-//                                },
-//                                modifier = Modifier.size(52.dp) // Set size on IconButton itself
-//                            ) {
-//                                Image(
-//                                    painter = painterResource(id = R.drawable.ball_3),
-//                                    contentDescription = "Ball by Ball History",
-//                                    modifier = Modifier.fillMaxSize(), // Fill the IconButton
-//                                    contentScale = ContentScale.Fit
-//                                )
-//                            }
-//                        }
-
                         Column(
                             modifier = Modifier
                                 .weight(1f)

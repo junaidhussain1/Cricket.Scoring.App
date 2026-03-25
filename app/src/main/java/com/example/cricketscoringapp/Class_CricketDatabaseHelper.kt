@@ -23,7 +23,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 24
+        const val DATABASE_VERSION = 25
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -169,7 +169,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         inning1.wicket_type AS firstInningHowOut,
         inning1.wicket_bowler AS firstInningBowler,
         CASE 
-            WHEN inning1.wicket_type = 'caught' THEN inning1.wicket_fielder  
+            WHEN inning1.wicket_type IN ('caught', 'caught behind') THEN inning1.wicket_fielder  
             ELSE ''                          
         END AS firstInningCaughtBy,
         CASE 
@@ -189,7 +189,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         inning2.wicket_type AS secondInningHowOut,
         inning2.wicket_bowler AS secondInningBowler,
         CASE 
-            WHEN inning2.wicket_type = 'caught' THEN inning2.wicket_fielder  
+            WHEN inning2.wicket_type IN ('caught', 'caught behind') THEN inning2.wicket_fielder  
             ELSE ''                          
         END AS secondInningCaughtBy,
         CASE 
