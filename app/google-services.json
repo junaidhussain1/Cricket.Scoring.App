@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1028698232017",
+    "firebase_url": "https://cricketscore-1235b-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "cricketscore-1235b",
+    "storage_bucket": "cricketscore-1235b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1028698232017:android:44ce78db359b8c8347a1f0",
+        "android_client_info": {
+          "package_name": "com.example.cricketscoringapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnbWuVE8QuLroIADNaU7udCiAGnckNMxM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

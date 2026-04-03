@@ -11,6 +11,7 @@ import java.io.IOException
 import java.io.OutputStream
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import android.util.Log
 
 fun swapBatsmenDB(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats) {
     swapBatsmen(batsman1,batsman2)
@@ -61,7 +62,8 @@ fun updateStats(context: Context,
                 firstBatsmanStats: BatsmanStats,
                 secondBatsmanStats: BatsmanStats,
                 firstTeamStats: TeamStats,
-                secondTeamStats: TeamStats) {
+                secondTeamStats: TeamStats,
+                pConsolidatedBowlerStats: BowlerStats) {
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
     val sideWallRule = dbHelper.getSideWallRule(matchId)
@@ -221,6 +223,73 @@ fun updateStats(context: Context,
 
         balls[lastNonEmptyIndex] = Ball("","")
     }
+
+    val battingTeam  = if (firstTeamStats.active.value) firstTeamStats.name.value else secondTeamStats.name.value
+    val bowlingTeam  = if (firstTeamStats.active.value) secondTeamStats.name.value else firstTeamStats.name.value
+
+    val battingStats = if (firstTeamStats.active.value) firstTeamStats else secondTeamStats
+    val fieldingTeam = if (firstTeamStats.active.value) secondTeamStats else firstTeamStats
+
+    val strikingBatsmanStat = if (firstBatsmanStats.active.value) firstBatsmanStats else secondBatsmanStats
+    val nonStrikingBatsmanStat = if (firstBatsmanStats.active.value) secondBatsmanStats else firstBatsmanStats
+
+    val noOfOversAside = dbHelper.getNoOfOversAside(matchId).toDouble()
+    val (runsToWinLocal, winningCaptain) = calcRunsToWin(firstTeamStats, secondTeamStats, noOfOversAside)
+
+    val consolidatedBowler =
+        dbHelper.getConsolidatedBowlerStats(matchId, bowlerStats.name.value)
+
+    val scoreUpdate = LiveScoreUpdate(
+        matchId          = matchId,
+        battingTeam      = "Team $battingTeam",
+        bowlingTeam      = "Team $bowlingTeam",
+        innings1Runs     = battingStats.inningScore.value,
+        innings1Wickets  = battingStats.inningWickets.value,
+        innings1Overs    = "%.1f".format(battingStats.overs.value),
+        innings2Runs     = fieldingTeam.inningScore.value,
+        innings2Wickets  = fieldingTeam.inningWickets.value,
+        innings2Overs    = "%.1f".format(fieldingTeam.overs.value),
+        currentOver = balls.filter { it.action.isNotEmpty() }
+            .map { if (it.action.startsWith("WK")) "OUT" else it.action }
+            .joinToString(","),
+        runsToWin        = runsToWinLocal,
+        // Striker
+        strikerName      = strikingBatsmanStat.name.value,
+        strikerRuns      = strikingBatsmanStat.runs.value,
+        strikerBalls     = strikingBatsmanStat.balls.value,
+        striker4s        = strikingBatsmanStat.fours.value,
+        striker6s        = strikingBatsmanStat.sixes.value,
+        // Non-Striker
+        nonStrikerName   = nonStrikingBatsmanStat.name.value,
+        nonStrikerRuns   = nonStrikingBatsmanStat.runs.value,
+        nonStrikerBalls  = nonStrikingBatsmanStat.balls.value,
+        nonStriker4s     = nonStrikingBatsmanStat.fours.value,
+        nonStriker6s     = nonStrikingBatsmanStat.sixes.value,
+        // Bowler
+        bowlerName       = consolidatedBowler.name.value,
+        bowlerOvers      = "%.1f".format(consolidatedBowler.over.value),
+        bowlerRuns       = consolidatedBowler.runs.value,
+        bowlerWickets    = consolidatedBowler.wickets.value,
+        // Partnership TODO
+        //partnershipRuns  = firstBatsmanStats.runs.value + secondBatsmanStats.runs.value,
+        //partnershipBalls = firstBatsmanStats.balls.value + secondBatsmanStats.balls.value,
+        partnershipRuns  = 0,
+        partnershipBalls = 0,
+        status           = "live"
+    )
+
+    try {
+        val firebaseManager = FirebaseScoreManager.getInstance(context)
+        firebaseManager.pushLiveScore(matchId, scoreUpdate)
+
+    } catch (e: Exception) {
+        Log.e("FirebaseError", "Firebase failed: ${e.message}", e)
+        e.printStackTrace()
+    }
+}
+
+private fun formatOvers(balls: Int): String {
+    return "${balls / 6}.${balls % 6}"
 }
 
 fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOversAside: Double) : Pair<String,String> {
@@ -924,6 +993,66 @@ fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>
             uploadRow.noBalls,                      // Column AL
             uploadRow.winLossTie                    // Column AM
         )
+    }.toMutableList()
+
+    // Add a blank separator row
+    transformedData.add(List(39) { "" })
+    transformedData.add(listOf<Any>(
+        "Over",             // Column A
+        "Bowler",           // Column B
+        "Batsman",          // Column C
+        "Result",           // Column D
+        "Result Text",      // Column E
+        "Is Over Summary",  // Column F
+        "Over Runs",        // Column G
+        "Over Extras",      // Column H
+        "Total Score"       // Column I
+    ))
+
+    // Fetch and append ball-by-ball data for Team 1
+    val ballByBallDataTeam1 = dbHelper.getBallByBallHistory(matchId, 1)
+    ballByBallDataTeam1.forEach { ballEvent ->
+        transformedData.add(listOf<Any>(
+            ballEvent.over,             // Column A
+            ballEvent.bowler,           // Column B
+            ballEvent.batsman,          // Column C
+            ballEvent.result,           // Column D
+            ballEvent.resultText.replace("•", "0"),  // Replace dot ball symbol with "0"
+            ballEvent.isOverSummary,    // Column F
+            ballEvent.overRuns,         // Column G
+            ballEvent.overExtras,       // Column H
+            ballEvent.totalScore        // Column I
+        ))
+    }
+
+    // Add a blank separator row between teams
+    transformedData.add(List(39) { "" })
+    transformedData.add(listOf<Any>(
+        "Over",             // Column A
+        "Bowler",           // Column B
+        "Batsman",          // Column C
+        "Result",           // Column D
+        "Result Text",      // Column E
+        "Is Over Summary",  // Column F
+        "Over Runs",        // Column G
+        "Over Extras",      // Column H
+        "Total Score"       // Column I
+    ))
+
+    // Fetch and append ball-by-ball data for Team 2
+    val ballByBallDataTeam2 = dbHelper.getBallByBallHistory(matchId, 2)
+    ballByBallDataTeam2.forEach { ballEvent ->
+        transformedData.add(listOf<Any>(
+            ballEvent.over,             // Column A
+            ballEvent.bowler,           // Column B
+            ballEvent.batsman,          // Column C
+            ballEvent.result,           // Column D
+            ballEvent.resultText.replace("•", "0"),  // Replace dot ball symbol with "0"
+            ballEvent.isOverSummary,    // Column F
+            ballEvent.overRuns,         // Column G
+            ballEvent.overExtras,       // Column H
+            ballEvent.totalScore        // Column I
+        ))
     }
 
     val matchDataSize = matchStats.size
