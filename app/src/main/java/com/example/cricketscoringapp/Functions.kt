@@ -13,7 +13,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import android.util.Log
 
-fun swapBatsmenDB(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats) {
+fun swapBatsmenDB(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats, updateFirebase: Boolean) {
     swapBatsmen(batsman1,batsman2)
 
     val dbHelper = CricketDatabaseHelper(context)
@@ -23,6 +23,12 @@ fun swapBatsmenDB(context: Context,matchId: String,batsman1: BatsmanStats, batsm
     } else {
         dbHelper.updateBattingStats(matchId,batsman1.name.value,"striker","non-striker")
         dbHelper.updateBattingStats(matchId,batsman2.name.value,"non-striker","striker")
+    }
+
+    if (updateFirebase) {
+        val firebaseManager = FirebaseScoreManager.getInstance(context)
+        val matchId = dbHelper.getMatchId()
+        firebaseManager.swapBatsmen(matchId)
     }
 }
 
@@ -34,7 +40,7 @@ fun swapBatsmen(batsman1: BatsmanStats, batsman2: BatsmanStats) {
 
 fun swapBatsmen(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats, actionForBatsman: String) {
     if (((batsman1.name.value == actionForBatsman) && (!batsman1.active.value)) || ((batsman2.name.value == actionForBatsman) && (!batsman2.active.value))) {
-        swapBatsmenDB(context,matchId,batsman1,batsman2)
+        swapBatsmenDB(context,matchId,batsman1,batsman2,false)
     }
 }
 
@@ -62,8 +68,7 @@ fun updateStats(context: Context,
                 firstBatsmanStats: BatsmanStats,
                 secondBatsmanStats: BatsmanStats,
                 firstTeamStats: TeamStats,
-                secondTeamStats: TeamStats,
-                pConsolidatedBowlerStats: BowlerStats) {
+                secondTeamStats: TeamStats) {
     val dbHelper = CricketDatabaseHelper(context)
     val matchId = dbHelper.getMatchId()
     val sideWallRule = dbHelper.getSideWallRule(matchId)
@@ -117,7 +122,7 @@ fun updateStats(context: Context,
         }
 
         if (shouldSwap) {
-            swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats)
+            swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats,false)
         }
 
         if (balls.size == 6 && balls.take(6).all { it.action == "0" || it.action.contains("WK") }) {
@@ -230,14 +235,15 @@ fun updateStats(context: Context,
     val battingStats = if (firstTeamStats.active.value) firstTeamStats else secondTeamStats
     val fieldingTeam = if (firstTeamStats.active.value) secondTeamStats else firstTeamStats
 
-    val strikingBatsmanStat = if (firstBatsmanStats.active.value) firstBatsmanStats else secondBatsmanStats
-    val nonStrikingBatsmanStat = if (firstBatsmanStats.active.value) secondBatsmanStats else firstBatsmanStats
+    //val strikingBatsmanStat = if (firstBatsmanStats.active.value) firstBatsmanStats else secondBatsmanStats
+    //val nonStrikingBatsmanStat = if (firstBatsmanStats.active.value) secondBatsmanStats else firstBatsmanStats
+    val strikingBatsmanStat = dbHelper.getBatsmanByStatus(matchId, "striker")
+    val nonStrikingBatsmanStat = dbHelper.getBatsmanByStatus(matchId, "non-striker")
 
     val noOfOversAside = dbHelper.getNoOfOversAside(matchId).toDouble()
     val (runsToWinLocal, winningCaptain) = calcRunsToWin(firstTeamStats, secondTeamStats, noOfOversAside)
 
-    val consolidatedBowler =
-        dbHelper.getConsolidatedBowlerStats(matchId, bowlerStats.name.value)
+    val consolidatedBowler = dbHelper.getConsolidatedBowlerStats(matchId, bowlerStats.name.value)
 
     val scoreUpdate = LiveScoreUpdate(
         matchId          = matchId,
@@ -250,8 +256,7 @@ fun updateStats(context: Context,
         innings2Wickets  = fieldingTeam.inningWickets.value,
         innings2Overs    = "%.1f".format(fieldingTeam.overs.value),
         currentOver = balls.filter { it.action.isNotEmpty() }
-            .map { if (it.action.startsWith("WK")) "OUT" else it.action }
-            .joinToString(","),
+            .joinToString(",") { if (it.action.startsWith("WK")) "OUT" else it.action },
         runsToWin        = runsToWinLocal,
         // Striker
         strikerName      = strikingBatsmanStat.name.value,
@@ -280,16 +285,15 @@ fun updateStats(context: Context,
 
     try {
         val firebaseManager = FirebaseScoreManager.getInstance(context)
-        firebaseManager.pushLiveScore(matchId, scoreUpdate)
+        Log.d("Firebase", "Pushing score update - Match: $matchId, Runs: ${scoreUpdate.innings1Runs}, Wickets: ${scoreUpdate.innings1Wickets}")
+        firebaseManager.pushLiveScore(matchId, scoreUpdate,context)
 
     } catch (e: Exception) {
         Log.e("FirebaseError", "Firebase failed: ${e.message}", e)
         e.printStackTrace()
+        Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+            .show()
     }
-}
-
-private fun formatOvers(balls: Int): String {
-    return "${balls / 6}.${balls % 6}"
 }
 
 fun calcRunsToWin(firstTeamStats: TeamStats, secondTeamStats: TeamStats, noOfOversAside: Double) : Pair<String,String> {
@@ -901,6 +905,18 @@ fun handleEndOfMatch(context: Context, matchId: String, firstBatsmanStats: Batsm
     dbHelper.updateBowlingStats(matchId,"bowled")
     handleLastBatsmen(context,matchId,firstBatsmanStats,secondBatsmanStats)
     dbHelper.updateMatchIsFinished(matchId, winningCaptain)
+
+    try {
+        val firebaseManager = FirebaseScoreManager.getInstance(context)
+        firebaseManager.pushMatchComplete(matchId)
+
+    } catch (e: Exception) {
+        Log.e("FirebaseError", "Firebase failed: ${e.message}", e)
+        e.printStackTrace()
+        Toast.makeText(context, e.message, Toast.LENGTH_LONG)
+            .show()
+    }
+
     Toast.makeText(context, "End of Match (${runsToWin})!", Toast.LENGTH_LONG)
         .show()
 }

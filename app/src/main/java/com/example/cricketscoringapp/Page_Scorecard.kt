@@ -406,7 +406,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     fontColor1 = fontColor2,
                     makePlayerTouchable = true
                 ) {
-                    swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats)
+                    swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats,true)
                 }
 
                 BatsmanBowlerKeeperBox(
@@ -419,7 +419,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     fontColor1 = fontColor3,
                     makePlayerTouchable = true
                 ) {
-                    swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats)
+                    swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats, true)
                 }
             }
         }
@@ -511,7 +511,8 @@ fun ScoreCardPage(navController: NavHostController) {
                                                     context,
                                                     matchId,
                                                     firstBatsmanStats,
-                                                    secondBatsmanStats
+                                                    secondBatsmanStats,
+                                                    true
                                                 )
                                                 balls.clear()
                                             },
@@ -648,8 +649,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    consolidatedBowlerStats
+                    secondBattingTeamStats
                 )
             }
             CircleButton("1", if (isTablet) 50 else 40) {
@@ -661,8 +661,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    consolidatedBowlerStats
+                    secondBattingTeamStats
                 )
             }
             CircleButton("2", if (isTablet) 50 else 40) {
@@ -674,8 +673,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    consolidatedBowlerStats
+                    secondBattingTeamStats
                 )
             }
             CircleButton("3", if (isTablet) 50 else 40) {
@@ -687,8 +685,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    consolidatedBowlerStats
+                    secondBattingTeamStats
                 )
             }
         }
@@ -709,8 +706,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    consolidatedBowlerStats
+                    secondBattingTeamStats
                 )
             }
             CircleButton("6", if (isTablet) 50 else 40) {
@@ -722,8 +718,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     firstBatsmanStats,
                     secondBatsmanStats,
                     firstBattingTeamStats,
-                    secondBattingTeamStats,
-                    consolidatedBowlerStats
+                    secondBattingTeamStats
                 )
             }
             CircleButton("WIDE", if (isTablet) 26 else 16) {
@@ -747,8 +742,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                     firstBatsmanStats,
                                     secondBatsmanStats,
                                     firstBattingTeamStats,
-                                    secondBattingTeamStats,
-                                    consolidatedBowlerStats
+                                    secondBattingTeamStats
                                 )
                             }) {
                                 Text("WIDE", fontSize = if (isTablet) 30.sp else 20.sp)
@@ -765,8 +759,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                     firstBatsmanStats,
                                     secondBatsmanStats,
                                     firstBattingTeamStats,
-                                    secondBattingTeamStats,
-                                    consolidatedBowlerStats
+                                    secondBattingTeamStats
                                 )
                             }) {
                                 Text("WIDE + 1", fontSize = if (isTablet) 30.sp else 20.sp)
@@ -783,8 +776,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                     firstBatsmanStats,
                                     secondBatsmanStats,
                                     firstBattingTeamStats,
-                                    secondBattingTeamStats,
-                                    consolidatedBowlerStats
+                                    secondBattingTeamStats
                                 )
                             }) {
                                 Text("WIDE + 2", fontSize = if (isTablet) 30.sp else 20.sp)
@@ -856,8 +848,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                         firstBatsmanStats,
                                                         secondBatsmanStats,
                                                         firstBattingTeamStats,
-                                                        secondBattingTeamStats,
-                                                        consolidatedBowlerStats
+                                                        secondBattingTeamStats
                                                     )
                                                 },
                                                 colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
@@ -914,8 +905,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                     firstBatsmanStats,
                                     secondBatsmanStats,
                                     firstBattingTeamStats,
-                                    secondBattingTeamStats,
-                                    consolidatedBowlerStats
+                                    secondBattingTeamStats
                                 )
                             }) {
                                 Text("1 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
@@ -932,8 +922,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                     firstBatsmanStats,
                                     secondBatsmanStats,
                                     firstBattingTeamStats,
-                                    secondBattingTeamStats,
-                                    consolidatedBowlerStats
+                                    secondBattingTeamStats
                                 )
                             }) {
                                 Text("2 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
@@ -950,8 +939,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                     firstBatsmanStats,
                                     secondBatsmanStats,
                                     firstBattingTeamStats,
-                                    secondBattingTeamStats,
-                                    consolidatedBowlerStats
+                                    secondBattingTeamStats
                                 )
                             }) {
                                 Text("3 BYE", fontSize = if (isTablet) 30.sp else 20.sp)
@@ -968,9 +956,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                     firstBatsmanStats,
                                     secondBatsmanStats,
                                     firstBattingTeamStats,
-                                    secondBattingTeamStats,
-                                    consolidatedBowlerStats
-                                )
+                                    secondBattingTeamStats                                )
                             }) {
                                 Text("1 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
                             }
@@ -986,8 +972,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                     firstBatsmanStats,
                                     secondBatsmanStats,
                                     firstBattingTeamStats,
-                                    secondBattingTeamStats,
-                                    consolidatedBowlerStats
+                                    secondBattingTeamStats
                                 )
                             }) {
                                 Text("2 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
@@ -1004,8 +989,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                     firstBatsmanStats,
                                     secondBatsmanStats,
                                     firstBattingTeamStats,
-                                    secondBattingTeamStats,
-                                    consolidatedBowlerStats
+                                    secondBattingTeamStats
                                 )
                             }) {
                                 Text("3 LEG-BYE", fontSize = if (isTablet) 30.sp else 20.sp)
@@ -1038,8 +1022,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                     firstBatsmanStats,
                                     secondBatsmanStats,
                                     firstBattingTeamStats,
-                                    secondBattingTeamStats,
-                                    consolidatedBowlerStats
+                                    secondBattingTeamStats
                                 )
                                 showMoreDialog.value = false
                             }) {
@@ -1256,7 +1239,8 @@ fun ScoreCardPage(navController: NavHostController) {
                                         context,
                                         matchId,
                                         firstBatsmanStats,
-                                        secondBatsmanStats
+                                        secondBatsmanStats,
+                                        true
                                     )
                                 }
                                 showBatsmanRunOutSelectionDialog.value = false
@@ -1276,7 +1260,8 @@ fun ScoreCardPage(navController: NavHostController) {
                                         context,
                                         matchId,
                                         firstBatsmanStats,
-                                        secondBatsmanStats
+                                        secondBatsmanStats,
+                                        true
                                     )
                                 }
                                 showBatsmanRunOutSelectionDialog.value = false
@@ -1375,8 +1360,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         firstBatsmanStats,
                         secondBatsmanStats,
                         firstBattingTeamStats,
-                        secondBattingTeamStats,
-                        consolidatedBowlerStats
+                        secondBattingTeamStats
                     )
                     currentBowler.value = dbHelper.getCurrentBowler(matchId)
                     val wicketDescription = getWicketDescription(
@@ -1442,8 +1426,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                 firstBatsmanStats,
                                                 secondBatsmanStats,
                                                 firstBattingTeamStats,
-                                                secondBattingTeamStats,
-                                                consolidatedBowlerStats
+                                                secondBattingTeamStats
                                             )
 
                                             currentBowler.value = dbHelper.getCurrentBowler(matchId)
@@ -1524,7 +1507,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                 // Swap to make non-striker active
-                                swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats)
+                                swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats, true)
                                 showActiveBatsmanSelectionDialog.value = false
                             }) {
                                 Text(
@@ -1572,8 +1555,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             firstBatsmanStats,
                             secondBatsmanStats,
                             firstBattingTeamStats,
-                            secondBattingTeamStats,
-                            consolidatedBowlerStats
+                            secondBattingTeamStats
                         )
                     },
                     onDismiss = {
