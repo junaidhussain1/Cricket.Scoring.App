@@ -1026,13 +1026,13 @@ fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>
     ))
 
     // Fetch and append ball-by-ball data for Team 1
-    val ballByBallDataTeam1 = dbHelper.getBallByBallHistory(matchId, 1)
+    val ballByBallDataTeam1 = dbHelper.getBallByBallHistory(matchId, 2)
     ballByBallDataTeam1.forEach { ballEvent ->
         transformedData.add(listOf<Any>(
             ballEvent.over,             // Column A
             ballEvent.bowler,           // Column B
             ballEvent.batsman,          // Column C
-            ballEvent.result,           // Column D
+            if (ballEvent.result.startsWith("WK")) "WICKET" else ballEvent.result,           // Column D
             ballEvent.resultText.replace("•", "0"),  // Replace dot ball symbol with "0"
             ballEvent.isOverSummary,    // Column F
             ballEvent.overRuns,         // Column G
@@ -1056,13 +1056,13 @@ fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>
     ))
 
     // Fetch and append ball-by-ball data for Team 2
-    val ballByBallDataTeam2 = dbHelper.getBallByBallHistory(matchId, 2)
+    val ballByBallDataTeam2 = dbHelper.getBallByBallHistory(matchId, 1)
     ballByBallDataTeam2.forEach { ballEvent ->
         transformedData.add(listOf<Any>(
             ballEvent.over,             // Column A
             ballEvent.bowler,           // Column B
             ballEvent.batsman,          // Column C
-            ballEvent.result,           // Column D
+            if (ballEvent.result.startsWith("WK")) "WICKET" else ballEvent.result,           // Column D
             ballEvent.resultText.replace("•", "0"),  // Replace dot ball symbol with "0"
             ballEvent.isOverSummary,    // Column F
             ballEvent.overRuns,         // Column G
