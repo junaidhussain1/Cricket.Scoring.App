@@ -824,13 +824,15 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
             //Warning only. WKLB is for the wicket.
             "LBW" -> {
                 updateBowler(matchId,undo,"dotballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
-                //updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,-2.00 * multiplier,"",context)
                 updateBatsman(matchId,"dotballs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
                 updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, -2 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, -2.0 * multiplier)
             }
         }
     }
+
+    val dbHelper = CricketDatabaseHelper(context)
+    dbHelper.saveSnapshot(matchId)
 }
 
 fun handleLastBatsmen(context: Context, matchId: String, firstBatsman: BatsmanStats, secondBatsman: BatsmanStats) {
@@ -1017,12 +1019,13 @@ fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>
         "Over",             // Column A
         "Bowler",           // Column B
         "Batsman",          // Column C
-        "Result",           // Column D
-        "Result Text",      // Column E
-        "Is Over Summary",  // Column F
-        "Over Runs",        // Column G
-        "Over Extras",      // Column H
-        "Total Score"       // Column I
+        "Non-Striker",      // Column D
+        "Result",           // Column E
+        "Result Text",      // Column F
+        "Is Over Summary",  // Column G
+        "Over Runs",        // Column H
+        "Over Extras",      // Column I
+        "Total Score"       // Column J
     ))
 
     // Fetch and append ball-by-ball data for Team 1
@@ -1032,12 +1035,13 @@ fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>
             ballEvent.over,             // Column A
             ballEvent.bowler,           // Column B
             ballEvent.batsman,          // Column C
-            if (ballEvent.result.startsWith("WK")) "WICKET" else ballEvent.result,           // Column D
-            ballEvent.resultText.replace("•", "0"),  // Replace dot ball symbol with "0"
-            ballEvent.isOverSummary,    // Column F
-            ballEvent.overRuns,         // Column G
-            ballEvent.overExtras,       // Column H
-            ballEvent.totalScore        // Column I
+            ballEvent.nonStriker,       // Column D
+            if (ballEvent.result.startsWith("WK")) "WICKET" else ballEvent.result, // Column E
+            ballEvent.resultText.replace("•", "0"),  // Column F - Replace dot ball symbol with "0"
+            ballEvent.isOverSummary,    // Column G
+            ballEvent.overRuns,         // Column H
+            ballEvent.overExtras,       // Column I
+            ballEvent.totalScore        // Column J
         ))
     }
 
