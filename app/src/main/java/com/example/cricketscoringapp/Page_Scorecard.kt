@@ -1414,7 +1414,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                 secondBatsmanStats
                                             )
 
-                                            selectedWicketsOption.value += ",$batsmanOut,$newBatsman,${selectedFielder.value}"
+                                            selectedWicketsOption.value += ",$batsmanOut,$newBatsman,${selectedFielder.value.ifEmpty { "NA" }}"
                                             updateStats(
                                                 context,
                                                 balls,
@@ -1455,6 +1455,9 @@ fun ScoreCardPage(navController: NavHostController) {
                                                 newBatsman,
                                                 "striker"
                                             )
+
+                                            dbHelper.insertPartnership(matchId, teamId, dbHelper.getStriker(matchId), dbHelper.getNonStriker(matchId))
+                                            dbHelper.saveSnapshot(matchId)
 
                                             // Check if it's a runout wicket - if so, ask which batsman should be on strike
                                             val isRunOut = selectedWicketsOption.value.startsWith("WKRO")
@@ -1524,21 +1527,9 @@ fun ScoreCardPage(navController: NavHostController) {
 
             CircleButton("UNDO", if (isTablet) 26 else 16) {
                 showUndoConfirmationDialog.value = true
-                val lastNonEmptyIndex = balls.indexOfLast { it.action.isNotEmpty() }
-                if (lastNonEmptyIndex != -1) {
-
-                    val lastBall = balls[lastNonEmptyIndex].action
-
-                    //if (lastBall.contains("WK")) {
-                    //    showUndoConfirmationDialog.value = false
-                    //    Toast.makeText(context, "Wicket UNDO is not supported!", Toast.LENGTH_SHORT)
-                    //        .show()
-                    //}
-                }
             }
 
             if (showUndoConfirmationDialog.value) {
-
                 ConfirmationDialog(
                     message = "Are you sure you want to UNDO?",
                     onConfirm = {

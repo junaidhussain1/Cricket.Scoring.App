@@ -17,7 +17,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
-import kotlin.text.insert
 
 // SQLite helper class
 class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -25,7 +24,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 26
+        const val DATABASE_VERSION = 27
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -33,6 +32,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         const val TABLE_TEAMS = "teams"
         const val TABLE_BATTINGSTATS = "battingstats"
         const val TABLE_BOWLINGSTATS = "bowlingstats"
+        const val TABLE_PARTNERSHIPS = "partnerships"
         const val TABLE_MATCHSNAPSHOT = "matchsnapshot"
 
         const val VIEW_MATCHSTATS = "vwmatchstats"
@@ -120,6 +120,19 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             dotballs INTEGER,
             over_record TEXT,
             PRIMARY KEY (match_id, bowling_order)
+        )
+    """
+
+    private val createPARTNERSHIP = """
+        CREATE TABLE $TABLE_PARTNERSHIPS (
+            match_id TEXT,
+            team_id INTEGER,
+            wicket_number INTEGER,
+            batsman1_name TEXT,
+            batsman2_name TEXT,
+            runs INTEGER DEFAULT 0,
+            balls INTEGER DEFAULT 0,
+            PRIMARY KEY (match_id, team_id, wicket_number)
         )
     """
 
@@ -263,6 +276,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db?.execSQL(createBATTINGSTATS)
         db?.execSQL(createBOWLINGSTATS)
         db?.execSQL(createMATCHSNAPSHOT)
+        db?.execSQL(createPARTNERSHIP)
         db?.execSQL(createMATCHSTATSVIEW)
     }
 
@@ -277,8 +291,8 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         //db?.execSQL(createMATCHSTATSVIEW)
         //onCreate(db)
 
-        if (oldVersion < 26) {
-            db?.execSQL(createMATCHSNAPSHOT)
+        if (oldVersion < 27) {
+            db?.execSQL(createPARTNERSHIP)
         }
     }
 
@@ -1293,9 +1307,9 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                         if (parts.size >= 2) {
                             val action = parts.getOrElse(0) { "" }
                             val batsmanName = parts.getOrElse(1) { "" }
-                            val nonStrikerName = "" //TODO
-                            //val newBatsmanName = parts.getOrElse(2) { "" }
+                            val newBatsmanName = parts.getOrElse(2) { "" }
                             val fielderName = parts.getOrElse(3) { "unknown" }
+                            val nonStrikerName = parts.getOrElse(4) { "unknown" }
 
                             val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3","WKRONB","WKROW","WKSTW")
                             val isInvalidBall = action in excludedValuesFromBallsBalled
@@ -1418,6 +1432,8 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db.delete(TABLE_TEAMS, "match_id = ?", arrayOf(matchId))
         db.delete(TABLE_BATTINGSTATS, "match_id = ?", arrayOf(matchId))
         db.delete(TABLE_BOWLINGSTATS, "match_id = ?", arrayOf(matchId))
+        db.delete(TABLE_MATCHSNAPSHOT, "match_id = ?", arrayOf(matchId))
+        db.delete(TABLE_PARTNERSHIPS, "match_id = ?", arrayOf(matchId))
         db.delete(TABLE_MATCHES, "match_id = ?", arrayOf(matchId))
     }
 
@@ -1872,8 +1888,31 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             }
         }
 
+        //Read the current partnership stats for this match
+        val partnerships = mutableListOf<Map<String, Any?>>()
+        db.rawQuery("SELECT * FROM $TABLE_PARTNERSHIPS WHERE match_id = ?", arrayOf(matchId)).use { cursor ->
+            while (cursor.moveToNext()) {
+                val row = mutableMapOf<String, Any?>()
+                cursor.columnNames.forEach { col ->
+                    row[col] = when (cursor.getType(cursor.getColumnIndexOrThrow(col))) {
+                        Cursor.FIELD_TYPE_INTEGER -> cursor.getLong(cursor.getColumnIndexOrThrow(col))
+                        Cursor.FIELD_TYPE_FLOAT -> cursor.getDouble(cursor.getColumnIndexOrThrow(col))
+                        Cursor.FIELD_TYPE_STRING -> cursor.getString(
+                            cursor.getColumnIndexOrThrow(
+                                col
+                            )
+                        )
+
+                        else -> null
+                    }
+                }
+                partnerships.add(row)
+            }
+        }
+
+
         // Serialise to JSON
-        val state = MatchState(battingStats, bowlingStats)
+        val state = MatchState(battingStats, bowlingStats, partnerships)
         val json = Gson().toJson(state)
 
         // Get next entry_no for this match
@@ -1949,6 +1988,22 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 }
                 db.insert(TABLE_BOWLINGSTATS, null, cv)
             }
+
+            // Restore the partnership stats
+            db.delete(TABLE_PARTNERSHIPS, "match_id = ?", arrayOf(matchId))
+            state.partnerships.forEach { row ->
+                val cv = ContentValues()
+                row.forEach { (col, value) ->
+                    when (value) {
+                        is Long   -> cv.put(col, value)
+                        is Double -> cv.put(col, value)
+                        is String -> cv.put(col, value)
+                        null      -> cv.putNull(col)
+                    }
+                }
+                db.insert(TABLE_PARTNERSHIPS, null, cv)
+            }
+
 
             db.setTransactionSuccessful()
         } finally {
@@ -2045,6 +2100,63 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             e.printStackTrace()
             Toast.makeText(context, "Import failed: ${e.message}", Toast.LENGTH_LONG).show()
         }
+    }
+
+    fun insertPartnership(matchId: String, teamId: Int, batsman1: String, batsman2: String) {
+        val db = writableDatabase
+
+        // Derive next wicket number automatically
+        val nextWicketNumber = db.rawQuery(
+            "SELECT COUNT(*) FROM $TABLE_PARTNERSHIPS WHERE match_id = ? AND team_id = ?",
+            arrayOf(matchId, teamId.toString())
+        ).use { cursor ->
+            if (cursor.moveToFirst()) cursor.getInt(0) + 1 else 1
+        }
+
+        val cv = ContentValues().apply {
+            put("match_id", matchId)
+            put("team_id", teamId)
+            put("wicket_number", nextWicketNumber)
+            put("batsman1_name", batsman1)
+            put("batsman2_name", batsman2)
+            put("runs", 0)
+            put("balls", 0)
+        }
+        db.insert(TABLE_PARTNERSHIPS, null, cv)
+    }
+
+    fun updatePartnership(matchId: String, teamId: Int, runsToAdd: Int, ballsToAdd: Int) {
+        val db = writableDatabase
+        db.execSQL("""
+        UPDATE $TABLE_PARTNERSHIPS 
+        SET runs = runs + $runsToAdd, balls = balls + $ballsToAdd
+        WHERE match_id = ? AND team_id = ? 
+        AND wicket_number = (SELECT MAX(wicket_number) FROM $TABLE_PARTNERSHIPS WHERE match_id = ? AND team_id = ?)
+    """, arrayOf(matchId, teamId.toString(), matchId, teamId.toString()))
+    }
+
+    fun getPartnerships(matchId: String, teamId: Int): List<Partnership> {
+        val partnerships = mutableListOf<Partnership>()
+        val db = readableDatabase
+        db.rawQuery("""
+        SELECT wicket_number, batsman1_name, batsman2_name, runs, balls 
+        FROM $TABLE_PARTNERSHIPS 
+        WHERE match_id = ? AND team_id = ?
+        ORDER BY wicket_number ASC
+    """, arrayOf(matchId, teamId.toString())).use { cursor ->
+            while (cursor.moveToNext()) {
+                partnerships.add(
+                    Partnership(
+                        wicketNumber = cursor.getInt(0),
+                        batsman1Name = cursor.getString(1),
+                        batsman2Name = cursor.getString(2),
+                        runs = cursor.getInt(3),
+                        balls = cursor.getInt(4)
+                    )
+                )
+            }
+        }
+        return partnerships
     }
 }
 

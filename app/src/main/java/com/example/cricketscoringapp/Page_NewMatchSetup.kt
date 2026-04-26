@@ -1043,6 +1043,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 if (!matchStarted)
                                 {
                                     dbHelper.updateMatchIsStarted(matchId)
+                                    dbHelper.insertPartnership(matchId, 1,
+                                        facingBatsman?.name ?: "",
+                                        secondBatsman?.name ?: ""
+                                    )
                                     dbHelper.saveSnapshot(matchId)
                                 }
                                 navController.navigate("scorecard")

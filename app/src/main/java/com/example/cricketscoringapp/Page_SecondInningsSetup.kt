@@ -290,6 +290,11 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                 if (facingBatsman != null && secondBatsman != null && openingBowler != null && openingKeeper != null) {
                     Button(
                         onClick = {
+                            dbHelper.insertPartnership(matchId, 2,
+                                facingBatsman?.name ?: "",
+                                secondBatsman?.name ?: ""
+                            )
+                            dbHelper.saveSnapshot(matchId)
                             navController.navigate("scorecard")
                         },
                         modifier = Modifier
