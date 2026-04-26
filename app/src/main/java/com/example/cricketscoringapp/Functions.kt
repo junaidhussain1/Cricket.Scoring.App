@@ -12,6 +12,8 @@ import java.io.OutputStream
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 
 fun swapBatsmenDB(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats, updateFirebase: Boolean) {
     swapBatsmen(batsman1,batsman2)
@@ -128,121 +130,32 @@ fun updateStats(context: Context,
         if (balls.size == 6 && balls.take(6).all { it.action == "0" || it.action.contains("WK") }) {
             updateBowler(matchId,false,"maiden",bowlerStats,activeBatsman,1.00,"",context)
         }
+
+        dbHelper.saveSnapshot(matchId)
     } else {
         //Handle the UNDO option
-        val lastNonEmptyIndex = balls.indexOfLast { it.action.isNotEmpty() }
-        if (lastNonEmptyIndex == -1) return
+        dbHelper.undoLastBall(matchId)
+        //return
 
-        val lastBall = balls[lastNonEmptyIndex].action
-
-        if (lastBall.contains("WK")) {
-            Toast.makeText(context, "Wicket UNDO is not supported!", Toast.LENGTH_SHORT).show()
-            return
-        }
-        // Decrement the bowlerOver by 0.1 only if the last ball was a valid ball value
-        var containsExcludedValue = lastBall.split(",").any { it in excludedValuesFromBallsBalled }
-        if (!containsExcludedValue) {
-            when(sideWallRule) {
-                0 -> {
-                    if ((lastBall == "1") || (lastBall == "3")) {
-                        swapBatsmen(
-                            context,
-                            matchId,
-                            firstBatsmanStats,
-                            secondBatsmanStats,
-                            balls[lastNonEmptyIndex].batsman
-                        )
-                    }
-                }
-                1 -> {
-                    if ((lastBall == "1") || (lastBall == "2")) {
-                        swapBatsmen(
-                            context,
-                            matchId,
-                            firstBatsmanStats,
-                            secondBatsmanStats,
-                            balls[lastNonEmptyIndex].batsman
-                        )
-                    }
-                }
-                2 -> {
-                    if ((lastBall == "1") || (lastBall == "3")) {
-                        swapBatsmen(
-                            context,
-                            matchId,
-                            firstBatsmanStats,
-                            secondBatsmanStats,
-                            balls[lastNonEmptyIndex].batsman
-                        )
-                    }
-                }
-            }
-            updateBowler(matchId,true,"over",bowlerStats,activeBatsman,-0.1,"",context)
-            updateTeam("overs", firstTeamStats, secondTeamStats, -0.1)
-        }
-
-        doUpdateStats(context,matchId,true,lastBall,-1, bowlerStats, firstBatsmanStats, secondBatsmanStats, firstTeamStats, secondTeamStats)
-
-        containsExcludedValue = lastBall.split(",").any { it in excludedValuesFromBallsFaced2 }
-        if (!containsExcludedValue) {
-            if (lastBall.contains("WK")) {
-                //Restore out batsman
-                val batsmanOut = balls[lastNonEmptyIndex].batsman
-
-                val batsmanOutFromDB = dbHelper.getBatsmanStats(matchId,batsmanOut)
-                dbHelper.deleteBatsman(matchId,activeBatsman)
-                dbHelper.updateBattingStats(matchId,batsmanOutFromDB.name.value,"out","striker")
-
-                containsExcludedValue = lastBall.split(",").any { it in excludedValuesFromBallsFaced1 }
-                if (!containsExcludedValue) {
-                    batsmanOutFromDB.balls.value -= 1
-                }
-
-                dbHelper.updateBattingStats(matchId,"striker",batsmanOutFromDB,"","","","")
-
-                if (firstBatsmanStats.name.value == activeBatsman) {
-                    firstBatsmanStats.name.value = batsmanOut
-                    firstBatsmanStats.runs.value = batsmanOutFromDB.runs.value
-                    firstBatsmanStats.balls.value = batsmanOutFromDB.balls.value
-                    firstBatsmanStats.fours.value = batsmanOutFromDB.fours.value
-                    firstBatsmanStats.sixes.value = batsmanOutFromDB.sixes.value
-                } else if (secondBatsmanStats.name.value == activeBatsman) {
-                    secondBatsmanStats.name.value = batsmanOut
-                    secondBatsmanStats.runs.value = batsmanOutFromDB.runs.value
-                    secondBatsmanStats.balls.value = batsmanOutFromDB.balls.value
-                    secondBatsmanStats.fours.value = batsmanOutFromDB.fours.value
-                    secondBatsmanStats.sixes.value = batsmanOutFromDB.sixes.value
-                }
-            } else {
-                updateBatsman(matchId,"balls", firstBatsmanStats, secondBatsmanStats, -1,context)
-            }
-        }
-
-        // Check if the first 5 balls were "0" and last index is 5
-        if (lastNonEmptyIndex == 5 && balls.take(5).all { it.action == "0" }) {
-            updateBowler(matchId,false,"maiden",bowlerStats,activeBatsman,-1.00,"",context)
-        }
-
-        bowlerStats.overrecord.value = removePipeDelimitedValue(lastNonEmptyIndex,bowlerStats.overrecord.value)
-        dbHelper.updateBowlingStats(matchId,bowlerStats)
-
-        balls[lastNonEmptyIndex] = Ball("","")
     }
 
-    val battingTeam  = if (firstTeamStats.active.value) firstTeamStats.name.value else secondTeamStats.name.value
-    val bowlingTeam  = if (firstTeamStats.active.value) secondTeamStats.name.value else firstTeamStats.name.value
+    val firstTeamStatistics = dbHelper.getTeamStats(matchId,1,firstTeamStats.name.value)
+    val secondTeamStatistics = dbHelper.getTeamStats(matchId,2,secondTeamStats.name.value)
 
-    val battingStats = if (firstTeamStats.active.value) firstTeamStats else secondTeamStats
-    val fieldingTeam = if (firstTeamStats.active.value) secondTeamStats else firstTeamStats
+    val battingTeam  = if (firstTeamStatistics.active.value) firstTeamStatistics.name.value else secondTeamStatistics.name.value
+    val bowlingTeam  = if (firstTeamStatistics.active.value) secondTeamStatistics.name.value else firstTeamStatistics.name.value
 
-    //val strikingBatsmanStat = if (firstBatsmanStats.active.value) firstBatsmanStats else secondBatsmanStats
-    //val nonStrikingBatsmanStat = if (firstBatsmanStats.active.value) secondBatsmanStats else firstBatsmanStats
+    val battingStats = if (firstTeamStatistics.active.value) firstTeamStatistics else secondTeamStatistics
+    val fieldingTeam = if (firstTeamStatistics.active.value) secondTeamStatistics else firstTeamStatistics
+
     val strikingBatsmanStat = dbHelper.getBatsmanByStatus(matchId, "striker")
     val nonStrikingBatsmanStat = dbHelper.getBatsmanByStatus(matchId, "non-striker")
 
     val noOfOversAside = dbHelper.getNoOfOversAside(matchId).toDouble()
-    val (runsToWinLocal, winningCaptain) = calcRunsToWin(firstTeamStats, secondTeamStats, noOfOversAside)
+    val (runsToWinLocal, winningCaptain) = calcRunsToWin(firstTeamStatistics, secondTeamStatistics, noOfOversAside)
 
+    val currentBowler = dbHelper.getCurrentBowlerStats(matchId)
+    val balls2 = buildBallsFromOverRecord(currentBowler)
     val consolidatedBowler = dbHelper.getConsolidatedBowlerStats(matchId, bowlerStats.name.value)
 
     val scoreUpdate = LiveScoreUpdate(
@@ -255,7 +168,7 @@ fun updateStats(context: Context,
         innings2Runs     = fieldingTeam.inningScore.value,
         innings2Wickets  = fieldingTeam.inningWickets.value,
         innings2Overs    = "%.1f".format(fieldingTeam.overs.value),
-        currentOver = balls.filter { it.action.isNotEmpty() }
+        currentOver = balls2.filter { it.action.isNotEmpty() }
             .joinToString(",") { if (it.action.startsWith("WK")) "OUT" else it.action },
         runsToWin        = runsToWinLocal,
         // Striker
@@ -623,6 +536,27 @@ fun getWicketType(wicketType: String) : String {
     return ""
 }
 
+fun buildBallsFromOverRecord(bowlerStats: BowlerStats): List<Ball> {
+    val balls = mutableListOf<Ball>()
+    val overRecord = bowlerStats.overrecord.value
+
+    when {
+        overRecord.contains("|") -> {
+            overRecord.split("|").forEach { value ->
+                val pipeValues = value.split(",")
+                balls.add(Ball(pipeValues[0], pipeValues[1]))
+            }
+        }
+        overRecord.contains(",") -> {
+            val pipeValues = overRecord.split(",")
+            balls.add(Ball(pipeValues[0], pipeValues[1]))
+        }
+        // else: overRecord is empty, return empty list
+    }
+
+    return balls
+}
+
 fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: String, multiplier: Int, bowlerStats: BowlerStats, firstBatsmanStats: BatsmanStats, secondBatsmanStats: BatsmanStats, firstTeamStats: TeamStats, secondTeamStats: TeamStats) {
     val activeBatsman = getActiveBatsman(firstBatsmanStats,secondBatsmanStats)
     if (newValue.contains("WK")) {
@@ -824,7 +758,6 @@ fun doUpdateStats(context: Context,matchId: String,undo:Boolean, newValue: Strin
             //Warning only. WKLB is for the wicket.
             "LBW" -> {
                 updateBowler(matchId,undo,"dotballs",bowlerStats,activeBatsman,1.00 * multiplier,"",context)
-                //updateBowler(matchId,undo,"runs",bowlerStats,activeBatsman,-2.00 * multiplier,"",context)
                 updateBatsman(matchId,"dotballs", firstBatsmanStats, secondBatsmanStats, 1 * multiplier,context)
                 updateBatsman(matchId,"runs", firstBatsmanStats, secondBatsmanStats, -2 * multiplier,context)
                 updateTeam("inningScore", firstTeamStats, secondTeamStats, -2.0 * multiplier)
@@ -1017,12 +950,13 @@ fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>
         "Over",             // Column A
         "Bowler",           // Column B
         "Batsman",          // Column C
-        "Result",           // Column D
-        "Result Text",      // Column E
-        "Is Over Summary",  // Column F
-        "Over Runs",        // Column G
-        "Over Extras",      // Column H
-        "Total Score"       // Column I
+        "Non-Striker",      // Column D
+        "Result",           // Column E
+        "Result Text",      // Column F
+        "Is Over Summary",  // Column G
+        "Over Runs",        // Column H
+        "Over Extras",      // Column I
+        "Total Score"       // Column J
     ))
 
     // Fetch and append ball-by-ball data for Team 1
@@ -1032,12 +966,13 @@ fun getMatchDataToUpload(context: Context, matchId: String): Pair<List<List<Any>
             ballEvent.over,             // Column A
             ballEvent.bowler,           // Column B
             ballEvent.batsman,          // Column C
-            if (ballEvent.result.startsWith("WK")) "WICKET" else ballEvent.result,           // Column D
-            ballEvent.resultText.replace("•", "0"),  // Replace dot ball symbol with "0"
-            ballEvent.isOverSummary,    // Column F
-            ballEvent.overRuns,         // Column G
-            ballEvent.overExtras,       // Column H
-            ballEvent.totalScore        // Column I
+            ballEvent.nonStriker,       // Column D
+            if (ballEvent.result.startsWith("WK")) "WICKET" else ballEvent.result, // Column E
+            ballEvent.resultText.replace("•", "0"),  // Column F - Replace dot ball symbol with "0"
+            ballEvent.isOverSummary,    // Column G
+            ballEvent.overRuns,         // Column H
+            ballEvent.overExtras,       // Column I
+            ballEvent.totalScore        // Column J
         ))
     }
 

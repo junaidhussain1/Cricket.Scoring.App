@@ -10,12 +10,14 @@ import android.widget.Toast
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import com.google.gson.Gson
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
+import kotlin.text.insert
 
 // SQLite helper class
 class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -23,7 +25,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 25
+        const val DATABASE_VERSION = 26
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -31,7 +33,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         const val TABLE_TEAMS = "teams"
         const val TABLE_BATTINGSTATS = "battingstats"
         const val TABLE_BOWLINGSTATS = "bowlingstats"
+        const val TABLE_MATCHSNAPSHOT = "matchsnapshot"
+
         const val VIEW_MATCHSTATS = "vwmatchstats"
+
     }
 
     // SQL statements to create tables
@@ -115,6 +120,15 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             dotballs INTEGER,
             over_record TEXT,
             PRIMARY KEY (match_id, bowling_order)
+        )
+    """
+
+    private val createMATCHSNAPSHOT = """
+        CREATE TABLE $TABLE_MATCHSNAPSHOT (
+            match_id TEXT,
+            entry_no INTEGER,
+            state TEXT,
+            PRIMARY KEY (match_id, entry_no)
         )
     """
 
@@ -248,6 +262,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         db?.execSQL(createTEAMSTABLE)
         db?.execSQL(createBATTINGSTATS)
         db?.execSQL(createBOWLINGSTATS)
+        db?.execSQL(createMATCHSNAPSHOT)
         db?.execSQL(createMATCHSTATSVIEW)
     }
 
@@ -258,10 +273,13 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         //db?.execSQL("DROP TABLE IF EXISTS $TABLE_BATTINGSTATS")
         //db?.execSQL("DROP TABLE IF EXISTS $TABLE_BOWLINGSTATS")
 
-        db?.execSQL("DROP VIEW IF EXISTS $VIEW_MATCHSTATS")
-        db?.execSQL(createMATCHSTATSVIEW)
-
+        //db?.execSQL("DROP VIEW IF EXISTS $VIEW_MATCHSTATS")
+        //db?.execSQL(createMATCHSTATSVIEW)
         //onCreate(db)
+
+        if (oldVersion < 26) {
+            db?.execSQL(createMATCHSNAPSHOT)
+        }
     }
 
     //GET FUNCTIONS ********************************************************************************
@@ -1275,7 +1293,8 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                         if (parts.size >= 2) {
                             val action = parts.getOrElse(0) { "" }
                             val batsmanName = parts.getOrElse(1) { "" }
-                            val newBatsmanName = parts.getOrElse(2) { "" }
+                            val nonStrikerName = "" //TODO
+                            //val newBatsmanName = parts.getOrElse(2) { "" }
                             val fielderName = parts.getOrElse(3) { "unknown" }
 
                             val excludedValuesFromBallsBalled = setOf("W","W+1","W+2","NB","NB+1","NB+2","NB+3","NB+4","NB+6","NBL1","NBL2","NBL3","NBB1","NBB2","NBB3","WKRONB","WKROW","WKSTW")
@@ -1300,7 +1319,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                                 }
 
                                 action.startsWith("NB") -> 1 // Just a no ball
-                                action.startsWith("LBW") -> -2 //-2 for a LBW warning
+                                action.startsWith("LBW") -> -2 //-2 for an LBW warning
                                 action.startsWith("LB") -> action.removePrefix("LB").toIntOrNull()
                                     ?: 0
 
@@ -1345,6 +1364,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                                     over = overDisplay,
                                     bowler = bowlerName,
                                     batsman = batsmanName,
+                                    nonStriker = nonStrikerName,
                                     result = action,
                                     resultText = displayResult
                                 )
@@ -1363,6 +1383,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                                 over = (baseOverNumber + 1).toString(),
                                 bowler = "",
                                 batsman = "",
+                                nonStriker = "",
                                 result = "",
                                 resultText = "",
                                 isOverSummary = true,
@@ -1812,6 +1833,129 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val whereArgs = arrayOf(matchId, "bowling")
 
         return db.update(TABLE_BOWLINGSTATS, contentValues, whereClause, whereArgs)
+    }
+
+    fun saveSnapshot(matchId: String) {
+        val db = writableDatabase
+
+        // Read current batting stats for this match
+        val battingStats = mutableListOf<Map<String, Any?>>()
+        db.rawQuery("SELECT * FROM $TABLE_BATTINGSTATS WHERE match_id = ?", arrayOf(matchId)).use { cursor ->
+            while (cursor.moveToNext()) {
+                val row = mutableMapOf<String, Any?>()
+                cursor.columnNames.forEach { col ->
+                    row[col] = when (cursor.getType(cursor.getColumnIndexOrThrow(col))) {
+                        Cursor.FIELD_TYPE_INTEGER -> cursor.getLong(cursor.getColumnIndexOrThrow(col))
+                        Cursor.FIELD_TYPE_FLOAT   -> cursor.getDouble(cursor.getColumnIndexOrThrow(col))
+                        Cursor.FIELD_TYPE_STRING  -> cursor.getString(cursor.getColumnIndexOrThrow(col))
+                        else                      -> null
+                    }
+                }
+                battingStats.add(row)
+            }
+        }
+
+        // Read current bowling stats for this match
+        val bowlingStats = mutableListOf<Map<String, Any?>>()
+        db.rawQuery("SELECT * FROM $TABLE_BOWLINGSTATS WHERE match_id = ?", arrayOf(matchId)).use { cursor ->
+            while (cursor.moveToNext()) {
+                val row = mutableMapOf<String, Any?>()
+                cursor.columnNames.forEach { col ->
+                    row[col] = when (cursor.getType(cursor.getColumnIndexOrThrow(col))) {
+                        Cursor.FIELD_TYPE_INTEGER -> cursor.getLong(cursor.getColumnIndexOrThrow(col))
+                        Cursor.FIELD_TYPE_FLOAT   -> cursor.getDouble(cursor.getColumnIndexOrThrow(col))
+                        Cursor.FIELD_TYPE_STRING  -> cursor.getString(cursor.getColumnIndexOrThrow(col))
+                        else                      -> null
+                    }
+                }
+                bowlingStats.add(row)
+            }
+        }
+
+        // Serialise to JSON
+        val state = MatchState(battingStats, bowlingStats)
+        val json = Gson().toJson(state)
+
+        // Get next entry_no for this match
+        val nextEntryNo = db.rawQuery(
+            "SELECT COALESCE(MAX(entry_no), 0) + 1 FROM $TABLE_MATCHSNAPSHOT WHERE match_id = ?",
+            arrayOf(matchId)
+        ).use { cursor ->
+            if (cursor.moveToFirst()) cursor.getInt(0) else 1
+        }
+
+        // Save snapshot
+        val contentValues = ContentValues().apply {
+            put("match_id", matchId)
+            put("entry_no", nextEntryNo)
+            put("state", json)
+        }
+        db.insert(TABLE_MATCHSNAPSHOT, null, contentValues)
+    }
+
+    fun undoLastBall(matchId: String): Boolean {
+        val db = writableDatabase
+
+        // Get the last entry_no for this match
+        val lastEntryNo = db.rawQuery(
+            "SELECT MAX(entry_no) FROM $TABLE_MATCHSNAPSHOT WHERE match_id = ?",
+            arrayOf(matchId)
+        ).use { cursor ->
+            if (cursor.moveToFirst()) cursor.getInt(0) else return false
+        }
+
+        // Delete the most recent snapshot (current state)
+        db.delete(TABLE_MATCHSNAPSHOT, "match_id = ? AND entry_no = ?", arrayOf(matchId, lastEntryNo.toString()))
+
+        // Fetch what is now the last snapshot (previous state)
+        val stateJson = db.rawQuery(
+            "SELECT state FROM $TABLE_MATCHSNAPSHOT WHERE match_id = ? ORDER BY entry_no DESC LIMIT 1",
+            arrayOf(matchId)
+        ).use { cursor ->
+            if (cursor.moveToFirst()) cursor.getString(0) else return false
+        }
+
+        // Deserialise the state
+        val state = Gson().fromJson(stateJson, MatchState::class.java)
+
+        db.beginTransaction()
+        try {
+            // Restore batting stats
+            db.delete(TABLE_BATTINGSTATS, "match_id = ?", arrayOf(matchId))
+            state.battingStats.forEach { row ->
+                val cv = ContentValues()
+                row.forEach { (col, value) ->
+                    when (value) {
+                        is Long   -> cv.put(col, value)
+                        is Double -> cv.put(col, value)
+                        is String -> cv.put(col, value)
+                        null      -> cv.putNull(col)
+                    }
+                }
+                db.insert(TABLE_BATTINGSTATS, null, cv)
+            }
+
+            // Restore bowling stats
+            db.delete(TABLE_BOWLINGSTATS, "match_id = ?", arrayOf(matchId))
+            state.bowlingStats.forEach { row ->
+                val cv = ContentValues()
+                row.forEach { (col, value) ->
+                    when (value) {
+                        is Long   -> cv.put(col, value)
+                        is Double -> cv.put(col, value)
+                        is String -> cv.put(col, value)
+                        null      -> cv.putNull(col)
+                    }
+                }
+                db.insert(TABLE_BOWLINGSTATS, null, cv)
+            }
+
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+
+        return true
     }
 
     //IS FUNCTIONS *********************************************************************************

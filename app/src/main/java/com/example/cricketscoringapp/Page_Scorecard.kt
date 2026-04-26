@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import java.util.Locale
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 
 @Composable
@@ -77,6 +79,8 @@ fun ScoreCardPage(navController: NavHostController) {
     val selectedFielder = remember { mutableStateOf("") }
     val manualBowlerChange = remember { mutableStateOf(false) }
 
+    var refreshKey by remember { mutableIntStateOf(0) }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -95,7 +99,7 @@ fun ScoreCardPage(navController: NavHostController) {
         }
 
         val team1Stats = dbHelper.getTeamStats(matchId, team1Id, team1Captain.name)
-        val firstBattingTeamStats = remember(team1Stats) {
+        val firstBattingTeamStats = remember(team1Stats, refreshKey) {
             TeamStats(
                 name = mutableStateOf(team1Stats.name.value),
                 overs = mutableDoubleStateOf(team1Stats.overs.value),
@@ -106,7 +110,7 @@ fun ScoreCardPage(navController: NavHostController) {
         }
 
         val team2Stats = dbHelper.getTeamStats(matchId, team2Id, team2Captain.name)
-        val secondBattingTeamStats = remember(team2Stats) {
+        val secondBattingTeamStats = remember(team2Stats, refreshKey) {
             TeamStats(
                 name = mutableStateOf(team2Stats.name.value),
                 overs = mutableDoubleStateOf(team2Stats.overs.value),
@@ -126,7 +130,7 @@ fun ScoreCardPage(navController: NavHostController) {
         }
 
         val firstBatsman = dbHelper.getBatsmanByStatus(matchId, "striker")
-        val firstBatsmanStats = remember {
+        val firstBatsmanStats = remember (refreshKey) {
             BatsmanStats(
                 name = mutableStateOf(value = firstBatsman.name.value),
                 runs = mutableIntStateOf(value = firstBatsman.runs.value),
@@ -140,7 +144,7 @@ fun ScoreCardPage(navController: NavHostController) {
         }
 
         val secondBatsman = dbHelper.getBatsmanByStatus(matchId, "non-striker")
-        val secondBatsmanStats = remember {
+        val secondBatsmanStats = remember (refreshKey) {
             BatsmanStats(
                 name = mutableStateOf(value = secondBatsman.name.value),
                 runs = mutableIntStateOf(value = secondBatsman.runs.value),
@@ -154,7 +158,7 @@ fun ScoreCardPage(navController: NavHostController) {
         }
 
         val currentOverBowler = dbHelper.getCurrentBowlerStats(matchId)
-        val currentOverBowlerStats = remember(currentOverBowler) {
+        val currentOverBowlerStats = remember(currentOverBowler, refreshKey) {
             BowlerStats(
                 name = mutableStateOf(currentOverBowler.name.value),
                 over = mutableDoubleStateOf(currentOverBowler.over.value),
@@ -175,7 +179,7 @@ fun ScoreCardPage(navController: NavHostController) {
 
         val consolidatedBowler =
             dbHelper.getConsolidatedBowlerStats(matchId, currentOverBowler.name.value)
-        val consolidatedBowlerStats = remember(consolidatedBowler) {
+        val consolidatedBowlerStats = remember(consolidatedBowler, refreshKey) {
             BowlerStats(
                 name = mutableStateOf(consolidatedBowler.name.value),
                 over = mutableDoubleStateOf(consolidatedBowler.over.value),
@@ -194,22 +198,11 @@ fun ScoreCardPage(navController: NavHostController) {
             )
         }
 
-        val balls = remember { mutableStateListOf<Ball>() }
+        val balls = remember (refreshKey) { mutableStateListOf<Ball>() }
 
         //Rebuild current over from current bowler stats in database
-        if (currentOverBowlerStats.overrecord.value.contains(",")) {
-            val ballValues = currentOverBowlerStats.overrecord.value.split("|")
-            balls.clear()
-            ballValues.forEach { value ->
-                val pipeValues = value.split(",")
-                val ball = Ball(pipeValues[0], pipeValues[1]) // Assuming Ball takes an Int
-                balls.add(ball)
-            }
-        } else if (currentOverBowlerStats.overrecord.value != "") {
-            val pipeValues = currentOverBowlerStats.overrecord.value.split(",")
-            val ball = Ball(pipeValues[0], pipeValues[1]) // Assuming Ball takes an Int
-            balls.add(ball)
-        }
+        balls.clear()
+        balls.addAll(buildBallsFromOverRecord(currentOverBowlerStats))
 
         //Automatically handle: End of Over, End of Innings, End of Match
         val team1wickets = dbHelper.getTeamWickets(matchId, firstTeamId)
@@ -407,6 +400,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     makePlayerTouchable = true
                 ) {
                     swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats,true)
+                    dbHelper.saveSnapshot(matchId)
                 }
 
                 BatsmanBowlerKeeperBox(
@@ -420,6 +414,7 @@ fun ScoreCardPage(navController: NavHostController) {
                     makePlayerTouchable = true
                 ) {
                     swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats, true)
+                    dbHelper.saveSnapshot(matchId)
                 }
             }
         }
@@ -514,6 +509,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                     secondBatsmanStats,
                                                     true
                                                 )
+
                                                 balls.clear()
                                             },
                                             modifier = Modifier.fillMaxWidth()
@@ -594,6 +590,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                             )
                                             showKeeperChangeDialog.value = false
                                             setCurrentKeeper(currentOverBowlerStats, player.name)
+                                            dbHelper.saveSnapshot(matchId)
                                         }, modifier = Modifier.fillMaxWidth()) {
                                             Text(
                                                 player.name,
@@ -1532,11 +1529,11 @@ fun ScoreCardPage(navController: NavHostController) {
 
                     val lastBall = balls[lastNonEmptyIndex].action
 
-                    if (lastBall.contains("WK")) {
-                        showUndoConfirmationDialog.value = false
-                        Toast.makeText(context, "Wicket UNDO is not supported!", Toast.LENGTH_SHORT)
-                            .show()
-                    }
+                    //if (lastBall.contains("WK")) {
+                    //    showUndoConfirmationDialog.value = false
+                    //    Toast.makeText(context, "Wicket UNDO is not supported!", Toast.LENGTH_SHORT)
+                    //        .show()
+                    //}
                 }
             }
 
@@ -1557,6 +1554,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             firstBattingTeamStats,
                             secondBattingTeamStats
                         )
+                        refreshKey++
                     },
                     onDismiss = {
                         showUndoConfirmationDialog.value = false
