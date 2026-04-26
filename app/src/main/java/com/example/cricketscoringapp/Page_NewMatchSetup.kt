@@ -1040,7 +1040,11 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     ) {
                         Button(
                             onClick = {
-                                if (!matchStarted) dbHelper.updateMatchIsStarted(matchId)
+                                if (!matchStarted)
+                                {
+                                    dbHelper.updateMatchIsStarted(matchId)
+                                    dbHelper.saveSnapshot(matchId)
+                                }
                                 navController.navigate("scorecard")
                             },
                             modifier = Modifier

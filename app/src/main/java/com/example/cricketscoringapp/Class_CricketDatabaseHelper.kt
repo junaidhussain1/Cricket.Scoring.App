@@ -1878,7 +1878,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
         // Get next entry_no for this match
         val nextEntryNo = db.rawQuery(
-            "SELECT COALESCE(MAX(entry_no), 0) + 1 FROM match_snapshot WHERE match_id = ?",
+            "SELECT COALESCE(MAX(entry_no), 0) + 1 FROM $TABLE_MATCHSNAPSHOT WHERE match_id = ?",
             arrayOf(matchId)
         ).use { cursor ->
             if (cursor.moveToFirst()) cursor.getInt(0) else 1
@@ -1896,17 +1896,24 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     fun undoLastBall(matchId: String): Boolean {
         val db = writableDatabase
 
-        // Fetch the last snapshot for this match
-        val json = db.rawQuery(
-            "SELECT entry_no, state FROM match_snapshot WHERE match_id = ? ORDER BY entry_no DESC LIMIT 1",
+        // Get the last entry_no for this match
+        val lastEntryNo = db.rawQuery(
+            "SELECT MAX(entry_no) FROM $TABLE_MATCHSNAPSHOT WHERE match_id = ?",
             arrayOf(matchId)
         ).use { cursor ->
-            if (cursor.moveToFirst()) {
-                Pair(cursor.getInt(0), cursor.getString(1))
-            } else null
-        } ?: return false  // No snapshots available, nothing to undo
+            if (cursor.moveToFirst()) cursor.getInt(0) else return false
+        }
 
-        val (entryNo, stateJson) = json
+        // Delete the most recent snapshot (current state)
+        db.delete(TABLE_MATCHSNAPSHOT, "match_id = ? AND entry_no = ?", arrayOf(matchId, lastEntryNo.toString()))
+
+        // Fetch what is now the last snapshot (previous state)
+        val stateJson = db.rawQuery(
+            "SELECT state FROM $TABLE_MATCHSNAPSHOT WHERE match_id = ? ORDER BY entry_no DESC LIMIT 1",
+            arrayOf(matchId)
+        ).use { cursor ->
+            if (cursor.moveToFirst()) cursor.getString(0) else return false
+        }
 
         // Deserialise the state
         val state = Gson().fromJson(stateJson, MatchState::class.java)
@@ -1919,10 +1926,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 val cv = ContentValues()
                 row.forEach { (col, value) ->
                     when (value) {
-                        is Long    -> cv.put(col, value)
-                        is Double  -> cv.put(col, value)
-                        is String  -> cv.put(col, value)
-                        null       -> cv.putNull(col)
+                        is Long   -> cv.put(col, value)
+                        is Double -> cv.put(col, value)
+                        is String -> cv.put(col, value)
+                        null      -> cv.putNull(col)
                     }
                 }
                 db.insert(TABLE_BATTINGSTATS, null, cv)
@@ -1934,17 +1941,14 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 val cv = ContentValues()
                 row.forEach { (col, value) ->
                     when (value) {
-                        is Long    -> cv.put(col, value)
-                        is Double  -> cv.put(col, value)
-                        is String  -> cv.put(col, value)
-                        null       -> cv.putNull(col)
+                        is Long   -> cv.put(col, value)
+                        is Double -> cv.put(col, value)
+                        is String -> cv.put(col, value)
+                        null      -> cv.putNull(col)
                     }
                 }
                 db.insert(TABLE_BOWLINGSTATS, null, cv)
             }
-
-            // Delete the snapshot we just restored from
-            db.delete("match_snapshot", "match_id = ? AND entry_no = ?", arrayOf(matchId, entryNo.toString()))
 
             db.setTransactionSuccessful()
         } finally {
