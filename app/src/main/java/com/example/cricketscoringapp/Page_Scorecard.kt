@@ -79,6 +79,9 @@ fun ScoreCardPage(navController: NavHostController) {
     val selectedFielder = remember { mutableStateOf("") }
     val manualBowlerChange = remember { mutableStateOf(false) }
 
+    val pendingStrikerName = remember { mutableStateOf("") }
+    val pendingNonStrikerName = remember { mutableStateOf("") }
+
     var refreshKey by remember { mutableIntStateOf(0) }
 
     Column(
@@ -1405,7 +1408,6 @@ fun ScoreCardPage(navController: NavHostController) {
                                     // List of options to choose from
                                     Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                         showNextBatsmanDialog.value = false
-
                                         val newBatsman = player.name
 
                                         if (!batsmanOverride.value) {
@@ -1413,6 +1415,10 @@ fun ScoreCardPage(navController: NavHostController) {
                                                 firstBatsmanStats,
                                                 secondBatsmanStats
                                             )
+
+                                            // Capture BEFORE any state changes
+                                            val strikerBeforeWicket = firstBatsmanStats.name.value
+                                            val nonStrikerBeforeWicket = secondBatsmanStats.name.value
 
                                             selectedWicketsOption.value += ",$batsmanOut,$newBatsman,${selectedFielder.value.ifEmpty { "NA" }}"
                                             updateStats(
@@ -1462,6 +1468,16 @@ fun ScoreCardPage(navController: NavHostController) {
                                             // Check if it's a runout wicket - if so, ask which batsman should be on strike
                                             val isRunOut = selectedWicketsOption.value.startsWith("WKRO")
                                             if (isRunOut) {
+                                                // The two batsmen now at the crease are:
+                                                // - newBatsman (just came in)
+                                                // - whoever was NOT run out from the original pair
+                                                val survivingBatsman = if (batsmanOut == strikerBeforeWicket) {
+                                                    nonStrikerBeforeWicket
+                                                } else {
+                                                    strikerBeforeWicket
+                                                }
+                                                pendingStrikerName.value = newBatsman
+                                                pendingNonStrikerName.value = survivingBatsman
                                                 showActiveBatsmanSelectionDialog.value = true
                                             }
 
@@ -1495,23 +1511,37 @@ fun ScoreCardPage(navController: NavHostController) {
                     title = { Text("Select Facing Batsman") },
                     text = {
                         Column {
-                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
-                                // Keep current striker (new batsman) as active
-                                showActiveBatsmanSelectionDialog.value = false
-                            }) {
+                            Button(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    val currentStriker = dbHelper.getStriker(matchId)
+                                    if (currentStriker != pendingStrikerName.value) {
+                                        swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats, true)
+                                    }
+                                    showActiveBatsmanSelectionDialog.value = false
+                                }
+                            ) {
                                 Text(
-                                    firstBatsmanStats.name.value,
+                                    text = pendingStrikerName.value,
                                     fontSize = if (isTablet) 30.sp else 20.sp
                                 )
                             }
+
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button(modifier = Modifier.fillMaxWidth(), onClick = {
-                                // Swap to make non-striker active
-                                swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats, true)
-                                showActiveBatsmanSelectionDialog.value = false
-                            }) {
+
+                            Button(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    // Make pendingNonStrikerName the active striker
+                                    val currentStriker = dbHelper.getStriker(matchId)
+                                    if (currentStriker != pendingNonStrikerName.value) {
+                                        swapBatsmenDB(context, matchId, firstBatsmanStats, secondBatsmanStats, true)
+                                    }
+                                    showActiveBatsmanSelectionDialog.value = false
+                                }
+                            ) {
                                 Text(
-                                    secondBatsmanStats.name.value,
+                                    text = pendingNonStrikerName.value,
                                     fontSize = if (isTablet) 30.sp else 20.sp
                                 )
                             }
