@@ -13,6 +13,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,7 +48,7 @@ fun SecondInningsSetupPage(navController: NavHostController) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(10, 18, 32)
+        color = CricketAppTheme.colors.primaryDark
     ) {
         LazyColumn(
             modifier = Modifier
@@ -88,9 +89,9 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                 value = facingBatsman?.name ?: "Select Batsman",
                                 onValueChange = { },
                                 label = {
-                                    Text("Facing Batsman", fontSize = if (isTablet) 22.sp else 14.sp)
+                                    Text("Facing Batsman", fontSize = CricketAppTheme.dimens.smallSize)
                                 },
-                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                 modifier = Modifier
                                     .menuAnchor()
                                     .fillMaxWidth()
@@ -103,7 +104,7 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                     if (player.name != secondBatsman?.name) {
                                         DropdownMenuItem(
                                             text = {
-                                                Text(player.name, fontSize = if (isTablet) 30.sp else 14.sp)
+                                                Text(player.name, fontSize = CricketAppTheme.dimens.bodySize)
                                             },
                                             onClick = {
                                                 facingBatsman = player
@@ -139,9 +140,9 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                 value = secondBatsman?.name ?: "Select Batsman",
                                 onValueChange = { },
                                 label = {
-                                    Text("Second Batsman", fontSize = if (isTablet) 22.sp else 14.sp)
+                                    Text("Second Batsman", fontSize = CricketAppTheme.dimens.smallSize)
                                 },
-                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                 modifier = Modifier
                                     .menuAnchor()
                                     .fillMaxWidth()
@@ -154,7 +155,7 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                     if (player.name != facingBatsman?.name) {
                                         DropdownMenuItem(
                                             text = {
-                                                Text(player.name, fontSize = if (isTablet) 30.sp else 14.sp)
+                                                Text(player.name, fontSize = CricketAppTheme.dimens.bodySize)
                                             },
                                             onClick = {
                                                 secondBatsman = player
@@ -198,9 +199,9 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                 value = openingBowler?.name ?: "Select Bowler",
                                 onValueChange = { },
                                 label = {
-                                    Text("Bowler", fontSize = if (isTablet) 22.sp else 14.sp)
+                                    Text("Bowler", fontSize = CricketAppTheme.dimens.smallSize)
                                 },
-                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                 modifier = Modifier
                                     .menuAnchor()
                                     .fillMaxWidth()
@@ -213,7 +214,7 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                     if (player.name != openingKeeper?.name) {
                                         DropdownMenuItem(
                                             text = {
-                                                Text(player.name, fontSize = if (isTablet) 30.sp else 14.sp)
+                                                Text(player.name, fontSize = CricketAppTheme.dimens.bodySize)
                                             },
                                             onClick = {
                                                 openingBowler = player
@@ -249,9 +250,9 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                 value = openingKeeper?.name ?: "Select Keeper",
                                 onValueChange = { },
                                 label = {
-                                    Text("Wicket keeper", fontSize = if (isTablet) 22.sp else 14.sp)
+                                    Text("Wicket keeper", fontSize = CricketAppTheme.dimens.smallSize)
                                 },
-                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                 modifier = Modifier
                                     .menuAnchor()
                                     .fillMaxWidth()
@@ -264,7 +265,7 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                                     if (player.name != openingBowler?.name) {
                                         DropdownMenuItem(
                                             text = {
-                                                Text(player.name, fontSize = if (isTablet) 30.sp else 14.sp)
+                                                Text(player.name, fontSize = CricketAppTheme.dimens.bodySize)
                                             },
                                             onClick = {
                                                 openingKeeper = player
@@ -300,9 +301,13 @@ fun SecondInningsSetupPage(navController: NavHostController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 8.dp, end = 8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(255, 252, 228))
+                        colors = ButtonDefaults.buttonColors(containerColor = CricketAppTheme.colors.primaryCream)
                     ) {
-                        Text("Continue Match", fontSize = if (isTablet) 22.sp else 16.sp)
+                        Text(
+                            text = "Continue Match",
+                            fontSize = CricketAppTheme.dimens.buttonTextSize,
+                            color = CricketAppTheme.colors.textOnLight
+                        )
                     }
                 }
             }

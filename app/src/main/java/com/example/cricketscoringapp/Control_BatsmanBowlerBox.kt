@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 
 @Composable
 fun BatsmanBowlerKeeperBox(col1: String,
@@ -34,7 +35,7 @@ fun BatsmanBowlerKeeperBox(col1: String,
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
 
-    Surface(color = Color(255, 252, 228), modifier = Modifier.fillMaxWidth()) {
+    Surface(color = CricketAppTheme.colors.primaryCream, modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -45,7 +46,7 @@ fun BatsmanBowlerKeeperBox(col1: String,
                     onClick = onClick,
                     shape = RectangleShape,
                     modifier = Modifier
-                        .height((if (isTablet) 44.dp else 30.dp))
+                        .height(CricketAppTheme.dimens.rowHeight)
                         .weight(3f),
                     contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -55,8 +56,8 @@ fun BatsmanBowlerKeeperBox(col1: String,
                 ) {
                     Text(
                         text = col1,
-                        fontSize = if (isTablet) 24.sp else 16.sp,
-                        color = Color(255, 252, 228),
+                        fontSize = CricketAppTheme.dimens.bodySize,
+                        color = CricketAppTheme.colors.primaryCream,
                         modifier = Modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically)  // Aligns text vertically center
@@ -67,7 +68,7 @@ fun BatsmanBowlerKeeperBox(col1: String,
                 Text(
                     text = col1,
                     fontWeight = fontBold1,
-                    fontSize = if (isTablet) 26.sp else 18.sp,
+                    fontSize = CricketAppTheme.dimens.bodySize,
                     color = fontColor1,
                     modifier = Modifier.weight(3f) // This pushes the next Text to the right
                 )
@@ -76,7 +77,7 @@ fun BatsmanBowlerKeeperBox(col1: String,
             Text(
                 text = col2,
                 fontWeight = fontBold1,
-                fontSize = if (isTablet) 26.sp else 18.sp,
+                fontSize = CricketAppTheme.dimens.bodySize,
                 color = fontColor1,
                 modifier = Modifier
                     .weight(1f)
@@ -86,7 +87,7 @@ fun BatsmanBowlerKeeperBox(col1: String,
             Text(
                 text = col3,
                 fontWeight = fontBold1,
-                fontSize = if (isTablet) 26.sp else 18.sp,
+                fontSize = CricketAppTheme.dimens.bodySize,
                 color = fontColor1,
                 modifier = Modifier
                     .weight(1f)
@@ -96,7 +97,7 @@ fun BatsmanBowlerKeeperBox(col1: String,
             Text(
                 text = col4,
                 fontWeight = fontBold1,
-                fontSize = if (isTablet) 26.sp else 18.sp,
+                fontSize = CricketAppTheme.dimens.bodySize,
                 color = fontColor1,
                 modifier = Modifier
                     .weight(1f)
@@ -106,7 +107,7 @@ fun BatsmanBowlerKeeperBox(col1: String,
             Text(
                 text = col5,
                 fontWeight = fontBold1,
-                fontSize = if (isTablet) 26.sp else 18.sp,
+                fontSize = CricketAppTheme.dimens.bodySize,
                 color = fontColor1,
                 modifier = Modifier
                     .weight(1f)

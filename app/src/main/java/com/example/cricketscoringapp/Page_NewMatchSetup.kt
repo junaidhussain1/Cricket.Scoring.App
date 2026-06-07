@@ -37,6 +37,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -82,7 +83,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(10, 18, 32)
+        color = CricketAppTheme.colors.primaryDark
     ) {
         LazyColumn(
             modifier = Modifier
@@ -111,8 +112,8 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     Text(
                         text = "Match: $formattedDate",
                         style = MaterialTheme.typography.headlineSmall,
-                        fontSize = if (isTablet) 40.sp else 22.sp,
-                        color = Color(255, 252, 228)
+                        fontSize = CricketAppTheme.dimens.headerSize,
+                        color = CricketAppTheme.colors.textOnDark
                     )
 
                     IconButton(
@@ -124,7 +125,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Recycle Bin",
-                            tint = Color(255, 252, 228)
+                            tint = CricketAppTheme.colors.textOnDark
                         )
                     }
                 }
@@ -160,10 +161,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 label = {
                                     Text(
                                         "Overs aside",
-                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                        fontSize = CricketAppTheme.dimens.smallSize
                                     )
                                 },
-                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                 modifier = Modifier
                                     .menuAnchor()
                                     .fillMaxWidth()
@@ -177,7 +178,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                         text = {
                                             Text(
                                                 text = i.toString(),
-                                                fontSize = if (isTablet) 30.sp else 14.sp
+                                                fontSize = CricketAppTheme.dimens.bodySize
                                             )
                                         },
                                         onClick = {
@@ -213,10 +214,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 label = {
                                     Text(
                                         text = "Players aside",
-                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                        fontSize = CricketAppTheme.dimens.smallSize
                                     )
                                 },
-                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                 modifier = Modifier
                                     .menuAnchor()
                                     .fillMaxWidth()
@@ -230,7 +231,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                         text = {
                                             Text(
                                                 text = i.toString(),
-                                                fontSize = if (isTablet) 30.sp else 14.sp
+                                                fontSize = CricketAppTheme.dimens.bodySize
                                             )
                                         },
                                         onClick = {
@@ -266,10 +267,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 label = {
                                     Text(
                                         text = "Side wall rule",
-                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                        fontSize = CricketAppTheme.dimens.smallSize
                                     )
                                 },
-                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                 modifier = Modifier
                                     .menuAnchor()
                                     .fillMaxWidth()
@@ -283,7 +284,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                         text = {
                                             Text(
                                                 text = i.toString(),
-                                                fontSize = if (isTablet) 30.sp else 14.sp
+                                                fontSize = CricketAppTheme.dimens.bodySize
                                             )
                                         },
                                         onClick = {
@@ -328,10 +329,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 label = {
                                     Text(
                                         "Team 1 Captain",
-                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                        fontSize = CricketAppTheme.dimens.smallSize
                                     )
                                 },
-                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                 modifier = Modifier
                                     .menuAnchor()
                                     .fillMaxWidth()
@@ -346,7 +347,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                         text = {
                                             Text(
                                                 text = player.name,
-                                                fontSize = if (isTablet) 30.sp else 14.sp
+                                                fontSize = CricketAppTheme.dimens.bodySize
                                             )
                                         },
                                         onClick = {
@@ -392,10 +393,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 label = {
                                     Text(
                                         text = "Team 2 Captain",
-                                        fontSize = if (isTablet) 22.sp else 14.sp
+                                        fontSize = CricketAppTheme.dimens.smallSize
                                     )
                                 },
-                                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                 modifier = Modifier
                                     .menuAnchor()
                                     .fillMaxWidth()
@@ -411,7 +412,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                         text = {
                                             Text(
                                                 text = player.name,
-                                                fontSize = if (isTablet) 30.sp else 14.sp
+                                                fontSize = CricketAppTheme.dimens.bodySize
                                             )
                                         },
                                         onClick = {
@@ -436,7 +437,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                val textColor = if (!matchStarted) Color.White else Color.Gray
+                val textColor = if (!matchStarted) CricketAppTheme.colors.textOnDark else CricketAppTheme.colors.secondaryGray
 
                 if ((team1Captain!!.name != "") && (team2Captain!!.name != "")) {
                     Row(
@@ -461,18 +462,15 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(
-                                            255,
-                                            252,
-                                            228
-                                        ) // Set the background color
+                                        containerColor = CricketAppTheme.colors.primaryCream
                                     ),
                                     content = {
                                         Text(
                                             text = "Select Team Players",
                                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                             modifier = Modifier.fillMaxWidth(),
-                                            fontSize = if (isTablet) 22.sp else 16.sp
+                                            fontSize = CricketAppTheme.dimens.buttonTextSize,
+                                            color = CricketAppTheme.colors.textOnLight
                                         )
                                     }
                                 )
@@ -486,7 +484,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     Text(
                                         text = player.name,
                                         color = textColor,
-                                        fontSize = if (isTablet) 30.sp else 16.sp
+                                        fontSize = CricketAppTheme.dimens.bodySize
                                     )
                                 }
                             }
@@ -510,18 +508,15 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(
-                                            255,
-                                            252,
-                                            228
-                                        ) // Set the background color
+                                        containerColor = CricketAppTheme.colors.primaryCream
                                     ),
                                     content = {
                                         Text(
                                             text = "Select Team Players",
                                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                             modifier = Modifier.fillMaxWidth(),
-                                            fontSize = if (isTablet) 22.sp else 16.sp
+                                            fontSize = CricketAppTheme.dimens.buttonTextSize,
+                                            color = CricketAppTheme.colors.textOnLight
                                         )
                                     }
                                 )
@@ -535,7 +530,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     Text(
                                         text = player.name,
                                         color = textColor,
-                                        fontSize = if (isTablet) 30.sp else 16.sp
+                                        fontSize = CricketAppTheme.dimens.bodySize
                                     )
                                 }
                             }
@@ -576,10 +571,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     label = {
                                         Text(
                                             "Batting Team",
-                                            fontSize = if (isTablet) 22.sp else 14.sp
+                                            fontSize = CricketAppTheme.dimens.smallSize
                                         )
                                     },
-                                    textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                    textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                     modifier = Modifier
                                         .menuAnchor()
                                         .fillMaxWidth()
@@ -594,7 +589,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                             team1Captain?.name?.let {
                                                 Text(
                                                     text = it,
-                                                    fontSize = if (isTablet) 30.sp else 14.sp
+                                                    fontSize = CricketAppTheme.dimens.bodySize
                                                 )
                                             }
                                         },
@@ -633,7 +628,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                             team2Captain?.name?.let {
                                                 Text(
                                                     text = it,
-                                                    fontSize = if (isTablet) 30.sp else 14.sp
+                                                    fontSize = CricketAppTheme.dimens.bodySize
                                                 )
                                             }
                                         },
@@ -734,10 +729,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     label = {
                                         Text(
                                             "Facing Batsman",
-                                            fontSize = if (isTablet) 22.sp else 14.sp
+                                            fontSize = CricketAppTheme.dimens.smallSize
                                         )
                                     },
-                                    textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                    textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                     modifier = Modifier
                                         .menuAnchor()
                                         .fillMaxWidth()
@@ -753,7 +748,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                 text = {
                                                     Text(
                                                         text = player.name,
-                                                        fontSize = if (isTablet) 30.sp else 14.sp
+                                                        fontSize = CricketAppTheme.dimens.bodySize
                                                     )
                                                 },
                                                 onClick = {
@@ -813,10 +808,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     label = {
                                         Text(
                                             "Second Batsman",
-                                            fontSize = if (isTablet) 22.sp else 14.sp
+                                            fontSize = CricketAppTheme.dimens.smallSize
                                         )
                                     },
-                                    textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                    textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                     modifier = Modifier
                                         .menuAnchor()
                                         .fillMaxWidth()
@@ -832,7 +827,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                 text = {
                                                     Text(
                                                         text = player.name,
-                                                        fontSize = if (isTablet) 30.sp else 14.sp
+                                                        fontSize = CricketAppTheme.dimens.bodySize
                                                     )
                                                 },
                                                 onClick = {
@@ -900,10 +895,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     label = {
                                         Text(
                                             "Bowler",
-                                            fontSize = if (isTablet) 22.sp else 14.sp
+                                            fontSize = CricketAppTheme.dimens.smallSize
                                         )
                                     },
-                                    textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                    textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                     modifier = Modifier
                                         .menuAnchor()
                                         .fillMaxWidth()
@@ -919,7 +914,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                 text = {
                                                     Text(
                                                         text = player.name,
-                                                        fontSize = if (isTablet) 30.sp else 14.sp
+                                                        fontSize = CricketAppTheme.dimens.bodySize
                                                     )
                                                 },
                                                 onClick = {
@@ -976,10 +971,10 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     label = {
                                         Text(
                                             "Wicket keeper",
-                                            fontSize = if (isTablet) 22.sp else 14.sp
+                                            fontSize = CricketAppTheme.dimens.smallSize
                                         )
                                     },
-                                    textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                                    textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                                     modifier = Modifier
                                         .menuAnchor()
                                         .fillMaxWidth()
@@ -995,7 +990,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                 text = {
                                                     Text(
                                                         text = player.name,
-                                                        fontSize = if (isTablet) 30.sp else 14.sp
+                                                        fontSize = CricketAppTheme.dimens.bodySize
                                                     )
                                                 },
                                                 onClick = {
@@ -1055,19 +1050,21 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                 .fillMaxWidth()
                                 .padding(start = 8.dp, end = 8.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(255, 252, 228)
+                                containerColor = CricketAppTheme.colors.primaryCream
                             )
 
                         ) {
                             if (!matchStarted) {
                                 Text(
                                     text = "Start New Match",
-                                    fontSize = if (isTablet) 22.sp else 16.sp
+                                    fontSize = CricketAppTheme.dimens.buttonTextSize,
+                                    color = CricketAppTheme.colors.textOnLight
                                 )
                             } else {
                                 Text(
                                     text = "Continue Match",
-                                    fontSize = if (isTablet) 26.sp else 22.sp
+                                    fontSize = CricketAppTheme.dimens.buttonTextSize,
+                                    color = CricketAppTheme.colors.textOnLight
                                 )
                             }
                         }

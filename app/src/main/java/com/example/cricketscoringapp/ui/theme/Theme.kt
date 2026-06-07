@@ -52,7 +52,8 @@ fun CricketScoringAppTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+        typography = Typography
+    ) {
+        ProvideCricketAppDesignSystem(content = content)
+    }
 }

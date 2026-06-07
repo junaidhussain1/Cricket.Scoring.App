@@ -17,6 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 
 @Composable
 fun OverBox(
@@ -46,7 +47,7 @@ fun OverBox(
             ) {
                 Text(
                     text = heading1,
-                    fontSize = if (isTablet) 26.sp else 18.sp,
+                    fontSize = CricketAppTheme.dimens.bodySize,
                     fontWeight = headingFontBold1,
                     color = Color.Gray,
                     modifier = Modifier
@@ -88,7 +89,7 @@ fun OverBox(
                                 Text(
                                     text = balls[index].action,
                                     fontWeight = ballsFontBold1,
-                                    fontSize = if (isTablet) 30.sp else 22.sp,
+                                    fontSize = CricketAppTheme.dimens.titleSize,
                                     color = Color.Black,
                                     modifier = Modifier
                                         .align(Alignment.CenterVertically)

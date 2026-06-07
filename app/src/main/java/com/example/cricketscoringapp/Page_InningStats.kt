@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
@@ -81,7 +82,7 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(10, 18, 32)
+        color = CricketAppTheme.colors.primaryDark
     ) {
         Column(
             modifier = Modifier
@@ -99,8 +100,8 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                         append(" ($teamBScore)")
                     }
                 },
-                fontSize = 22.sp,
-                color = Color(255, 252, 228),
+                fontSize = CricketAppTheme.dimens.headerSize,
+                color = CricketAppTheme.colors.textOnDark,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -116,14 +117,14 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                         onClick = { selectedTabIndex = 0 },
                         modifier = Modifier.weight(1f).padding(end = 8.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (selectedTabIndex == 0) Color(0xFF00E676) else Color(
+                            containerColor = if (selectedTabIndex == 0) CricketAppTheme.colors.accentGreen else Color(
                                 0xFF424242
                             )
                         )
                     ) {
                         Text(
                             text = if (teamACaptain.isNotEmpty()) "Team $teamACaptain Score" else "Team A Score",
-                            fontSize = if (isTablet) 14.sp else 12.sp,
+                            fontSize = CricketAppTheme.dimens.microSize,
                             textAlign = TextAlign.Center,
                             color = if (selectedTabIndex == 0) Color.Black else Color.White,
                             maxLines = 1
@@ -136,14 +137,14 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                         onClick = { selectedTabIndex = 1 },
                         modifier = Modifier.weight(1f).padding(start = 8.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (selectedTabIndex == 1) Color(0xFF00E676) else Color(
+                            containerColor = if (selectedTabIndex == 1) CricketAppTheme.colors.accentGreen else Color(
                                 0xFF424242
                             )
                         )
                     ) {
                         Text(
                             text = if (teamBCaptain.isNotEmpty()) "Team $teamBCaptain Score" else "Team B Score",
-                            fontSize = if (isTablet) 14.sp else 12.sp,
+                            fontSize = CricketAppTheme.dimens.microSize,
                             textAlign = TextAlign.Center,
                             color = if (selectedTabIndex == 1) Color.Black else Color.White,
                             maxLines = 1
@@ -156,14 +157,14 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                     onClick = { selectedTabIndex = 2 },
                     modifier = Modifier.weight(1f).padding(start = 8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedTabIndex == 2) Color(0xFF00E676) else Color(
+                        containerColor = if (selectedTabIndex == 2) CricketAppTheme.colors.accentGreen else Color(
                             0xFF424242
                         )
                     )
                 ) {
                     Text(
                         text = "Match Runworm",
-                        fontSize = if (isTablet) 14.sp else 12.sp,
+                        fontSize = CricketAppTheme.dimens.microSize,
                         textAlign = TextAlign.Center,
                         color = if (selectedTabIndex == 2) Color.Black else Color.White,
                         maxLines = 1
@@ -183,12 +184,12 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                     onClick = { selectedTabIndex = 3 },
                     modifier = Modifier.weight(1f).padding(start = 8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedTabIndex == 3) Color(0xFF00E676) else Color(0xFF424242)
+                        containerColor = if (selectedTabIndex == 3) CricketAppTheme.colors.accentGreen else Color(0xFF424242)
                     )
                 ) {
                     Text(
                         text = "Ball by Ball History" ,
-                        fontSize = if (isTablet) 14.sp else 12.sp,
+                        fontSize = CricketAppTheme.dimens.microSize,
                         textAlign = TextAlign.Center,
                         color = if (selectedTabIndex == 3) Color.Black else Color.White
                     )
@@ -244,7 +245,7 @@ fun MatchRunwormSection(matchId: String, context: Context) {
     Text(
         text = "Match Runworm",
         style = MaterialTheme.typography.headlineLarge,
-        color = Color(255, 252, 228),
+        color = CricketAppTheme.colors.textOnDark,
         modifier = Modifier.padding(bottom = 8.dp)
     )
 
@@ -519,14 +520,14 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
         Text(
             "Team $teamCaptain ($teamScore)",
             style = MaterialTheme.typography.headlineLarge,
-            color = Color(255, 252, 228)
+            color = CricketAppTheme.colors.textOnDark
         )
 
         if (battersList.isNotEmpty()) {
             Text(
                 "Batting Stats",
                 style = MaterialTheme.typography.headlineSmall,
-                color = Color(255, 252, 228),
+                color = CricketAppTheme.colors.textOnDark,
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentWidth(Alignment.Start)
@@ -544,7 +545,7 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
                 dotballs = "DB",
                 strikeRate = "S/R",
                 fontBold1 = FontWeight.Bold,
-                fontColor1 = Color.Gray
+                fontColor1 = CricketAppTheme.colors.secondaryGray
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -591,7 +592,7 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
                         strikeRate
                     ),
                     fontBold1 = FontWeight.Normal, // Changed to normal for list items
-                    fontColor1 = Color.White
+                    fontColor1 = CricketAppTheme.colors.textOnDark
                 )
             }
         }
@@ -602,7 +603,7 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
             Text(
                 "Bowling Stats",
                 style = MaterialTheme.typography.headlineSmall,
-                color = Color(255, 252, 228),
+                color = CricketAppTheme.colors.textOnDark,
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentWidth(Alignment.Start)
@@ -623,7 +624,7 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
                 totalDotBalls = "DB",
                 totalEconomy = "Ec",
                 fontBold1 = FontWeight.Bold,
-                fontColor1 = Color.Gray
+                fontColor1 = CricketAppTheme.colors.secondaryGray
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -693,7 +694,7 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
                         economy
                     ),
                     fontBold1 = FontWeight.Normal, // Changed to normal for list items
-                    fontColor1 = Color.White
+                    fontColor1 = CricketAppTheme.colors.textOnDark
                 )
             }
 
@@ -702,7 +703,7 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
             Text(
                 "Extras Given",
                 style = MaterialTheme.typography.headlineSmall,
-                color = Color(255, 252, 228)
+                color = CricketAppTheme.colors.textOnDark
             )
 
             Row(
@@ -713,15 +714,15 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
                 Text(
                     text = "Byes",
                     fontWeight = FontWeight.Normal,
-                    fontSize = if (isTablet) 16.sp else 10.sp,
-                    color = Color.White,
+                    fontSize = CricketAppTheme.dimens.microSize,
+                    color = CricketAppTheme.colors.textOnDark,
                     modifier = Modifier.weight(1f) // This pushes the next Text to the right
                 )
                 Text(
                     text = totalByes.toString(),
                     fontWeight = FontWeight.Normal,
-                    fontSize = if (isTablet) 16.sp else 10.sp,
-                    color = Color.White,
+                    fontSize = CricketAppTheme.dimens.microSize,
+                    color = CricketAppTheme.colors.textOnDark,
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically) // Aligns text vertically center
@@ -737,15 +738,15 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
                 Text(
                     text = "Legbyes",
                     fontWeight = FontWeight.Normal,
-                    fontSize = if (isTablet) 16.sp else 10.sp,
-                    color = Color.White,
+                    fontSize = CricketAppTheme.dimens.microSize,
+                    color = CricketAppTheme.colors.textOnDark,
                     modifier = Modifier.weight(1f) // This pushes the next Text to the right
                 )
                 Text(
                     text = totalLegByes.toString(),
                     fontWeight = FontWeight.Normal,
-                    fontSize = if (isTablet) 16.sp else 10.sp,
-                    color = Color.White,
+                    fontSize = CricketAppTheme.dimens.microSize,
+                    color = CricketAppTheme.colors.textOnDark,
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically) // Aligns text vertically center
@@ -761,15 +762,15 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
                 Text(
                     text = "Wides",
                     fontWeight = FontWeight.Normal,
-                    fontSize = if (isTablet) 16.sp else 10.sp,
-                    color = Color.White,
+                    fontSize = CricketAppTheme.dimens.microSize,
+                    color = CricketAppTheme.colors.textOnDark,
                     modifier = Modifier.weight(1f) // This pushes the next Text to the right
                 )
                 Text(
                     text = totalWides.toString(),
                     fontWeight = FontWeight.Normal,
-                    fontSize = if (isTablet) 16.sp else 10.sp,
-                    color = Color.White,
+                    fontSize = CricketAppTheme.dimens.microSize,
+                    color = CricketAppTheme.colors.textOnDark,
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically) // Aligns text vertically center
@@ -785,15 +786,15 @@ fun TeamStatsSection (matchId: String, pTeamId: Int, context: Context) {
                 Text(
                     text = "No Balls",
                     fontWeight = FontWeight.Normal,
-                    fontSize = if (isTablet) 16.sp else 10.sp,
-                    color = Color.White,
+                    fontSize = CricketAppTheme.dimens.microSize,
+                    color = CricketAppTheme.colors.textOnDark,
                     modifier = Modifier.weight(1f) // This pushes the next Text to the right
                 )
                 Text(
                     text = totalNoBalls.toString(),
                     fontWeight = FontWeight.Normal,
-                    fontSize = if (isTablet) 16.sp else 10.sp,
-                    color = Color.White,
+                    fontSize = CricketAppTheme.dimens.microSize,
+                    color = CricketAppTheme.colors.textOnDark,
                     modifier = Modifier
                         .weight(1f)
                         .align(Alignment.CenterVertically) // Aligns text vertically center

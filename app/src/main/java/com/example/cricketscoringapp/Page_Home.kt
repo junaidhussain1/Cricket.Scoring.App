@@ -27,6 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 import com.google.api.client.auth.oauth2.Credential
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver
@@ -54,7 +55,7 @@ fun HomePage(navController: NavHostController) {
 
     Surface(
         modifier = Modifier.fillMaxSize(), // This makes the Surface fill the entire screen
-        color = Color(10, 18, 32)
+        color = CricketAppTheme.colors.primaryDark
     ) {
 
         Column(
@@ -66,8 +67,8 @@ fun HomePage(navController: NavHostController) {
         ) {
             Text(
                 text = "The Gotham City Scoresheet App",
-                fontSize = if (isTablet) 32.sp else 20.sp,// Larger font size for tablets
-                color = Color(255, 252, 228)
+                fontSize = CricketAppTheme.dimens.titleSize,
+                color = CricketAppTheme.colors.textOnDark
             )
 
             Image(
@@ -82,13 +83,13 @@ fun HomePage(navController: NavHostController) {
                 onClick = { navController.navigate("playermgt") },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f), // Adjust button width for tablets
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(255, 252, 228) // Set the background color
+                    containerColor = CricketAppTheme.colors.primaryCream
                 )
             ) {
                 Text(
                     text = "Player Management",
-                    fontSize = if (isTablet) 26.sp else 22.sp,
-                    color = Color(10, 18, 32)// Larger font size for tablets
+                    fontSize = CricketAppTheme.dimens.buttonTextSize,
+                    color = CricketAppTheme.colors.textOnLight
                 )
             }
 
@@ -98,13 +99,13 @@ fun HomePage(navController: NavHostController) {
                 onClick = { navController.navigate("newmatch") },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(255, 252, 228) // Set the background color
+                    containerColor = CricketAppTheme.colors.primaryCream
                 )
             ) {
                 Text(
                     text = "New Match",
-                    fontSize = if (isTablet) 26.sp else 22.sp,
-                    color = Color(10, 18, 32)
+                    fontSize = CricketAppTheme.dimens.buttonTextSize,
+                    color = CricketAppTheme.colors.textOnLight
                 )
             }
 
@@ -114,13 +115,13 @@ fun HomePage(navController: NavHostController) {
                 onClick = { navController.navigate("existingmatches") },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(255, 252, 228) // Set the background color
+                    containerColor = CricketAppTheme.colors.primaryCream
                 )
             ) {
                 Text(
                     text = "Existing Matches",
-                    fontSize = if (isTablet) 26.sp else 22.sp,
-                    color = Color(10, 18, 32)
+                    fontSize = CricketAppTheme.dimens.buttonTextSize,
+                    color = CricketAppTheme.colors.textOnLight
                 )
             }
 
@@ -130,13 +131,13 @@ fun HomePage(navController: NavHostController) {
                 onClick = { navController.navigate("settings") },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(255, 252, 228) // Set the background color
+                    containerColor = CricketAppTheme.colors.primaryCream
                 )
             ) {
                 Text(
                     text = "Settings",
-                    fontSize = if (isTablet) 26.sp else 22.sp,
-                    color = Color(10, 18, 32)
+                    fontSize = CricketAppTheme.dimens.buttonTextSize,
+                    color = CricketAppTheme.colors.textOnLight
                 )
             }
 
@@ -147,7 +148,7 @@ fun HomePage(navController: NavHostController) {
             val dbVersion = dbHelper.getDBVersion()
 
             Text("App Version: $versionName, DB Version: $dbVersion",
-                color = Color(255, 252, 228)
+                color = CricketAppTheme.colors.textOnDark
                 )
         }
     }
@@ -256,7 +257,3 @@ fun loadClientSecrets(context: Context): GoogleClientSecrets {
     val inputStream = context.resources.openRawResource(R.raw.clientsecret) // Replace with the correct file name
     return GoogleClientSecrets.load(jsonFactory, InputStreamReader(inputStream))
 }
-
-
-
-
