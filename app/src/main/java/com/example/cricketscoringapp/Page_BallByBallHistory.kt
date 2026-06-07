@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 
 @Composable
 fun BallByBallHistoryPage(matchId: String, teamIdA: Int, teamIdB: Int) {
@@ -46,8 +47,6 @@ fun BallByBallHistoryPage(matchId: String, teamIdA: Int, teamIdB: Int) {
     val historyListStateB = rememberLazyListState()
     var teamACaptain by remember { mutableStateOf("") }
     var teamBCaptain by remember { mutableStateOf("") }
-    val teamOne = 1
-    val teamTwo = 2
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
@@ -74,17 +73,17 @@ fun BallByBallHistoryPage(matchId: String, teamIdA: Int, teamIdB: Int) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(CricketAppTheme.colors.primaryDark)
             .padding(16.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "Full Ball by Ball History",
-            fontSize = 22.sp,
+            fontSize = CricketAppTheme.dimens.headerSize,
+            color = CricketAppTheme.colors.textOnDark,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-
-        //Spacer(modifier = Modifier.height(20.dp))
 
         // Custom Tab Buttons
         Row(
@@ -98,12 +97,12 @@ fun BallByBallHistoryPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                     onClick = { selectedTabIndex = 0 },
                     modifier = Modifier.weight(1f).padding(end = 8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedTabIndex == 0) Color(0xFF00E676) else Color(0xFF424242)
+                        containerColor = if (selectedTabIndex == 0) CricketAppTheme.colors.accentGreen else Color(0xFF424242)
                     )
                 ) {
                     Text(
                         text = "📊 Team $teamACaptain",
-                        fontSize = if (isTablet) 16.sp else 12.sp,
+                        fontSize = CricketAppTheme.dimens.microSize,
                         textAlign = TextAlign.Center,
                         color = if (selectedTabIndex == 0) Color.Black else Color.White
                     )
@@ -115,12 +114,12 @@ fun BallByBallHistoryPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                     onClick = { selectedTabIndex = 1 },
                     modifier = Modifier.weight(1f).padding(start = 8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedTabIndex == 1) Color(0xFF00E676) else Color(0xFF424242)
+                        containerColor = if (selectedTabIndex == 1) CricketAppTheme.colors.accentGreen else Color(0xFF424242)
                     )
                 ) {
                     Text(
                         text = "📊 Team $teamBCaptain",
-                        fontSize = if (isTablet) 16.sp else 12.sp,
+                        fontSize = CricketAppTheme.dimens.microSize,
                         textAlign = TextAlign.Center,
                         color = if (selectedTabIndex == 1) Color.Black else Color.White
                     )
@@ -204,14 +203,14 @@ fun ModernBallHistoryItem(ball: BallEvent) {
         Text(
             text = "${ball.over}     ${ball.bowler} to ${ball.batsman}",
             color = Color(0xFFE0E0E0),
-            fontSize = 16.sp,
+            fontSize = CricketAppTheme.dimens.bodySize,
             modifier = Modifier.weight(1f)
         )
 
         Text(
             text = ball.resultText,
             color = resultColor,
-            fontSize = 16.sp,
+            fontSize = CricketAppTheme.dimens.bodySize,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(start = 4.dp)
         )
@@ -229,10 +228,11 @@ fun OverSummaryItem(ball: BallEvent) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val accentColor = CricketAppTheme.colors.accentGreen
         Text(
             text = "END OF OVER ${ball.over}",
-            color = Color(0xFF00E676),
-            fontSize = 18.sp,
+            color = accentColor,
+            fontSize = CricketAppTheme.dimens.bodySize,
             fontWeight = FontWeight.Bold
         )
 
@@ -241,22 +241,22 @@ fun OverSummaryItem(ball: BallEvent) {
         ) {
             Text(
                 text = "${ball.overRuns} runs",
-                color = Color(0xFF00E676),
-                fontSize = 18.sp,
+                color = accentColor,
+                fontSize = CricketAppTheme.dimens.bodySize,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
                 text = "${ball.overExtras} extras",
-                color = Color(0xFF00E676),
-                fontSize = 18.sp,
+                color = accentColor,
+                fontSize = CricketAppTheme.dimens.bodySize,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
                 text = ball.totalScore,
-                color = Color(0xFF00E676),
-                fontSize = 18.sp,
+                color = accentColor,
+                fontSize = CricketAppTheme.dimens.bodySize,
                 fontWeight = FontWeight.Bold
             )
         }

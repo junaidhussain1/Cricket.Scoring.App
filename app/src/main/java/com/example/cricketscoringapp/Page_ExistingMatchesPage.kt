@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 
 @Composable
 fun ExistingMatchesPage(navController: NavHostController) {
@@ -44,7 +45,11 @@ fun ExistingMatchesPage(navController: NavHostController) {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Existing Matches", fontSize = 22.sp)
+        Text(
+            text = "Existing Matches",
+            fontSize = CricketAppTheme.dimens.headerSize,
+            color = CricketAppTheme.colors.textOnLight
+        )
 
         Spacer(modifier = Modifier.height(20.dp))
         val context = LocalContext.current
@@ -75,7 +80,7 @@ fun ExistingMatchesPage(navController: NavHostController) {
                         ) {
                             Button(
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(255, 252, 228)
+                                    containerColor = CricketAppTheme.colors.primaryCream
                                 ),
                                 onClick = {
                                     val matchId = match.matchId
@@ -97,7 +102,8 @@ fun ExistingMatchesPage(navController: NavHostController) {
                                         },
                                         style = androidx.compose.ui.text.TextStyle(
                                             textAlign = TextAlign.Start,
-                                            fontSize = if (isTablet) 20.sp else 10.sp
+                                            fontSize = CricketAppTheme.dimens.microSize,
+                                            color = CricketAppTheme.colors.textOnLight
                                         )
                                     )
                                 }
@@ -121,7 +127,7 @@ fun ExistingMatchesPage(navController: NavHostController) {
                                     imageVector = Icons.Default.Share,
                                     contentDescription = "Share CSV",
                                     tint = Color.Green,
-                                    modifier = Modifier.size(if (isTablet) 48.dp else 24.dp)
+                                    modifier = Modifier.size(CricketAppTheme.dimens.iconSize)
                                 )
                             }
                         }

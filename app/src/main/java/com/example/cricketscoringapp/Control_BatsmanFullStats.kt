@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 
 @Composable
 fun BatsmanFullStats(batsman: String,
@@ -28,7 +29,7 @@ fun BatsmanFullStats(batsman: String,
                      fontColor1: Color) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
-    val fontSize1 = if (isTablet) 16.sp else 10.sp
+    val fontSize1 = CricketAppTheme.dimens.microSize
 
     Surface(color = Color.Black, modifier = Modifier.fillMaxWidth()) {
         Row(

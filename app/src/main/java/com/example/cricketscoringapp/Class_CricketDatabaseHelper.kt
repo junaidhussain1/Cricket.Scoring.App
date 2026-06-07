@@ -24,7 +24,7 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     companion object {
         //Database name
         const val DATABASE_NAME = "cricket.db"
-        const val DATABASE_VERSION = 27
+        const val DATABASE_VERSION = 29
 
         //Table Names
         const val TABLE_PLAYERS = "players"
@@ -281,18 +281,58 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        //db?.execSQL("DROP TABLE IF EXISTS $TABLE_PLAYERS")
-        //db?.execSQL("DROP TABLE IF EXISTS $TABLE_MATCHES")
-        //db?.execSQL("DROP TABLE IF EXISTS $TABLE_TEAMS")
-        //db?.execSQL("DROP TABLE IF EXISTS $TABLE_BATTINGSTATS")
-        //db?.execSQL("DROP TABLE IF EXISTS $TABLE_BOWLINGSTATS")
-
-        //db?.execSQL("DROP VIEW IF EXISTS $VIEW_MATCHSTATS")
-        //db?.execSQL(createMATCHSTATSVIEW)
-        //onCreate(db)
+        if (db == null) return
 
         if (oldVersion < 27) {
-            db?.execSQL(createPARTNERSHIP)
+            // Ensure partnerships table exists
+            db.execSQL("CREATE TABLE IF NOT EXISTS $TABLE_PARTNERSHIPS (match_id TEXT, team_id INTEGER, wicket_number INTEGER, batsman1_name TEXT, batsman2_name TEXT, runs INTEGER DEFAULT 0, balls INTEGER DEFAULT 0, PRIMARY KEY (match_id, team_id, wicket_number))")
+        }
+
+        if (oldVersion < 28) {
+            // Repair/Upgrade matches table for missing columns or corrupted data
+            val columns = mutableSetOf<String>()
+            db.rawQuery("PRAGMA table_info($TABLE_MATCHES)", null).use { cursor ->
+                while (cursor.moveToNext()) {
+                    columns.add(cursor.getString(1))
+                }
+            }
+
+            val requiredColumns = mapOf(
+                "is_synced" to "INTEGER DEFAULT 0",
+                "side_wall_rule" to "INTEGER DEFAULT 1",
+                "match_date" to "TEXT",
+                "winning_team_captain" to "TEXT"
+            )
+
+            for ((column, type) in requiredColumns) {
+                if (!columns.contains(column)) {
+                    db.execSQL("ALTER TABLE $TABLE_MATCHES ADD COLUMN $column $type")
+                }
+            }
+
+            // Correct corrupted/null data in existing rows
+            db.execSQL("UPDATE $TABLE_MATCHES SET match_date = '2024-01-01' WHERE match_date IS NULL OR match_date = ''")
+            db.execSQL("UPDATE $TABLE_MATCHES SET is_synced = 0 WHERE is_synced IS NULL")
+            db.execSQL("UPDATE $TABLE_MATCHES SET side_wall_rule = 1 WHERE side_wall_rule IS NULL")
+            db.execSQL("UPDATE $TABLE_MATCHES SET is_started = 0 WHERE is_started IS NULL")
+            db.execSQL("UPDATE $TABLE_MATCHES SET is_finished = 0 WHERE is_finished IS NULL")
+        }
+
+        if (oldVersion < 29) {
+            // Purge data corrupted by accidental PNG import
+            val corruptedIdPattern = "%PNG%"
+            val tables = arrayOf(
+                TABLE_MATCHES,
+                TABLE_TEAMS,
+                TABLE_BATTINGSTATS,
+                TABLE_BOWLINGSTATS,
+                TABLE_MATCHSNAPSHOT,
+                TABLE_PARTNERSHIPS
+            )
+            
+            for (table in tables) {
+                db.execSQL("DELETE FROM $table WHERE match_id LIKE ?", arrayOf(corruptedIdPattern))
+            }
         }
     }
 
@@ -372,22 +412,24 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     fun getMatchId(): String {
         val db = readableDatabase
-        val cursor = db.rawQuery(
+        var matchId = ""
+        
+        db.rawQuery(
             "SELECT match_id FROM $TABLE_MATCHES WHERE is_finished = ? LIMIT 1",
             arrayOf("0")
-        )
-        val matchId: String
+        ).use { cursor ->
+            if (cursor.moveToFirst()) {
+                matchId = cursor.getStringOrEmpty("match_id")
+            }
+        }
 
-        if (cursor.moveToFirst()) {
-            matchId = cursor.getStringOrEmpty("match_id")
+        if (matchId.isNotEmpty()) {
             return matchId
         } else {
-            //Use this to get unique universal identifier to use for Match ID
             matchId = UUID.randomUUID().toString()
             addMatch(matchId)
+            return matchId
         }
-        cursor.close()
-        return matchId
     }
 
     fun getBattingTeamCaptain(matchId: String, whichTeam: Int): String {
@@ -1484,12 +1526,16 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val db = this.writableDatabase
         val values = ContentValues()
         val currentDate = LocalDate.now()
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // Define the format
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val formattedDate = currentDate.format(formatter)
         values.put("match_id", matchId)
         values.put("match_date", formattedDate)
         values.put("first_batting_team_captain", "")
+        values.put("first_batting_team_striker", "")
+        values.put("first_batting_team_nonstriker", "")
         values.put("second_batting_team_captain", "")
+        values.put("second_batting_team_bowler", "")
+        values.put("second_batting_team_keeper", "")
         values.put("winning_team_captain", "")
         values.put("no_of_overs_aside", 12)
         values.put("no_of_players_aside", 6)
@@ -1498,7 +1544,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         values.put("is_finished", 0)
         values.put("is_synced", 0)
         db.insert(TABLE_MATCHES, null, values)
-        db.close()
     }
 
     fun addPlayer(name: String) {
@@ -1506,7 +1551,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         val values = ContentValues()
         values.put("name", name)
         db.insert(TABLE_PLAYERS, null, values)
-        db.close()
     }
 
     fun addTeamPlayer(
@@ -1524,7 +1568,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         values.put("is_captain", isCaptain)
         values.put("is_midbowler", isMidBowler)
         db.insert(TABLE_TEAMS, null, values)
-        db.close()
     }
 
     fun addBattingStats(matchId: String, teamId: Int, playerName: String, battingStatus: String) {
@@ -1537,7 +1580,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         values.put("batting_turn", getNextBattingTurnNo(matchId, playerName))
         values.put("batting_status", battingStatus)
         db.insert(TABLE_BATTINGSTATS, null, values)
-        db.close()
     }
 
     fun addBowlingStats(
@@ -1557,7 +1599,6 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
         values.put("bowling_status", bowlingStatus)
         values.put("keeper_name", keeperName)
         db.insert(TABLE_BOWLINGSTATS, null, values)
-        db.close()
     }
 
     //UPDATE FUNCTIONS *****************************************************************************
@@ -2058,7 +2099,19 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 return
             }
 
-            val reader = BufferedReader(InputStreamReader(inputStream))
+            // Safety Check: Read first few bytes to check for PNG/Binary header
+            val buffer = ByteArray(8)
+            inputStream.read(buffer)
+            val header = String(buffer)
+            if (header.contains("PNG") || header.contains("JFIF")) {
+                Toast.makeText(context, "Error: Selected file is an image, not a CSV!", Toast.LENGTH_LONG).show()
+                inputStream.close()
+                return
+            }
+            
+            // Re-open stream for the reader after safety check
+            val freshInputStream = context.contentResolver.openInputStream(uri)!!
+            val reader = BufferedReader(InputStreamReader(freshInputStream))
 
             val db = this.writableDatabase
 

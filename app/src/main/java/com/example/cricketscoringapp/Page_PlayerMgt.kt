@@ -39,6 +39,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,7 +52,7 @@ fun PlayerMgtPage() {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(10, 18, 32)
+        color = CricketAppTheme.colors.primaryDark
     ) {
 
         Column(
@@ -73,8 +74,8 @@ fun PlayerMgtPage() {
             OutlinedTextField(
                 value = playerName,
                 onValueChange = { playerName = it },
-                label = { Text("Enter Player Name", fontSize = if (isTablet) 22.sp else 14.sp) },
-                textStyle = TextStyle(fontSize = if (isTablet) 32.sp else 14.sp),
+                label = { Text("Enter Player Name", fontSize = CricketAppTheme.dimens.smallSize) },
+                textStyle = TextStyle(fontSize = CricketAppTheme.dimens.titleSize),
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Done // Set the IME action to "Done"
                 ),
@@ -123,13 +124,13 @@ fun PlayerMgtPage() {
                     }
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(255, 252, 228) // Button background color
+                    containerColor = CricketAppTheme.colors.primaryCream
                 ),
             ) {
                 Text(
                     "Add Player",
-                    fontSize = if (isTablet) 32.sp else 20.sp,// Larger font size for tablets)
-                    color = Color(10, 18, 32)
+                    fontSize = CricketAppTheme.dimens.titleSize,
+                    color = CricketAppTheme.colors.textOnLight
                 )
             }
 
@@ -171,7 +172,7 @@ fun PlayerMgtPage() {
                     imageVector = Icons.Default.Sync,
                     contentDescription = "Sync Status",
                     tint = Color.Green,
-                    modifier = Modifier.size(if (isTablet) 48.dp else 24.dp) // Size based on isTablet
+                    modifier = Modifier.size(CricketAppTheme.dimens.iconSize)
                 )
             }
 
@@ -180,7 +181,8 @@ fun PlayerMgtPage() {
                 Text(
                     "Player List: " + playersList.size.toString(),
                     style = MaterialTheme.typography.headlineSmall,
-                    color = Color(255, 252, 228)
+                    fontSize = CricketAppTheme.dimens.bodySize,
+                    color = CricketAppTheme.colors.textOnDark
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -198,7 +200,7 @@ fun PlayerMgtPage() {
                     }
                 }
             } else {
-                Text("No players found")
+                Text("No players found", color = CricketAppTheme.colors.textOnDark)
             }
         }
     }

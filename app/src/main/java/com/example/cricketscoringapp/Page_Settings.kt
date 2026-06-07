@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 
 
 @Composable
@@ -36,7 +37,7 @@ fun SettingsPage(navController: NavHostController) {
 
     Surface(
         modifier = Modifier.fillMaxSize(), // This makes the Surface fill the entire screen
-        color = Color(10, 18, 32)
+        color = CricketAppTheme.colors.primaryDark
     ) {
 
         Column(
@@ -48,15 +49,15 @@ fun SettingsPage(navController: NavHostController) {
         ) {
             Text(
                 text = "The Gotham City Scoresheet App",
-                fontSize = if (isTablet) 32.sp else 20.sp,// Larger font size for tablets
-                color = Color(255, 252, 228)
+                fontSize = CricketAppTheme.dimens.titleSize,
+                color = CricketAppTheme.colors.textOnDark
             )
 
             Image(
                 painter = painterResource(id = R.drawable.designer2), // Replace with your app icon resource
                 contentDescription = "App Icon",
                 modifier = Modifier
-                    .size(if (isTablet) 400.dp else 300.dp) // Larger image size for tablets
+                    .size(CricketAppTheme.dimens.imageSizeLarge)
                     .padding(8.dp)
             )
 
@@ -66,13 +67,13 @@ fun SettingsPage(navController: NavHostController) {
                 onClick = { navController.navigate("googlesheetsettings") },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f), // Adjust button width for tablets
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(255, 252, 228) // Set the background color
+                    containerColor = CricketAppTheme.colors.primaryCream
                 )
             ) {
                 Text(
                     text = "Google Sheet Settings",
-                    fontSize = if (isTablet) 26.sp else 22.sp,
-                    color = Color(10, 18, 32)// Larger font size for tablets
+                    fontSize = CricketAppTheme.dimens.buttonTextSize,
+                    color = CricketAppTheme.colors.textOnLight
                 )
             }
 
@@ -83,13 +84,13 @@ fun SettingsPage(navController: NavHostController) {
                 onClick = { navController.navigate("importdata") },
                 modifier = Modifier.fillMaxWidth(if (isTablet) 0.7f else 1f),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(255, 252, 228) // Set the background color
+                    containerColor = CricketAppTheme.colors.primaryCream
                 )
             ) {
                 Text(
                     text = "Import Data",
-                    fontSize = if (isTablet) 26.sp else 22.sp,
-                    color = Color(10, 18, 32)
+                    fontSize = CricketAppTheme.dimens.buttonTextSize,
+                    color = CricketAppTheme.colors.textOnLight
                 )
             }
 
