@@ -100,7 +100,7 @@ fun InningStatsPage(matchId: String, teamIdA: Int, teamIdB: Int) {
                         append(" ($teamBScore)")
                     }
                 },
-                fontSize = CricketAppTheme.dimens.headerSize,
+                fontSize = CricketAppTheme.dimens.titleSize, // Changed from headerSize
                 color = CricketAppTheme.colors.textOnDark,
                 modifier = Modifier.padding(bottom = 16.dp)
             )

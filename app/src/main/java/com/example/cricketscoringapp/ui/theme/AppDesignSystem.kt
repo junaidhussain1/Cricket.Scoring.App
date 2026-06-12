@@ -24,18 +24,19 @@ data class AppColors(
 
 // 2. Define adaptive dimensions (Tablet vs Phone)
 data class AppDimensions(
-    val headerSize: TextUnit,     // 40 / 22
-    val titleSize: TextUnit,      // 32 / 20
-    val bodySize: TextUnit,       // 26-30 / 16-20
-    val smallSize: TextUnit,      // 22 / 14 (Labels, Dropdown Text)
-    val microSize: TextUnit,      // 20 / 10-12
-    val buttonTextSize: TextUnit, // 26 / 16-22
-    val iconSize: Dp,             // 48 / 24
-    val imageSizeLarge: Dp,       // 400 / 300
-    val circleButtonSize: Int,    // 50 / 40 (Font size)
-    val circleButtonSizeSmall: Int, // 26 / 16 (Font size)
-    val circleButtonDiameter: Dp, // 120 / 80
-    val rowHeight: Dp             // 44 / 30
+    val headerSize: TextUnit,     
+    val titleSize: TextUnit,      
+    val bodySize: TextUnit,       
+    val smallSize: TextUnit,      
+    val microSize: TextUnit,      
+    val listTextSize: TextUnit,   
+    val buttonTextSize: TextUnit, 
+    val iconSize: Dp,             
+    val imageSizeLarge: Dp,       
+    val circleButtonSize: Int,    
+    val circleButtonSizeSmall: Int, 
+    val circleButtonDiameter: Dp, 
+    val rowHeight: Dp             
 )
 
 val PhoneDimensions = AppDimensions(
@@ -43,7 +44,8 @@ val PhoneDimensions = AppDimensions(
     titleSize = 20.sp,
     bodySize = 16.sp,
     smallSize = 14.sp,
-    microSize = 12.sp,
+    microSize = 10.sp,
+    listTextSize = 10.sp,
     buttonTextSize = 16.sp,
     iconSize = 24.dp,
     imageSizeLarge = 300.dp,
@@ -54,11 +56,12 @@ val PhoneDimensions = AppDimensions(
 )
 
 val TabletDimensions = AppDimensions(
-    headerSize = 40.sp,
-    titleSize = 32.sp,
+    headerSize = 36.sp,
+    titleSize = 26.sp,  // Reduced from 32 to help wrapping
     bodySize = 26.sp,
     smallSize = 22.sp,
-    microSize = 20.sp,
+    microSize = 16.sp,
+    listTextSize = 20.sp, // Restored to original 20sp
     buttonTextSize = 22.sp,
     iconSize = 48.dp,
     imageSizeLarge = 400.dp,
