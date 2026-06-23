@@ -1,23 +1,26 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.cricketscoringapp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.cricketscoringapp"
-        minSdk = 24
+        minSdk = 29
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 65
+        versionName = "5.05"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+
         }
+        signingConfig = signingConfigs.getByName("debug")
     }
 
     buildTypes {
@@ -45,6 +48,15 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "/META-INF/DEPENDENCIES"
+        }
+    }
+
+    applicationVariants.all {
+        outputs.all {
+            val outputFileName = "CricketApp-${name}-${versionName}.apk"
+            (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName = outputFileName
         }
     }
 }
@@ -60,6 +72,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.compose.foundation.layout)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -68,20 +83,20 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Retrofit for networking
-    //implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    //implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    //implementation(libs.androidx.material)
+    implementation(libs.androidx.material.icons.extended)
 
-    // Coroutine support for networking
-//    implementation(libs.kotlinx.coroutines.android)
-//
-//    implementation(libs.google.api.client.android)
-//    implementation(libs.google.api.services.sheets)
-//    implementation(libs.google.oauth.client.jetty)
-//    implementation(libs.google.auth.library.oauth2.http)
-//
-//    implementation(libs.gradle)
-//
-//    implementation(libs.androidx.core.ktx.v1100)
+    implementation(libs.google.api.client.android)
+    implementation(libs.google.api.services.sheets)
+    implementation(libs.google.oauth.client.jetty)
+    implementation(libs.google.auth.library.oauth2.http)
+    implementation(libs.google.http.client.jackson2)
+    implementation(libs.gson)
 
+    implementation(libs.mpandroidchart)
+
+    //firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-auth")
 }
