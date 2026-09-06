@@ -1,6 +1,7 @@
 package com.example.cricketscoringapp
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 
 @Composable
 fun Team1PlayerSelectionPage() {
@@ -57,11 +59,17 @@ fun Team1PlayerSelectionPage() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(CricketAppTheme.colors.primaryDark)
             .padding(16.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Select Players for ${team1Captain?.name}", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            text = "Select Players for ${team1Captain?.name}",
+            style = MaterialTheme.typography.headlineSmall,
+            fontSize = CricketAppTheme.dimens.headerSize,
+            color = CricketAppTheme.colors.textOnDark
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -89,7 +97,8 @@ fun Team1PlayerSelectionPage() {
                             .padding(0.dp)  // Removed padding
                             .size(24.dp),   // Optionally make checkbox smaller
                         colors = CheckboxDefaults.colors(
-                            Color(255, 252, 228)
+                            checkedColor = CricketAppTheme.colors.primaryCream,
+                            uncheckedColor = CricketAppTheme.colors.primaryCream.copy(alpha = 0.6f)
                         ),
                         checked = isSelected,
                         onCheckedChange = { checked ->
@@ -112,9 +121,9 @@ fun Team1PlayerSelectionPage() {
                     )
 
                     Text(player.name,
-                        fontSize = if (isTablet) 32.sp else 20.sp,
+                        fontSize = CricketAppTheme.dimens.titleSize,
                         modifier = Modifier.padding(start = 4.dp),
-                        color = Color(255, 252, 228))
+                        color = CricketAppTheme.colors.textOnDark)
                 }
             }
         }

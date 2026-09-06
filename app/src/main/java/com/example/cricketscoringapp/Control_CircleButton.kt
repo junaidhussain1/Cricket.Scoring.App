@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cricketscoringapp.ui.theme.CricketAppTheme
 
 @Composable
 fun CircleButton(
@@ -35,7 +36,7 @@ fun CircleButton(
     Button(
         onClick = onClick,
         shape = CircleShape,
-        modifier = if (isTablet) Modifier.size(120.dp) else Modifier.size(80.dp),
+        modifier = Modifier.size(CricketAppTheme.dimens.circleButtonDiameter),
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = buttonColor,
