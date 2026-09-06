@@ -12,8 +12,8 @@ android {
         applicationId = "com.example.cricketscoringapp"
         minSdk = 29
         targetSdk = 34
-        versionCode = 67
-        versionName = "5.2"
+        versionCode = 69
+        versionName = "5.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

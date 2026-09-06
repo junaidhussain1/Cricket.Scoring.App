@@ -546,7 +546,14 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
     fun getMatches(): List<Match> {
         val matches = mutableListOf<Match>()
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_MATCHES ORDER BY match_date DESC ", null)
+        val query = """
+            SELECT *, 
+            (SELECT player_name FROM $TABLE_TEAMS WHERE $TABLE_TEAMS.match_id = $TABLE_MATCHES.match_id AND team_id = 1 AND is_captain = 1 LIMIT 1) as team1_captain,
+            (SELECT player_name FROM $TABLE_TEAMS WHERE $TABLE_TEAMS.match_id = $TABLE_MATCHES.match_id AND team_id = 2 AND is_captain = 1 LIMIT 1) as team2_captain
+            FROM $TABLE_MATCHES 
+            ORDER BY match_date DESC
+        """.trimIndent()
+        val cursor = db.rawQuery(query, null)
         while (cursor.moveToNext()) {
             val matchId = cursor.getStringOrEmpty("match_id")
             val firstBattingTeamCaptain = cursor.getStringOrEmpty("first_batting_team_captain")
@@ -558,6 +565,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
             val isStarted = cursor.getIntOrZero("is_started") == 1
             val isFinished = cursor.getIntOrZero("is_finished") == 1
             val isSynced = cursor.getIntOrZero("is_synced") == 1
+            val matchDate = cursor.getStringOrEmpty("match_date")
+            val team1Captain = cursor.getStringOrEmpty("team1_captain")
+            val team2Captain = cursor.getStringOrEmpty("team2_captain")
+
             matches.add(
                 Match(
                     matchId,
@@ -569,7 +580,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                     sideWallRule,
                     isStarted,
                     isFinished,
-                    isSynced
+                    isSynced,
+                    matchDate,
+                    team1Captain,
+                    team2Captain
                 )
             )
         }
@@ -579,10 +593,14 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
 
     fun getMatch(matchId: String): Match? {
         val db = readableDatabase
-        val cursor = db.rawQuery(
-            "SELECT * FROM $TABLE_MATCHES WHERE match_id = ?",
-            arrayOf(matchId)
-        )
+        val query = """
+            SELECT *, 
+            (SELECT player_name FROM $TABLE_TEAMS WHERE $TABLE_TEAMS.match_id = $TABLE_MATCHES.match_id AND team_id = 1 AND is_captain = 1 LIMIT 1) as team1_captain,
+            (SELECT player_name FROM $TABLE_TEAMS WHERE $TABLE_TEAMS.match_id = $TABLE_MATCHES.match_id AND team_id = 2 AND is_captain = 1 LIMIT 1) as team2_captain
+            FROM $TABLE_MATCHES 
+            WHERE match_id = ?
+        """.trimIndent()
+        val cursor = db.rawQuery(query, arrayOf(matchId))
 
         var match: Match? = null
 
@@ -597,7 +615,10 @@ class CricketDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABA
                 sideWallRule = cursor.getIntOrZero("side_wall_rule"),
                 isStarted = cursor.getIntOrZero("is_started") == 1,
                 isFinished = cursor.getIntOrZero("is_finished") == 1,
-                isSynced = cursor.getIntOrZero("is_synced") == 1
+                isSynced = cursor.getIntOrZero("is_synced") == 1,
+                matchDate = cursor.getStringOrEmpty("match_date"),
+                team1CaptainName = cursor.getStringOrEmpty("team1_captain"),
+                team2CaptainName = cursor.getStringOrEmpty("team2_captain")
             )
         }
 

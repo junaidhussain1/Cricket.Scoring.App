@@ -23,6 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,19 +49,20 @@ fun NewMatchSetupPage(navController: NavHostController) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
 
+    // Performance: Initialize dbHelper and basic match values only once
     val dbHelper = remember { CricketDatabaseHelper(context) }
     val matchId = remember { dbHelper.getMatchId() }
     val matchStarted by remember { mutableStateOf(dbHelper.getIsMatchStarted(matchId)) }
 
     val playersList = remember { mutableStateListOf<Player>().also { it.addAll(dbHelper.getAllPlayers()) } }
-    val battingTeamList = remember { mutableStateListOf<Player>() }
-    val bowlingTeamList = remember { mutableStateListOf<Player>() }
-
+    
     var refreshKey1 by remember { mutableStateOf(0) }
     var refreshKey2 by remember { mutableStateOf(0) }
+    
+    // Performance: Cache initial state from DB
     var team1Captain by remember(refreshKey1) { mutableStateOf<Player?>(Player(dbHelper.getCaptainForTeam(matchId, 1))) }
     var team2Captain by remember(refreshKey2) { mutableStateOf<Player?>(Player(dbHelper.getCaptainForTeam(matchId, 2))) }
-    var battingTeamCaptain by remember { mutableStateOf<Player?>(Player(dbHelper.getBattingTeamCaptain(matchId, 1))) }
+    var battingTeamCaptain by remember(refreshKey1, refreshKey2) { mutableStateOf<Player?>(Player(dbHelper.getBattingTeamCaptain(matchId, 1))) }
     var facingBatsman by remember { mutableStateOf<Player?>(Player(dbHelper.getFirstBattingTeamStriker(matchId))) }
     var secondBatsman by remember { mutableStateOf<Player?>(Player(dbHelper.getFirstBattingTeamNonStriker(matchId))) }
     var openingBowler by remember { mutableStateOf<Player?>(Player(dbHelper.getSecondBattingTeamBowler(matchId))) }
@@ -69,6 +71,12 @@ fun NewMatchSetupPage(navController: NavHostController) {
     var sideWallRule by remember { mutableStateOf(dbHelper.getSideWallRule(matchId)) }
     var noOfOversAside by remember { mutableStateOf(dbHelper.getNoOfOversAside(matchId)) }
     var noOfPlayersAside by remember { mutableStateOf(dbHelper.getNoOfPlayersAside(matchId)) }
+
+    // Performance: Cache heavy DB calls
+    val team1Players = remember(matchId, refreshKey1) { dbHelper.getTeamPlayers(matchId, 1, 1) }
+    val team2Players = remember(matchId, refreshKey2) { dbHelper.getTeamPlayers(matchId, 2, 1) }
+    val team1Size = remember(matchId, refreshKey1) { dbHelper.getTeamSize(matchId, 1) }
+    val team2Size = remember(matchId, refreshKey2) { dbHelper.getTeamSize(matchId, 2) }
 
     var expanded00 by remember { mutableStateOf(false) }
     var expanded01 by remember { mutableStateOf(false) }
@@ -80,6 +88,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
     var expanded07 by remember { mutableStateOf(false) }
     var expanded08 by remember { mutableStateOf(false) }
     var expanded09 by remember { mutableStateOf(false) }
+
+    // Performance: Side effect for date update
+    LaunchedEffect(matchId) {
+        val currentDate = LocalDate.now()
+        val sqlFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        dbHelper.updateMatchDate(matchId, currentDate.format(sqlFormatter))
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -102,13 +117,9 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     val currentDate = LocalDate.now()
-                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy") // Define the format
+                    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
                     val formattedDate = currentDate.format(formatter)
-                    val sqlFormatter =
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd") // Define the format
-                    val sqlFormattedDate = currentDate.format(sqlFormatter)
 
-                    dbHelper.updateMatchDate(matchId, sqlFormattedDate)
                     Text(
                         text = "Match: $formattedDate",
                         style = MaterialTheme.typography.headlineSmall,
@@ -361,6 +372,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                     0
                                                 )
                                             }
+                                            refreshKey1++
                                             expanded02 = false
                                         }
                                     )
@@ -426,6 +438,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                     0
                                                 )
                                             }
+                                            refreshKey2++
                                             expanded03 = false
                                         }
                                     )
@@ -439,7 +452,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                 val textColor = if (!matchStarted) CricketAppTheme.colors.textOnDark else CricketAppTheme.colors.secondaryGray
 
-                if ((team1Captain!!.name != "") && (team2Captain!!.name != "")) {
+                if ((team1Captain?.name.orEmpty().isNotEmpty()) && (team2Captain?.name.orEmpty().isNotEmpty())) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -454,7 +467,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             // Buttons to navigate to team player selection pages
-                            if (dbHelper.getCaptainForTeam(matchId, 1) != "") {
+                            if (team1Captain?.name.orEmpty().isNotEmpty()) {
                                 Button(
                                     enabled = !matchStarted,
                                     onClick = {
@@ -477,8 +490,6 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                val team1Players = dbHelper.getTeamPlayers(matchId, 1, 1)
-
                                 for (player in team1Players) {
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
@@ -500,7 +511,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
 
-                            if (dbHelper.getCaptainForTeam(matchId, 2) != "") {
+                            if (team2Captain?.name.orEmpty().isNotEmpty()) {
                                 Button(
                                     enabled = !matchStarted,
                                     onClick = {
@@ -523,8 +534,6 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                val team2Players = dbHelper.getTeamPlayers(matchId, 2, 1)
-
                                 for (player in team2Players) {
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
@@ -540,9 +549,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                if ((dbHelper.getTeamSize(matchId, 1) == noOfPlayersAside)
-                    && (dbHelper.getTeamSize(matchId, 2) == noOfPlayersAside)
-                ) {
+                if ((team1Size == noOfPlayersAside) && (team2Size == noOfPlayersAside)) {
                     // Select Batting Team Captain
                     Row(
                         modifier = Modifier
@@ -583,119 +590,74 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     expanded = expanded04,
                                     onDismissRequest = { expanded04 = false }
                                 ) {
-                                    androidx.compose.material3.DropdownMenuItem(
-                                        enabled = !matchStarted,
-                                        text = {
-                                            team1Captain?.name?.let {
+                                    team1Captain?.name?.let {
+                                        androidx.compose.material3.DropdownMenuItem(
+                                            enabled = !matchStarted,
+                                            text = {
                                                 Text(
                                                     text = it,
                                                     fontSize = CricketAppTheme.dimens.bodySize
                                                 )
-                                            }
-                                        },
-                                        onClick = {
-                                            team1Captain?.let { captain ->
-                                                battingTeamCaptain = captain
-                                                dbHelper.updateMatchCaptain(
-                                                    matchId,
-                                                    1,
-                                                    captain.name
-                                                )
-                                                dbHelper.updateMatchCaptain(
-                                                    matchId,
-                                                    2,
-                                                    team2Captain!!.name
-                                                )
-                                                val teamA = dbHelper.getTeamForPlayer(matchId,captain.name)
+                                            },
+                                            onClick = {
+                                                battingTeamCaptain = team1Captain
+                                                dbHelper.updateMatchCaptain(matchId, 1, it)
+                                                dbHelper.updateMatchCaptain(matchId, 2, team2Captain!!.name)
+                                                val teamA = dbHelper.getTeamForPlayer(matchId, it)
                                                 if (teamA == 2) {
-                                                    dbHelper.updateTeamID(matchId,1,3)
-                                                    dbHelper.updateTeamID(matchId,2,1)
-                                                    dbHelper.updateTeamID(matchId,3,2)
+                                                    dbHelper.updateTeamID(matchId, 1, 3)
+                                                    dbHelper.updateTeamID(matchId, 2, 1)
+                                                    dbHelper.updateTeamID(matchId, 3, 2)
                                                 }
                                                 refreshKey1++
                                                 refreshKey2++
-
+                                                expanded04 = false
+                                                facingBatsman = null
+                                                secondBatsman = null
                                             }
-                                            expanded04 = false
-                                            facingBatsman = null
-                                            secondBatsman = null
-                                        }
-                                    )
+                                        )
+                                    }
 
-                                    androidx.compose.material3.DropdownMenuItem(
-                                        enabled = !matchStarted,
-                                        text = {
-                                            team2Captain?.name?.let {
+                                    team2Captain?.name?.let {
+                                        androidx.compose.material3.DropdownMenuItem(
+                                            enabled = !matchStarted,
+                                            text = {
                                                 Text(
                                                     text = it,
                                                     fontSize = CricketAppTheme.dimens.bodySize
                                                 )
-                                            }
-                                        },
-                                        onClick = {
-                                            team2Captain?.let { captain ->
-                                                battingTeamCaptain = captain
-                                                dbHelper.updateMatchCaptain(
-                                                    matchId,
-                                                    1,
-                                                    captain.name
-                                                )
-                                                dbHelper.updateMatchCaptain(
-                                                    matchId,
-                                                    2,
-                                                    team1Captain!!.name
-                                                )
-                                                val teamA = dbHelper.getTeamForPlayer(matchId,captain.name)
+                                            },
+                                            onClick = {
+                                                battingTeamCaptain = team2Captain
+                                                dbHelper.updateMatchCaptain(matchId, 1, it)
+                                                dbHelper.updateMatchCaptain(matchId, 2, team1Captain!!.name)
+                                                val teamA = dbHelper.getTeamForPlayer(matchId, it)
                                                 if (teamA == 2) {
-                                                    dbHelper.updateTeamID(matchId,1,3)
-                                                    dbHelper.updateTeamID(matchId,2,1)
-                                                    dbHelper.updateTeamID(matchId,3,2)
+                                                    dbHelper.updateTeamID(matchId, 1, 3)
+                                                    dbHelper.updateTeamID(matchId, 2, 1)
+                                                    dbHelper.updateTeamID(matchId, 3, 2)
                                                 }
                                                 refreshKey1++
                                                 refreshKey2++
+                                                expanded04 = false
+                                                facingBatsman = null
+                                                secondBatsman = null
                                             }
-                                            expanded04 = false
-                                            facingBatsman = null
-                                            secondBatsman = null
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
 
-                    val battingTeamId =
-                        battingTeamCaptain?.name?.let {
-                            dbHelper.getTeamForPlayer(
-                                matchId,
-                                it
-                            )
-                        }
+                    val battingTeamId = battingTeamCaptain?.name?.let { dbHelper.getTeamForPlayer(matchId, it) }
+                    val bowlingTeamId = if (battingTeamId == 1) 2 else 1
 
-                    val bowlingTeamId = if (battingTeamId == 1) {
-                        2
-                    } else {
-                        1
+                    val battingTeamPlayers = remember(matchId, battingTeamId, refreshKey1, refreshKey2) {
+                        if (battingTeamId != null) dbHelper.getTeamPlayers(matchId, battingTeamId, 1) else emptyList()
                     }
-
-                    if (battingTeamId != null) {
-                        battingTeamList.clear()
-                        battingTeamList.addAll(
-                            dbHelper.getTeamPlayers(
-                                matchId,
-                                battingTeamId,
-                                1
-                            )
-                        )
-
-                        bowlingTeamList.clear()
-                        bowlingTeamList.addAll(
-                            dbHelper.getTeamPlayers(
-                                matchId,
-                                bowlingTeamId,
-                                1
-                            )
-                        )
+                    val bowlingTeamPlayers = remember(matchId, bowlingTeamId, refreshKey1, refreshKey2) {
+                        if (battingTeamId != null) dbHelper.getTeamPlayers(matchId, bowlingTeamId, 1) else emptyList()
                     }
 
                     // Row to hold both Facing Batsman and Second Batsman
@@ -741,7 +703,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     expanded = expanded05,
                                     onDismissRequest = { expanded05 = false }
                                 ) {
-                                    battingTeamList.forEach { player ->
+                                    battingTeamPlayers.forEach { player ->
                                         if (player.name != secondBatsman?.name) {
                                             androidx.compose.material3.DropdownMenuItem(
                                                 enabled = !matchStarted,
@@ -755,25 +717,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                     facingBatsman = player
                                                     if (battingTeamId != null) {
                                                         facingBatsman?.name?.let {
-                                                            val striker =
-                                                                dbHelper.getStriker(matchId)
+                                                            val striker = dbHelper.getStriker(matchId)
                                                             if (striker != "") {
-                                                                dbHelper.updateStriker(
-                                                                    matchId,
-                                                                    it
-                                                                )
+                                                                dbHelper.updateStriker(matchId, it)
                                                             } else {
-                                                                dbHelper.addBattingStats(
-                                                                    matchId,
-                                                                    battingTeamId,
-                                                                    it,
-                                                                    "striker"
-                                                                )
+                                                                dbHelper.addBattingStats(matchId, battingTeamId, it, "striker")
                                                             }
-                                                            dbHelper.updateMatchOpeningStriker(
-                                                                matchId,
-                                                                it
-                                                            )
+                                                            dbHelper.updateMatchOpeningStriker(matchId, it)
                                                         }
                                                     }
                                                     expanded05 = false
@@ -820,7 +770,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     expanded = expanded06,
                                     onDismissRequest = { expanded06 = false }
                                 ) {
-                                    battingTeamList.forEach { player ->
+                                    battingTeamPlayers.forEach { player ->
                                         if (player.name != facingBatsman?.name) {
                                             androidx.compose.material3.DropdownMenuItem(
                                                 enabled = !matchStarted,
@@ -834,25 +784,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                     secondBatsman = player
                                                     if (battingTeamId != null) {
                                                         secondBatsman?.name?.let {
-                                                            val nonStriker =
-                                                                dbHelper.getNonStriker(matchId)
+                                                            val nonStriker = dbHelper.getNonStriker(matchId)
                                                             if (nonStriker != "") {
-                                                                dbHelper.updateNonStriker(
-                                                                    matchId,
-                                                                    it
-                                                                )
+                                                                dbHelper.updateNonStriker(matchId, it)
                                                             } else {
-                                                                dbHelper.addBattingStats(
-                                                                    matchId,
-                                                                    battingTeamId,
-                                                                    it,
-                                                                    "non-striker"
-                                                                )
+                                                                dbHelper.addBattingStats(matchId, battingTeamId, it, "non-striker")
                                                             }
-                                                            dbHelper.updateMatchOpeningNonStriker(
-                                                                matchId,
-                                                                it
-                                                            )
+                                                            dbHelper.updateMatchOpeningNonStriker(matchId, it)
                                                         }
                                                     }
                                                     expanded06 = false
@@ -907,7 +845,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     expanded = expanded07,
                                     onDismissRequest = { expanded07 = false }
                                 ) {
-                                    bowlingTeamList.forEach { player ->
+                                    bowlingTeamPlayers.forEach { player ->
                                         if (player.name != openingKeeper?.name) {
                                             androidx.compose.material3.DropdownMenuItem(
                                                 enabled = !matchStarted,
@@ -919,26 +857,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                 },
                                                 onClick = {
                                                     openingBowler = player
-                                                    val bowler =
-                                                        dbHelper.getBowler(matchId)
+                                                    val bowler = dbHelper.getBowler(matchId)
                                                     if (bowler != "") {
-                                                        dbHelper.updateBowler(
-                                                            matchId,
-                                                            player.name
-                                                        )
+                                                        dbHelper.updateBowler(matchId, player.name)
                                                     } else {
-                                                        dbHelper.addBowlingStats(
-                                                            matchId,
-                                                            bowlingTeamId,
-                                                            player.name,
-                                                            "",
-                                                            "bowling"
-                                                        )
+                                                        dbHelper.addBowlingStats(matchId, bowlingTeamId, player.name, "", "bowling")
                                                     }
-                                                    dbHelper.updateMatchOpeningBowler(
-                                                        matchId,
-                                                        player.name
-                                                    )
+                                                    dbHelper.updateMatchOpeningBowler(matchId, player.name)
                                                     expanded07 = false
                                                 }
                                             )
@@ -983,7 +908,7 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                     expanded = expanded08,
                                     onDismissRequest = { expanded08 = false }
                                 ) {
-                                    bowlingTeamList.forEach { player ->
+                                    bowlingTeamPlayers.forEach { player ->
                                         if (player.name != openingBowler?.name) {
                                             androidx.compose.material3.DropdownMenuItem(
                                                 enabled = !matchStarted,
@@ -995,24 +920,13 @@ fun NewMatchSetupPage(navController: NavHostController) {
                                                 },
                                                 onClick = {
                                                     openingKeeper = player
-                                                    val keeper =
-                                                        dbHelper.getKeeper(matchId)
+                                                    val keeper = dbHelper.getKeeper(matchId)
                                                     if (keeper != "") {
-                                                        dbHelper.updateKeeper(
-                                                            matchId,
-                                                            player.name
-                                                        )
+                                                        dbHelper.updateKeeper(matchId, player.name)
                                                     } else {
-                                                        dbHelper.updateBowlingStatsKeeper(
-                                                            matchId,
-                                                            bowlingTeamId,
-                                                            player.name
-                                                        )
+                                                        dbHelper.updateBowlingStatsKeeper(matchId, bowlingTeamId, player.name)
                                                     }
-                                                    dbHelper.updateMatchOpeningKeeper(
-                                                        matchId,
-                                                        player.name
-                                                    )
+                                                    dbHelper.updateMatchOpeningKeeper(matchId, player.name)
                                                     expanded08 = false
                                                 }
                                             )
@@ -1026,12 +940,12 @@ fun NewMatchSetupPage(navController: NavHostController) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     //Only show if both teams contain all players and batting team, keeper and bowler have been set
-                    if ((dbHelper.getTeamSize(matchId, 1) == noOfPlayersAside)
-                        && (dbHelper.getTeamSize(matchId, 2) == noOfPlayersAside)
-                        && (facingBatsman?.name != "")
-                        && (secondBatsman?.name != "")
-                        && (openingBowler?.name != "")
-                        && (openingKeeper?.name != "")
+                    if ((team1Size == noOfPlayersAside)
+                        && (team2Size == noOfPlayersAside)
+                        && (facingBatsman?.name.orEmpty().isNotEmpty())
+                        && (secondBatsman?.name.orEmpty().isNotEmpty())
+                        && (openingBowler?.name.orEmpty().isNotEmpty())
+                        && (openingKeeper?.name.orEmpty().isNotEmpty())
                     ) {
                         Button(
                             onClick = {

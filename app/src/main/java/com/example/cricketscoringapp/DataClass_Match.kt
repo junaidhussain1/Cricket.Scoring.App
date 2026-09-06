@@ -10,4 +10,8 @@ data class Match(
     val sideWallRule: Int,
     val isStarted: Boolean,
     val isFinished: Boolean,
-    val isSynced: Boolean)
+    val isSynced: Boolean,
+    val matchDate: String = "",
+    val team1CaptainName: String = "",
+    val team2CaptainName: String = ""
+)

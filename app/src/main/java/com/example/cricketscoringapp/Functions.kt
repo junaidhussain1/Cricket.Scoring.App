@@ -12,6 +12,9 @@ import java.io.OutputStream
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 fun swapBatsmenDB(context: Context,matchId: String,batsman1: BatsmanStats, batsman2: BatsmanStats, updateFirebase: Boolean) {
     swapBatsmen(batsman1,batsman2)
@@ -136,11 +139,15 @@ fun updateStats(context: Context,
         }
 
         if (!newValue.contains("WK")) {
-            dbHelper.saveSnapshot(matchId)
+            CoroutineScope(Dispatchers.IO).launch {
+                dbHelper.saveSnapshot(matchId)
+            }
         }
     } else {
         //Handle the UNDO option
-        dbHelper.undoLastBall(matchId)
+        CoroutineScope(Dispatchers.IO).launch {
+            dbHelper.undoLastBall(matchId)
+        }
     }
 
     val firstTeamStatistics = dbHelper.getTeamStats(matchId,1,firstTeamStats.name.value)
@@ -203,7 +210,10 @@ fun updateStats(context: Context,
     try {
         val firebaseManager = FirebaseScoreManager.getInstance(context)
         Log.d("Firebase", "Pushing score update - Match: $matchId, Runs: ${scoreUpdate.innings1Runs}, Wickets: ${scoreUpdate.innings1Wickets}")
-        firebaseManager.pushLiveScore(matchId, scoreUpdate,context)
+        
+        CoroutineScope(Dispatchers.IO).launch {
+            firebaseManager.pushLiveScore(matchId, scoreUpdate, context)
+        }
 
     } catch (e: Exception) {
         Log.e("FirebaseError", "Firebase failed: ${e.message}", e)
@@ -512,6 +522,8 @@ fun setCurrentBowlerAndKeeper(bowlerStats: BowlerStats, bowlerName: String, keep
     bowlerStats.dotballs.value = 0
     bowlerStats.byes.value = 0
     bowlerStats.legbyes.value = 0
+    bowlerStats.economy.value = 0.0
+    bowlerStats.overrecord.value = ""
 }
 
 fun setCurrentKeeper(bowlerStats: BowlerStats, keeperName: String) {
@@ -885,7 +897,9 @@ fun handleEndOfMatch(context: Context, matchId: String, firstBatsmanStats: Batsm
 
     try {
         val firebaseManager = FirebaseScoreManager.getInstance(context)
-        firebaseManager.pushMatchComplete(matchId)
+        CoroutineScope(Dispatchers.IO).launch {
+            firebaseManager.pushMatchComplete(matchId)
+        }
 
     } catch (e: Exception) {
         Log.e("FirebaseError", "Firebase failed: ${e.message}", e)

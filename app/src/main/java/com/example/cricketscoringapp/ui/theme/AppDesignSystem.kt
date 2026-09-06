@@ -30,6 +30,7 @@ data class AppDimensions(
     val smallSize: TextUnit,      
     val microSize: TextUnit,      
     val listTextSize: TextUnit,   
+    val matchListSize: TextUnit,
     val buttonTextSize: TextUnit, 
     val iconSize: Dp,             
     val imageSizeLarge: Dp,       
@@ -46,6 +47,7 @@ val PhoneDimensions = AppDimensions(
     smallSize = 14.sp,
     microSize = 10.sp,
     listTextSize = 10.sp,
+    matchListSize = 20.sp, // Increased from 16.sp
     buttonTextSize = 16.sp,
     iconSize = 24.dp,
     imageSizeLarge = 300.dp,
@@ -57,11 +59,12 @@ val PhoneDimensions = AppDimensions(
 
 val TabletDimensions = AppDimensions(
     headerSize = 36.sp,
-    titleSize = 26.sp,  // Reduced from 32 to help wrapping
+    titleSize = 26.sp,  
     bodySize = 26.sp,
     smallSize = 22.sp,
     microSize = 16.sp,
-    listTextSize = 20.sp, // Restored to original 20sp
+    listTextSize = 20.sp, 
+    matchListSize = 26.sp, // Increased from 26.sp
     buttonTextSize = 22.sp,
     iconSize = 48.dp,
     imageSizeLarge = 400.dp,

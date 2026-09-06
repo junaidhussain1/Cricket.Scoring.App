@@ -48,15 +48,22 @@ fun ScoreCardPage(navController: NavHostController) {
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
 
-    val dbHelper = CricketDatabaseHelper(context)
-    val matchId = dbHelper.getMatchId()
-    val noOfOversAside = dbHelper.getNoOfOversAside(matchId).toDouble()
-    val noOfPlayersAside = dbHelper.getNoOfPlayersAside(matchId)
-    val currentBowler = remember { mutableStateOf(dbHelper.getCurrentBowler(matchId)) }
-    val bowlingTeamId = dbHelper.getTeamForPlayer(matchId, currentBowler.value)
-    val bowlingTeam = bowlingTeamId.let { dbHelper.getTeamPlayers(matchId, it, 1) }
-    val firstTeamId =
-        dbHelper.getTeamForPlayer(matchId, dbHelper.getFirstBattingTeamStriker(matchId))
+    // Performance: remember dbHelper and basic match values
+    val dbHelper = remember { CricketDatabaseHelper(context) }
+    val matchId = remember { dbHelper.getMatchId() }
+    val noOfOversAside = remember(matchId) { dbHelper.getNoOfOversAside(matchId).toDouble() }
+    val noOfPlayersAside = remember(matchId) { dbHelper.getNoOfPlayersAside(matchId) }
+    
+    var refreshKey by remember { mutableIntStateOf(0) }
+
+    // Performance: remember current actors
+    val currentBowlerName = remember(matchId, refreshKey) { dbHelper.getCurrentBowler(matchId) }
+    val currentBowler = remember { mutableStateOf(currentBowlerName) }
+    
+    val bowlingTeamId = remember(matchId, currentBowler.value) { dbHelper.getTeamForPlayer(matchId, currentBowler.value) }
+    val bowlingTeam = remember(matchId, bowlingTeamId) { dbHelper.getTeamPlayers(matchId, bowlingTeamId, 1) }
+    
+    val firstTeamId = remember(matchId, refreshKey) { dbHelper.getTeamForPlayer(matchId, dbHelper.getFirstBattingTeamStriker(matchId)) }
     val secondTeamId = if (firstTeamId == 1) 2 else 1
 
     val showWidesDialog = remember { mutableStateOf(false) }
@@ -84,8 +91,6 @@ fun ScoreCardPage(navController: NavHostController) {
     val pendingStrikerName = remember { mutableStateOf("") }
     val pendingNonStrikerName = remember { mutableStateOf("") }
 
-    var refreshKey by remember { mutableIntStateOf(0) }
-
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = CricketAppTheme.colors.primaryDark
@@ -94,10 +99,15 @@ fun ScoreCardPage(navController: NavHostController) {
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Retrieve the captain names from the view model
-            var team1Captain = Player(dbHelper.getCaptainForTeam(matchId, 1))
-            var team2Captain = Player(dbHelper.getCaptainForTeam(matchId, 2))
-            val firstBattingTeamCaptain = Player(dbHelper.getBattingTeamCaptain(matchId, 1))
+            // Performance: remember captain names
+            val team1CaptainData = remember(matchId) { Player(dbHelper.getCaptainForTeam(matchId, 1)) }
+            val team2CaptainData = remember(matchId) { Player(dbHelper.getCaptainForTeam(matchId, 2)) }
+            val firstBattingTeamCaptainData = remember(matchId) { Player(dbHelper.getBattingTeamCaptain(matchId, 1)) }
+            
+            var team1Captain = team1CaptainData
+            var team2Captain = team2CaptainData
+            val firstBattingTeamCaptain = firstBattingTeamCaptainData
+            
             var team1Id = 1
             var team2Id = 2
             if (team1Captain != firstBattingTeamCaptain) {
@@ -107,118 +117,115 @@ fun ScoreCardPage(navController: NavHostController) {
                 team2Id = 1
             }
 
-            val team1Stats = dbHelper.getTeamStats(matchId, team1Id, team1Captain.name)
-            val firstBattingTeamStats = remember(team1Stats, refreshKey) {
+            // Performance: Wrap heavy DB calls inside remember
+            val firstBattingTeamStats = remember(matchId, team1Id, team1Captain.name, refreshKey) {
+                val stats = dbHelper.getTeamStats(matchId, team1Id, team1Captain.name)
                 TeamStats(
-                    name = mutableStateOf(team1Stats.name.value),
-                    overs = mutableDoubleStateOf(team1Stats.overs.value),
-                    inningScore = mutableIntStateOf(team1Stats.inningScore.value),
-                    inningWickets = mutableIntStateOf(team1Stats.inningWickets.value),
-                    active = mutableStateOf(team1Stats.active.value)
+                    name = mutableStateOf(stats.name.value),
+                    overs = mutableDoubleStateOf(stats.overs.value),
+                    inningScore = mutableIntStateOf(stats.inningScore.value),
+                    inningWickets = mutableIntStateOf(stats.inningWickets.value),
+                    active = mutableStateOf(stats.active.value)
                 )
             }
 
-            val team2Stats = dbHelper.getTeamStats(matchId, team2Id, team2Captain.name)
-            val secondBattingTeamStats = remember(team2Stats, refreshKey) {
+            val secondBattingTeamStats = remember(matchId, team2Id, team2Captain.name, refreshKey) {
+                val stats = dbHelper.getTeamStats(matchId, team2Id, team2Captain.name)
                 TeamStats(
-                    name = mutableStateOf(team2Stats.name.value),
-                    overs = mutableDoubleStateOf(team2Stats.overs.value),
-                    inningScore = mutableIntStateOf(team2Stats.inningScore.value),
-                    inningWickets = mutableIntStateOf(team2Stats.inningWickets.value),
-                    active = mutableStateOf(team2Stats.active.value)
+                    name = mutableStateOf(stats.name.value),
+                    overs = mutableDoubleStateOf(stats.overs.value),
+                    inningScore = mutableIntStateOf(stats.inningScore.value),
+                    inningWickets = mutableIntStateOf(stats.inningWickets.value),
+                    active = mutableStateOf(stats.active.value)
                 )
             }
 
-            val (runsToWinLocal, winningCaptain) = calcRunsToWin(
-                firstBattingTeamStats,
-                secondBattingTeamStats,
-                noOfOversAside
-            )
-            val runsToWin = remember(runsToWinLocal) {
-                runsToWinLocal
+            val (runsToWinLocal, winningCaptain) = remember(firstBattingTeamStats, secondBattingTeamStats, refreshKey) {
+                calcRunsToWin(firstBattingTeamStats, secondBattingTeamStats, noOfOversAside)
             }
+            val runsToWin = runsToWinLocal
 
-            val firstBatsman = dbHelper.getBatsmanByStatus(matchId, "striker")
-            val firstBatsmanStats = remember(refreshKey) {
+            val firstBatsmanStats = remember(matchId, refreshKey) {
+                val stats = dbHelper.getBatsmanByStatus(matchId, "striker")
                 BatsmanStats(
-                    name = mutableStateOf(value = firstBatsman.name.value),
-                    runs = mutableIntStateOf(value = firstBatsman.runs.value),
-                    balls = mutableIntStateOf(value = firstBatsman.balls.value),
-                    fours = mutableIntStateOf(value = firstBatsman.fours.value),
-                    sixes = mutableIntStateOf(value = firstBatsman.sixes.value),
-                    dotballs = mutableIntStateOf(value = firstBatsman.dotballs.value),
-                    wicketDescription = mutableStateOf(value = firstBatsman.wicketDescription.value),
-                    active = mutableStateOf(value = firstBatsman.active.value)
+                    name = mutableStateOf(value = stats.name.value),
+                    runs = mutableIntStateOf(value = stats.runs.value),
+                    balls = mutableIntStateOf(value = stats.balls.value),
+                    fours = mutableIntStateOf(value = stats.fours.value),
+                    sixes = mutableIntStateOf(value = stats.sixes.value),
+                    dotballs = mutableIntStateOf(value = stats.dotballs.value),
+                    wicketDescription = mutableStateOf(value = stats.wicketDescription.value),
+                    active = mutableStateOf(value = stats.active.value)
                 )
             }
 
-            val secondBatsman = dbHelper.getBatsmanByStatus(matchId, "non-striker")
-            val secondBatsmanStats = remember(refreshKey) {
+            val secondBatsmanStats = remember(matchId, refreshKey) {
+                val stats = dbHelper.getBatsmanByStatus(matchId, "non-striker")
                 BatsmanStats(
-                    name = mutableStateOf(value = secondBatsman.name.value),
-                    runs = mutableIntStateOf(value = secondBatsman.runs.value),
-                    balls = mutableIntStateOf(value = secondBatsman.balls.value),
-                    fours = mutableIntStateOf(value = secondBatsman.fours.value),
-                    sixes = mutableIntStateOf(value = secondBatsman.sixes.value),
-                    dotballs = mutableIntStateOf(value = secondBatsman.dotballs.value),
-                    wicketDescription = mutableStateOf(value = secondBatsman.name.value),
-                    active = mutableStateOf(value = secondBatsman.active.value)
+                    name = mutableStateOf(value = stats.name.value),
+                    runs = mutableIntStateOf(value = stats.runs.value),
+                    balls = mutableIntStateOf(value = stats.balls.value),
+                    fours = mutableIntStateOf(value = stats.fours.value),
+                    sixes = mutableIntStateOf(value = stats.sixes.value),
+                    dotballs = mutableIntStateOf(value = stats.dotballs.value),
+                    wicketDescription = mutableStateOf(value = stats.wicketDescription.value),
+                    active = mutableStateOf(value = stats.active.value)
                 )
             }
 
-            val currentOverBowler = dbHelper.getCurrentBowlerStats(matchId)
-            val currentOverBowlerStats = remember(currentOverBowler, refreshKey) {
+            val currentOverBowlerStats = remember(matchId, refreshKey) {
+                val stats = dbHelper.getCurrentBowlerStats(matchId)
                 BowlerStats(
-                    name = mutableStateOf(currentOverBowler.name.value),
-                    over = mutableDoubleStateOf(currentOverBowler.over.value),
-                    maiden = mutableIntStateOf(currentOverBowler.maiden.value),
-                    runs = mutableIntStateOf(currentOverBowler.runs.value),
-                    wickets = mutableIntStateOf(currentOverBowler.wickets.value),
-                    noballs = mutableIntStateOf(currentOverBowler.noballs.value),
-                    wides = mutableIntStateOf(currentOverBowler.wides.value),
-                    byes = mutableIntStateOf(currentOverBowler.byes.value),
-                    legbyes = mutableIntStateOf(currentOverBowler.legbyes.value),
-                    fours = mutableIntStateOf(currentOverBowler.fours.value),
-                    sixes = mutableIntStateOf(currentOverBowler.sixes.value),
-                    dotballs = mutableIntStateOf(currentOverBowler.dotballs.value),
-                    keepername = mutableStateOf(currentOverBowler.keepername.value),
-                    overrecord = mutableStateOf(currentOverBowler.overrecord.value)
+                    name = mutableStateOf(stats.name.value),
+                    over = mutableDoubleStateOf(stats.over.value),
+                    maiden = mutableIntStateOf(stats.maiden.value),
+                    runs = mutableIntStateOf(stats.runs.value),
+                    wickets = mutableIntStateOf(stats.wickets.value),
+                    noballs = mutableIntStateOf(stats.noballs.value),
+                    wides = mutableIntStateOf(stats.wides.value),
+                    byes = mutableIntStateOf(stats.byes.value),
+                    legbyes = mutableIntStateOf(stats.legbyes.value),
+                    fours = mutableIntStateOf(stats.fours.value),
+                    sixes = mutableIntStateOf(stats.sixes.value),
+                    dotballs = mutableIntStateOf(stats.dotballs.value),
+                    keepername = mutableStateOf(stats.keepername.value),
+                    overrecord = mutableStateOf(stats.overrecord.value)
                 )
             }
 
-            val consolidatedBowler =
-                dbHelper.getConsolidatedBowlerStats(matchId, currentOverBowler.name.value)
-            val consolidatedBowlerStats = remember(consolidatedBowler, refreshKey) {
+            val consolidatedBowlerStats = remember(matchId, currentOverBowlerStats.name.value, refreshKey) {
+                val stats = dbHelper.getConsolidatedBowlerStats(matchId, currentOverBowlerStats.name.value)
                 BowlerStats(
-                    name = mutableStateOf(consolidatedBowler.name.value),
-                    over = mutableDoubleStateOf(consolidatedBowler.over.value),
-                    maiden = mutableIntStateOf(consolidatedBowler.maiden.value),
-                    runs = mutableIntStateOf(consolidatedBowler.runs.value),
-                    wickets = mutableIntStateOf(consolidatedBowler.wickets.value),
-                    noballs = mutableIntStateOf(consolidatedBowler.noballs.value),
-                    wides = mutableIntStateOf(consolidatedBowler.wides.value),
-                    byes = mutableIntStateOf(consolidatedBowler.byes.value),
-                    legbyes = mutableIntStateOf(consolidatedBowler.legbyes.value),
-                    fours = mutableIntStateOf(consolidatedBowler.fours.value),
-                    sixes = mutableIntStateOf(consolidatedBowler.sixes.value),
-                    dotballs = mutableIntStateOf(consolidatedBowler.dotballs.value),
-                    keepername = mutableStateOf(consolidatedBowler.keepername.value),
-                    overrecord = mutableStateOf(consolidatedBowler.overrecord.value)
+                    name = mutableStateOf(stats.name.value),
+                    over = mutableDoubleStateOf(stats.over.value),
+                    maiden = mutableIntStateOf(stats.maiden.value),
+                    runs = mutableIntStateOf(stats.runs.value),
+                    wickets = mutableIntStateOf(stats.wickets.value),
+                    noballs = mutableIntStateOf(stats.noballs.value),
+                    wides = mutableIntStateOf(stats.wides.value),
+                    byes = mutableIntStateOf(stats.byes.value),
+                    legbyes = mutableIntStateOf(stats.legbyes.value),
+                    fours = mutableIntStateOf(stats.fours.value),
+                    sixes = mutableIntStateOf(stats.sixes.value),
+                    dotballs = mutableIntStateOf(stats.dotballs.value),
+                    keepername = mutableStateOf(stats.keepername.value),
+                    overrecord = mutableStateOf(stats.overrecord.value)
                 )
             }
 
             val balls = remember(refreshKey) { mutableStateListOf<Ball>() }
+            remember(currentOverBowlerStats.overrecord.value, refreshKey) {
+                balls.clear()
+                balls.addAll(buildBallsFromOverRecord(currentOverBowlerStats))
+                true
+            }
 
-            //Rebuild current over from current bowler stats in database
-            balls.clear()
-            balls.addAll(buildBallsFromOverRecord(currentOverBowlerStats))
-
-            //Automatically handle: End of Over, End of Innings, End of Match
-            val team1wickets = dbHelper.getTeamWickets(matchId, firstTeamId)
-            val team2wickets = dbHelper.getTeamWickets(matchId, secondTeamId)
-            val team2batters = dbHelper.getTeamBatters(matchId, secondTeamId)
-            val team1OversBowled = dbHelper.getTeamOversBowled(matchId, secondTeamId)
-            val team2OversBowled = dbHelper.getTeamOversBowled(matchId, firstTeamId)
+            // Automatically handle: End of Over, End of Innings, End of Match
+            val team1wickets = remember(matchId, firstTeamId, refreshKey) { dbHelper.getTeamWickets(matchId, firstTeamId) }
+            val team2wickets = remember(matchId, secondTeamId, refreshKey) { dbHelper.getTeamWickets(matchId, secondTeamId) }
+            val team2batters = remember(matchId, secondTeamId, refreshKey) { dbHelper.getTeamBatters(matchId, secondTeamId) }
+            val team1OversBowled = remember(matchId, secondTeamId, refreshKey) { dbHelper.getTeamOversBowled(matchId, secondTeamId) }
+            val team2OversBowled = remember(matchId, firstTeamId, refreshKey) { dbHelper.getTeamOversBowled(matchId, firstTeamId) }
 
             if (dbHelper.getIsMatchStarted(matchId)) {
                 if ((team1wickets == noOfPlayersAside * 2) and (team2batters == 0)) {
@@ -500,19 +507,19 @@ fun ScoreCardPage(navController: NavHostController) {
                                                     )
                                                     showBowlerChangeDialog.value = false
                                                     setCurrentBowlerAndKeeper(
-                                                        currentOverBowlerStats,
-                                                        player.name,
-                                                        existingKeeper
-                                                    )
-                                                    swapBatsmenDB(
-                                                        context,
-                                                        matchId,
-                                                        firstBatsmanStats,
-                                                        secondBatsmanStats,
-                                                        true
-                                                    )
+                                                    currentOverBowlerStats,
+                                                    player.name,
+                                                    existingKeeper
+                                                )
+                                                swapBatsmenDB(
+                                                    context,
+                                                    matchId,
+                                                    firstBatsmanStats,
+                                                    secondBatsmanStats,
+                                                    true
+                                                )
 
-                                                    balls.clear()
+                                                refreshKey++
                                                 },
                                                 modifier = Modifier.fillMaxWidth()
                                             ) {
@@ -650,6 +657,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         firstBattingTeamStats,
                         secondBattingTeamStats
                     )
+                    refreshKey++
                 }
                 CircleButton("1", CricketAppTheme.dimens.circleButtonSize) {
                     updateStats(
@@ -662,6 +670,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         firstBattingTeamStats,
                         secondBattingTeamStats
                     )
+                    refreshKey++
                 }
                 CircleButton("2", CricketAppTheme.dimens.circleButtonSize) {
                     updateStats(
@@ -674,6 +683,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         firstBattingTeamStats,
                         secondBattingTeamStats
                     )
+                    refreshKey++
                 }
                 CircleButton("3", CricketAppTheme.dimens.circleButtonSize) {
                     updateStats(
@@ -686,6 +696,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         firstBattingTeamStats,
                         secondBattingTeamStats
                     )
+                    refreshKey++
                 }
             }
 
@@ -707,6 +718,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         firstBattingTeamStats,
                         secondBattingTeamStats
                     )
+                    refreshKey++
                 }
                 CircleButton("6", CricketAppTheme.dimens.circleButtonSize) {
                     updateStats(
@@ -719,6 +731,7 @@ fun ScoreCardPage(navController: NavHostController) {
                         firstBattingTeamStats,
                         secondBattingTeamStats
                     )
+                    refreshKey++
                 }
                 CircleButton("WIDE", CricketAppTheme.dimens.circleButtonSizeSmall) {
                     showWidesDialog.value = true
@@ -743,6 +756,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                         firstBattingTeamStats,
                                         secondBattingTeamStats
                                     )
+                                    refreshKey++
                                 }) {
                                     Text("WIDE", fontSize = CricketAppTheme.dimens.bodySize)
                                 }
@@ -760,6 +774,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                         firstBattingTeamStats,
                                         secondBattingTeamStats
                                     )
+                                    refreshKey++
                                 }) {
                                     Text("WIDE + 1", fontSize = CricketAppTheme.dimens.bodySize)
                                 }
@@ -777,6 +792,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                         firstBattingTeamStats,
                                         secondBattingTeamStats
                                     )
+                                    refreshKey++
                                 }) {
                                     Text("WIDE + 2", fontSize = CricketAppTheme.dimens.bodySize)
                                 }
@@ -849,6 +865,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                             firstBattingTeamStats,
                                                             secondBattingTeamStats
                                                         )
+                                                        refreshKey++
                                                     },
                                                     colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
                                                     modifier = Modifier
@@ -906,6 +923,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                         firstBattingTeamStats,
                                         secondBattingTeamStats
                                     )
+                                    refreshKey++
                                 }) {
                                     Text("1 BYE", fontSize = CricketAppTheme.dimens.bodySize)
                                 }
@@ -923,6 +941,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                         firstBattingTeamStats,
                                         secondBattingTeamStats
                                     )
+                                    refreshKey++
                                 }) {
                                     Text("2 BYE", fontSize = CricketAppTheme.dimens.bodySize)
                                 }
@@ -940,6 +959,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                         firstBattingTeamStats,
                                         secondBattingTeamStats
                                     )
+                                    refreshKey++
                                 }) {
                                     Text("3 BYE", fontSize = CricketAppTheme.dimens.bodySize)
                                 }
@@ -956,6 +976,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                         secondBatsmanStats,
                                         firstBattingTeamStats,
                                         secondBattingTeamStats                                )
+                                    refreshKey++
                                 }) {
                                     Text("1 LEG-BYE", fontSize = CricketAppTheme.dimens.bodySize)
                                 }
@@ -973,6 +994,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                         firstBattingTeamStats,
                                         secondBattingTeamStats
                                     )
+                                    refreshKey++
                                 }) {
                                     Text("2 LEG-BYE", fontSize = CricketAppTheme.dimens.bodySize)
                                 }
@@ -990,6 +1012,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                         firstBattingTeamStats,
                                         secondBattingTeamStats
                                     )
+                                    refreshKey++
                                 }) {
                                     Text("3 LEG-BYE", fontSize = CricketAppTheme.dimens.bodySize)
                                 }
@@ -1023,34 +1046,12 @@ fun ScoreCardPage(navController: NavHostController) {
                                         firstBattingTeamStats,
                                         secondBattingTeamStats
                                     )
+                                    refreshKey++
                                     showMoreDialog.value = false
                                 }) {
                                     Text("LBW (Warning -2)", fontSize = CricketAppTheme.dimens.bodySize)
                                 }
                                 Spacer(modifier = Modifier.height(16.dp))
-
-//                                Button(modifier = Modifier.fillMaxWidth(), onClick = {
-//                                    //If active batsman has faced 0 balls
-//                                    val activeBatsman =
-//                                        getActiveBatsman(firstBatsmanStats, secondBatsmanStats)
-//                                    val activeBatsmanStats =
-//                                        dbHelper.getBatsmanStats(matchId, activeBatsman)
-//                                    if (activeBatsmanStats.balls.value == 0) {
-//                                        //Then show next batsman change dialog
-//                                        batsmanOverride.value = true
-//                                        showNextBatsmanDialog.value = true
-//                                        showMoreDialog.value = false
-//                                    } else {
-//                                        Toast.makeText(
-//                                            context,
-//                                            "You can only change Batsman who has faced 0 balls!",
-//                                            Toast.LENGTH_SHORT
-//                                        ).show()
-//                                    }
-//                                }) {
-//                                    Text("Change Batsman", fontSize = CricketAppTheme.dimens.bodySize)
-//                                }
-//                                Spacer(modifier = Modifier.height(16.dp))
 
                                 Button(modifier = Modifier.fillMaxWidth(), onClick = {
                                     Toast.makeText(context, "Not working yet!", Toast.LENGTH_SHORT)
@@ -1361,6 +1362,7 @@ fun ScoreCardPage(navController: NavHostController) {
                             firstBattingTeamStats,
                             secondBattingTeamStats
                         )
+                        refreshKey++
                         currentBowler.value = dbHelper.getCurrentBowler(matchId)
                         val wicketDescription = getWicketDescription(
                             selectedWicketsOption.value,
@@ -1430,6 +1432,7 @@ fun ScoreCardPage(navController: NavHostController) {
                                                     firstBattingTeamStats,
                                                     secondBattingTeamStats
                                                 )
+                                                refreshKey++
 
                                                 currentBowler.value = dbHelper.getCurrentBowler(matchId)
                                                 val wicketDescription = getWicketDescription(
